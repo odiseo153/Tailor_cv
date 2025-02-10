@@ -46,7 +46,6 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
           <TabsList className="flex justify-between items-center border-b">
             <div className="flex-1">
               <TabsTrigger value="preview">Preview</TabsTrigger>
-              <TabsTrigger value="visual">Visual Editor</TabsTrigger>
               <TabsTrigger value="code">Code Editor</TabsTrigger>
             </div>
             <Button onClick={handleDownloadPdf} className="flex items-center h-10">
@@ -54,9 +53,11 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
             </Button>
           </TabsList>
           <Suspense fallback={<div>Loading editor...</div>}>
+          {/*
             <TabsContent value="visual" className="mt-4">
               <VisualEditor html={html} onChange={handleHtmlChange} />
             </TabsContent>
+              */}
             <TabsContent value="code" className="mt-4 w-full ">
               <CodeEditor htmlView={html} onChange={handleHtmlChange} />
             </TabsContent>
