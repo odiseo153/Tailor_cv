@@ -1,17 +1,20 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Editor } from "@monaco-editor/react"
+import { EditorView } from "@codemirror/view"
+import { html } from "@codemirror/lang-html"
+import { dracula } from "@uiw/codemirror-theme-dracula"
+import CodeMirror from "@uiw/react-codemirror" 
 
 interface CodeEditorProps {
-  html: string
+  htmlView: string
   onChange: (html: string) => void
 }
 
-export default function CodeEditor({ html, onChange }: CodeEditorProps) {
+export default function CodeEditor({ htmlView, onChange }: CodeEditorProps) {
   const [mounted, setMounted] = useState(false)
 
-  useEffect(() => {
+  useEffect(() => { 
     setMounted(true)
   }, [])
 
@@ -20,16 +23,15 @@ export default function CodeEditor({ html, onChange }: CodeEditorProps) {
   }
 
   return (
-    <Editor
+    <CodeMirror
+      value={htmlView}
       height="600px"
-      defaultLanguage="html"
-      defaultValue={html}
-      theme="vs-dark"
-      onChange={(value) => onChange(value || "")}
-      options={{
-        minimap: { enabled: false },
-        wordWrap: "on",
-        automaticLayout: true,
+      extensions={[html()]}
+      theme={dracula}
+      onChange={(value) => onChange(value)}
+      basicSetup={{
+        lineNumbers: true,
+        highlightActiveLine: true,
       }}
     />
   )

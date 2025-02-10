@@ -58,11 +58,11 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
               <VisualEditor html={html} onChange={handleHtmlChange} />
             </TabsContent>
             <TabsContent value="code" className="mt-4 w-full ">
-              <CodeEditor html={html} onChange={handleHtmlChange} />
+              <CodeEditor htmlView={html} onChange={handleHtmlChange} />
             </TabsContent>
             <TabsContent value="preview" className="mt-4 max-w-none">
               <div className="border rounded-md p-4  h-[600px] overflow-auto"> {/* Ajuste de altura con h-[600px] */}
-                <iframe
+                <iframe 
                   srcDoc={`
                         ${html}
                       
