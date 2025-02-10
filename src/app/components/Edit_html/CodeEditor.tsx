@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Editor } from "@monaco-editor/react"
 
 interface CodeEditorProps {
   html: string
@@ -8,35 +9,28 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ html, onChange }: CodeEditorProps) {
-  const [AceEditor, setAceEditor] = useState<any>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    async function loadAce() {
-      const ace = await import("react-ace")
-      await import("ace-builds/src-noconflict/mode-html")
-      await import("ace-builds/src-noconflict/theme-monokai")
-      setAceEditor(() => ace.default)
-    }
-    loadAce()
+    setMounted(true)
   }, [])
 
-  if (!AceEditor) {
+  if (!mounted) {
     return <div>Loading editor...</div>
   }
 
   return (
-    <AceEditor
-      mode="html"
-      theme="monokai"
-      onChange={onChange}
-      value={html}
-      name="html-editor"
-      editorProps={{ $blockScrolling: true }}
-      setOptions={{
-        useWorker: false,
+    <Editor
+      height="600px"
+      defaultLanguage="html"
+      defaultValue={html}
+      theme="vs-dark"
+      onChange={(value) => onChange(value || "")}
+      options={{
+        minimap: { enabled: false },
+        wordWrap: "on",
+        automaticLayout: true,
       }}
-      style={{ width: "100%", height: "600px" }}
     />
   )
 }
-
