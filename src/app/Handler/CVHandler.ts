@@ -299,23 +299,14 @@ export class CVHandler {
     }
   }
 
-  async crearCV(data: any, type: any,plantilla?:File,infoAdicional?:string): Promise<{ html: string }> { 
+  async crearCV(data: any, type: any, plantilla?: File, infoAdicional?: string): Promise<{ html: string }> {
     try {
-      const infoCV = type == 'text' ? await this.extraerInfoCV(data) : await this.getInfoFromFile(data, type)
-      const plantilla = type != 'text' ? await this.getPlantilla(data,type) : null;
-      const cvAdaptadoHTML = await this.generarCVAdaptado(data, infoCV,plantilla as string,infoAdicional);
-      
-      /*
-      const rutaHTML: string = "./cvs/cv_adaptado.html";
-      const rutaPDF: string = "./cvs/cv_adaptado.pdf";
-      
-      await fs.ensureDir("./cvs");
-      await fs.writeFile(rutaHTML, cvAdaptadoHTML);   
-      await this.generarPDFFromHTML(cvAdaptadoHTML, rutaPDF);
-      */ 
+      const infoCV = type == 'text' ? await this.extraerInfoCV(data) : await this.getInfoFromFile(data, type);
+      const plantillaHTML = type != 'text' ? await this.getPlantilla(data, type) : null;
+      const cvAdaptadoHTML = await this.generarCVAdaptado(data, infoCV, plantillaHTML as string, infoAdicional);
 
       return { html: cvAdaptadoHTML };
-    } catch (error: any) { // error: any
+    } catch (error: any) {
       console.error("Error en crearCV:", error.message);
       throw error;
     }

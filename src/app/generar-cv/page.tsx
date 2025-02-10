@@ -22,7 +22,6 @@ export default function GenerarCV() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("Generando CV...", { ofertaType, ofertaLaboral, plantillaCV, informacion });
 
     const formData = new FormData();
     formData.append('ofertaType', ofertaType);
@@ -43,13 +42,27 @@ export default function GenerarCV() {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        setData(result); // Actualiza el estado 'data' con la respuesta del backend
-       Message.successMessage("CV Generado Exitosamente:");
+        try {
+          const result = await response.json();
+          setData(result); // Actualiza el estado 'data' con la respuesta del backend
+          Message.successMessage("CV Generado Exitosamente:");
+        } catch (jsonError) {
+          const text = await response.text();
+          console.error("Error al parsear JSON en respuesta exitosa:", jsonError);
+          console.error("Respuesta del servidor (texto):", text);
+          Message.errorMessage("Error al procesar la respuesta del servidor. Detalles en la consola.");
+        }
       } else {
-        const errorResult = await response.json();
-      Message.errorMessage(`Error al generar CV: ${errorResult.error || 'Error desconocido'}`);
-        console.error("Error al generar CV:", errorResult);
+        try {
+          const errorResult = await response.json();
+          Message.errorMessage(`Error al generar CV: ${errorResult.error || 'Error desconocido'}`);
+          console.error("Error al generar CV:", errorResult);
+        } catch (jsonError) {
+          const text = await response.text();
+          console.error("Error al parsear JSON en respuesta de error:", jsonError);
+          console.error("Respuesta del servidor (texto):", text);
+          Message.errorMessage("Error del servidor al generar CV. Detalles en la consola.");
+        }
       }
     } catch (error) {
       console.error("Error de red o al procesar la respuesta:", error);
