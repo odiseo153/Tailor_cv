@@ -34,33 +34,31 @@ export default function GenerarCV() {
     }
     formData.append('informacionAdicional', informacion);
 
-
     try {
       const response = await fetch('/api/generate', {
         method: 'POST',
         body: formData,
       });
 
+      const responseText = await response.text(); // Read response.text() once
       if (response.ok) {
         try {
-          const result = await response.json();
-          setData(result); // Actualiza el estado 'data' con la respuesta del backend
+          const result = JSON.parse(responseText); // Try to parse JSON
+          setData(result);
           Message.successMessage("CV Generado Exitosamente:");
         } catch (jsonError) {
-          const text = await response.text();
           console.error("Error al parsear JSON en respuesta exitosa:", jsonError);
-          console.error("Respuesta del servidor (texto):", text);
+          console.error("Respuesta del servidor (texto):", responseText);
           Message.errorMessage("Error al procesar la respuesta del servidor. Detalles en la consola.");
         }
       } else {
         try {
-          const errorResult = await response.json();
+          const errorResult = JSON.parse(responseText); // Try to parse JSON for error
           Message.errorMessage(`Error al generar CV: ${errorResult.error || 'Error desconocido'}`);
           console.error("Error al generar CV:", errorResult);
         } catch (jsonError) {
-          const text = await response.text();
           console.error("Error al parsear JSON en respuesta de error:", jsonError);
-          console.error("Respuesta del servidor (texto):", text);
+          console.error("Respuesta del servidor (texto):", responseText);
           Message.errorMessage("Error del servidor al generar CV. Detalles en la consola.");
         }
       }
