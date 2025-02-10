@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## 📄 **TailorCV** - Generador de CVs Inteligente con IA  
 
-## Getting Started
+**TailorCV** es una aplicación que utiliza inteligencia artificial para generar **currículums adaptados automáticamente** a cada oferta laboral, optimizando el proceso de postulación.  
 
-First, run the development server:
+![TailorCV Home](images/home.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### 🚀 **¿Cómo funciona?**  
+1️⃣ **Sube una oferta de trabajo** (texto o PDF).  
+2️⃣ La IA **extrae la información clave** y la adapta al CV.  
+3️⃣ Se genera un **CV optimizado en segundos** en formato PDF.  
+4️⃣ El usuario proximamente podra **subir su propia plantilla** para mantener su estilo personal.  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+![TailorCV Home](images/cv_vista.png)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🎯 **Objetivo**  
+💡 **Ahorrar tiempo y esfuerzo** en la personalización de CVs, eliminando la necesidad de copiar y pegar información manualmente en cada postulación.  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🛠️ **Estado del Proyecto**  
+Actualmente, **TailorCV** está en fase de desarrollo como un **side project**, y se está recopilando feedback para mejorarlo antes del lanzamiento.  
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+### 🔧 **Tecnologías Utilizadas**  
+- 🧠 **Inteligencia Artificial** para analizar y adaptar CVs,se esta utilizando deepseek y geminis.  
+- 🌐 **Next.js / React** para la interfaz de usuario.  
+- 📄 **PDF.js** para manejar archivos PDF.  
+- ☁️ **Node.js + Express** para el backend.  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 📌 **Próximas Funcionalidades**  
+✅ Mejoras en el análisis semántico de ofertas.  
+✅ Mejoras a la hora de descargar pdf.  
+✅ Soporte para subir tus propias plantillas y que genere en base a esas plantillas.  
+✅ Integración con plataformas de empleo.  
 
-## Deploy on Vercel
+📢 **¡Tu feedback es importante!** Si tienes ideas o sugerencias, no dudes en compartirlas.  
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

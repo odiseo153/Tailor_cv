@@ -1,0 +1,2 @@
+
+export const nameApp = "TailorCV";
