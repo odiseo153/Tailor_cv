@@ -28,11 +28,8 @@
     "openai": "^4.83.0",
     "pdf-parse": "^1.1.1",
     "puppeteer": "^24.2.0",
-    "quill": "^2.0.3",
     "react": "^19.0.0",
-    "react-ace": "^13.0.0",
     "react-dom": "^19.0.0",
-    "react-quill": "^2.0.0",
     "sweetalert2": "^11.16.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7"
