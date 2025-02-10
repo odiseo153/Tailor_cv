@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { CVHandler } from '../../Handler/CVHandler';
 
+export const config = { runtime: 'edge' };
+
 const cv_handler = new CVHandler();
 
 export async function POST(request: Request) {
@@ -11,7 +13,6 @@ export async function POST(request: Request) {
     const plantillaCV = formData.get('plantillaCV');
     const infoAdicional = formData.get('informacionAdicional');
 
-    console.log("formData received in /api/generate:", { ofertaType, ofertaLaboral: ofertaLaboral instanceof File ? ofertaLaboral.name : ofertaLaboral, plantillaCV: plantillaCV instanceof File ? plantillaCV.name : plantillaCV });
 
     if (!ofertaType || !['text', 'pdf', 'image'].includes(ofertaType as string)) {
       return NextResponse.json({ error: 'Tipo de oferta laboral inválido.' }, { status: 400 });
@@ -38,8 +39,8 @@ export async function POST(request: Request) {
       html: resultado.html,
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error processing request in /api/generate:", error);
-    return NextResponse.json({ error: 'Error al procesar la solicitud para generar el CV.' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al procesar la solicitud para generar el CV. Detalles: ' + (error.message || 'Error desconocido') }, { status: 500 });
   }
 }
