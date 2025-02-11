@@ -75,8 +75,8 @@ export default function GenerarCV() {
       <Header />
       <main className="flex-grow container mx-auto px-6 py-12 ">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Genera tu CV Personalizado</h1>
-        <div className="flex gap-8">
-          <form onSubmit={handleSubmit} className="space-y-6 w-2/4">
+        <div className="flex flex-col lg:flex-row gap-8"> {/* Changed to flex-col on small screens and flex-row on larger screens */}
+          <form onSubmit={handleSubmit} className="space-y-6 w-full lg:w-2/4"> {/* Form takes full width on small screens and 2/4 on larger */}
             {/* Sección Oferta Laboral */}
             <Card>
               <CardHeader>
@@ -146,7 +146,7 @@ export default function GenerarCV() {
                 <CardTitle>Información Adicional (Opcional)</CardTitle>
               </CardHeader>
               <CardContent>
-                <Textarea rows={4} value={informacion} onChange={(e) => setInformacion(e.target.value)} className="block w-full border p-2 rounded" placeholder="Añade información que crees que pueda ayudar a tu CV" />
+                <Textarea rows={4} value={informacion} onChange={(e) => setInformacion(e.target.value)} className="block w-full border p-2 rounded" placeholder="Añade información que creas que pueda ayudar a tu CV" />
               </CardContent>
             </Card>
 
@@ -157,12 +157,12 @@ export default function GenerarCV() {
             </Button>
           </form>
           {data &&
-            <div className="w-full" >
+            <div className="w-full mt-8" > {/* Added mt-8 to create space between form and ShowHtml */}
               <ShowHtml html={data?.html ?? ""} />
             </div>
           }
         </div>
-      </main> 
+      </main>
       <Footer />
     </div>
   );
