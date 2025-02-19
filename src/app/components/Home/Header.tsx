@@ -45,17 +45,19 @@ export default function Header() {
                 {/* User Profile or Authentication Buttons */}
                 <div className="flex items-center space-x-4">
                     {!user ? (
-                        <>
+                        <div>
                         <Link href="/generar-cv" className="text-gray-700 dark:text-gray-300 text-sm font-medium hover:underline">
                             Probar
                         </Link>
+                        {/*
                             <Button variant="ghost" onClick={openAuthModal} className="text-gray-900 hover:bg-gray-200 dark:text-white dark:hover:bg-gray-700">
                                 Log in
                             </Button>
                             <Button onClick={openAuthModal} className="bg-blue-600 hover:bg-blue-700 text-white">
                                 Get started
                             </Button>
-                        </>
+                                */}
+                        </div>
                     ) : (
                         <DropdownMenu>
                             <DropdownMenuTrigger>

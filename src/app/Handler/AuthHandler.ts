@@ -8,9 +8,11 @@ const prisma = new PrismaClient();
 
 class AuthHandler {
     async register(name: string, email: string, password: string) {
-        try {
-            const existingUser = await prisma.user.findUnique({
-                where: { email },
+        return "welcome"
+      /*
+      try {
+        const existingUser = await prisma.user.findUnique({
+            where: { email },
             });
             if (existingUser) {
                 return { success: false, error: "Email already exists" };
@@ -35,6 +37,7 @@ class AuthHandler {
             console.error("Registration failed:", error);
             return { success: false, error: "Registration failed" };
         }
+        */
     }
 
     async login(email: string, password: string) {
