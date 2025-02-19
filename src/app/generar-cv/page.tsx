@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileIcon, UploadIcon, TextIcon, ImageIcon } from "lucide-react";
-import Footer from "../components/Footer";
-import Header from "../components/Header";
 import ShowHtml from "../components/Edit_html/Index";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Message } from "../utils/Message";
+import { CVHandler } from "../Handler/CVHandler";
+
+
 
 export default function GenerarCV() {
   const [ofertaLaboral, setOfertaLaboral] = useState<File | string | null>(null);
@@ -18,61 +20,67 @@ export default function GenerarCV() {
   const [data, setData] = useState<{ html: string}>();
   const [ofertaType, setOfertaType] = useState<'pdf' | 'image' | 'text'>("text");
   const [isLoading, setIsLoading] = useState(false);
+  const [templates, setTemplates] = useState<string[]>(['']);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedTemplateContent, setSelectedTemplateContent] = useState<string | null>(null);
+  const cv_handler = new CVHandler();
 
-    const formData = new FormData();
-    formData.append('ofertaType', ofertaType);
-    if (ofertaLaboral) {
-      formData.append('ofertaLaboral', ofertaLaboral);
-    }
 
-    if (plantillaCV) {
-      formData.append('plantillaCV', plantillaCV);
-    }
-    formData.append('informacionAdicional', informacion);
 
-    try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        body: formData,
-      });
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        const request = await fetch("/api/templates");
+        const response = await request.json();
 
-      const responseText = await response.text(); // Read response.text() once
-      if (response.ok) {
-        try {
-          const result = JSON.parse(responseText); // Try to parse JSON
-          setData(result);
-          Message.successMessage("CV Generado Exitosamente:");
-        } catch (jsonError) {
-          console.error("Error al parsear JSON en respuesta exitosa:", jsonError);
-          console.error("Respuesta del servidor (texto):", responseText);
-          Message.errorMessage("Error al procesar la respuesta del servidor. Detalles en la consola.");
-        }
-      } else {
-        try {
-          const errorResult = JSON.parse(responseText); // Try to parse JSON for error
-          Message.errorMessage(`Error al generar CV: ${errorResult.error || 'Error desconocido'}`);
-          console.error("Error al generar CV:", errorResult);
-        } catch (jsonError) {
-          console.error("Error al parsear JSON en respuesta de error:", jsonError);
-          console.error("Respuesta del servidor (texto):", responseText);
-          Message.errorMessage("Error del servidor al generar CV. Detalles en la consola.");
-        }
+        console.log(response.contentHtml);
+        setTemplates(response.contentHtml); // Actualiza con el contenido HTML
+      } catch (error) {
+        console.error("Error cargando las plantillas:", error);
       }
+    };
+
+    loadTemplates();
+  }, []); 
+
+  const handleTemplateClick = async (template: string) => {
+    setSelectedTemplate(template);
+    try {
+      setSelectedTemplateContent(template);
     } catch (error) {
-      console.error("Error de red o al procesar la respuesta:", error);
-      Message.errorMessage("Error al generar CV. Por favor, intenta nuevamente.");
-    } finally {
-      setIsLoading(false);
+      console.error("Error fetching template content:", error);
     }
   };
 
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+
+  try {
+    const responseHtml = await cv_handler.crearCV(
+      ofertaLaboral,
+      ofertaType,
+      undefined,
+      informacion
+    );
+
+    if (responseHtml) {
+      setData(responseHtml);
+      Message.successMessage("CV Generado Exitosamente:");
+    } else {
+      Message.errorMessage("Error al procesar la respuesta del servidor. Detalles en la consola.");
+    }
+  } catch (error) {
+    console.error("Error al generar CV:", error);
+    Message.errorMessage("Error al generar CV. Por favor, intenta nuevamente.");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
       <main className="flex-grow container mx-auto px-6 py-12 ">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Genera tu CV Personalizado</h1>
         <div className="flex flex-col lg:flex-row gap-8"> {/* Changed to flex-col on small screens and flex-row on larger screens */}
@@ -120,7 +128,7 @@ export default function GenerarCV() {
                 ) : (
                   <Textarea
                     rows={4}
-                    value={ofertaLaboral as string}
+                    value={ofertaLaboral as string ?? ""}
                     onChange={(e) => setOfertaLaboral(e.target.value)}
                     className="block w-full border p-2 rounded"
                     placeholder="Pega aquí el texto de la oferta laboral..."
@@ -129,16 +137,27 @@ export default function GenerarCV() {
               </CardContent>
             </Card>
 
-            {/* Sección Plantilla de CV
+            {/* Sección Plantilla de CV 
             <Card>
               <CardHeader>
-                <CardTitle>Plantilla de CV (Opcional)</CardTitle>
+                <CardTitle>Plantillas de CV</CardTitle>
               </CardHeader>
               <CardContent>
-                <Input type="file" accept=".pdf" title="Plantilla CV" onChange={(e) => setPlantillaCV(e.target.files?.[0] || null)} className="block w-full border p-2 rounded" />
+                <div className="grid grid-cols-2 gap-4">
+                  {templates.map((template) => (
+                    <div key={template} className={`p-4 border rounded cursor-pointer ${selectedTemplate === template ? 'border-blue-500' : 'border-gray-300'}`} onClick={() => handleTemplateClick(template)}>
+                      <iframe
+                        srcDoc={template}
+                        className="w-full h-full"
+                        title="Preview"
+                        style={{ zoom: '1.0', transform: 'scale(1)', transformOrigin: '0 0' }}
+                      />
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-                */}
+              */}
 
             {/* Sección Información Adicional */}
             <Card>
@@ -149,7 +168,6 @@ export default function GenerarCV() {
                 <Textarea rows={4} value={informacion} onChange={(e) => setInformacion(e.target.value)} className="block w-full border p-2 rounded" placeholder="Añade información que creas que pueda ayudar a tu CV" />
               </CardContent>
             </Card>
-
 
             {/* Botón de envío */}
             <Button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition">
@@ -163,7 +181,20 @@ export default function GenerarCV() {
           }
         </div>
       </main>
-      <Footer />
+      {/*
+      {selectedTemplateContent && (
+        <Dialog open={!!selectedTemplateContent} onOpenChange={() => setSelectedTemplateContent(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Vista Previa de la Plantilla</DialogTitle>
+            </DialogHeader>
+            <div className="p-4">
+              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: selectedTemplateContent }} />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+              */}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import Swal, { SweetAlertResult } from "sweetalert2";
 
-const timer =700;
+const timer =2000;
  
 export class Message {
     static errorMessage(message: string) {

@@ -1,20 +1,12 @@
-import fs from "fs-extra";
-import puppeteer from "puppeteer";
 import { OpenAI } from "openai";
 import { jsonrepair } from "jsonrepair";
-
+import { validation_prompt } from "../utils/cv_validations";
 
 const apiKey = process.env.NEXT_PUBLIC_API_URL_DEESEEK;
 const API_KEY_GEMINIS = process.env.NEXT_PUBLIC_API_URL_GEMINIS;
-const client = new OpenAI({ apiKey, baseURL: "https://api.deepseek.com" });
+const client = new OpenAI({ apiKey, baseURL: "https://api.deepseek.com",dangerouslyAllowBrowser:true });
 
-const plantillas = Promise.all([
-  fs.readFile("../../templates/plantilla.html", "utf-8"),
-  fs.readFile("../../templates/plantilla2.html", "utf-8"),
-]).catch(error => {
-  console.error("Error reading template files:", error);
-  return []; // Return an empty array or handle the error as needed
-});
+
 
 export class CVHandler {
 
@@ -162,14 +154,10 @@ export class CVHandler {
     }
   }
 
-
-
-
   async extraerInfoCV(textoCV: string): Promise<any> {
-    try {
-      const response = await client.chat.completions.create({
-        model: "deepseek-chat",
-        messages: [
+    const response = await client.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [
           {
             role: "system",
             content: `Eres un asistente experto en extraer información de currículums (CVs) y devolverla en formato JSON.  Analiza el CV y extrae la siguiente información en JSON.  Si una sección no está presente, omítela o usa un array vacío si es una lista.  No incluyas texto adicional fuera del JSON.
@@ -218,20 +206,22 @@ export class CVHandler {
 }
 \`\`\`
 `,
-          },
-          {
-            role: "user",
-            content: `Extrae la información del siguiente CV en formato JSON, solo en formato JSON: ${textoCV}`,
-          },
-        ],
-        stream: false,
-      });
+},
+{
+  role: "user",
+  content: `Extrae la información del siguiente CV en formato JSON, solo en formato JSON: ${textoCV}`,
+},
+],
+stream: false,
+});
 
-      if (!response.choices?.[0]?.message?.content) {
-        throw new Error("Deepseek devolvió una respuesta vacía o incorrecta.");
-      }
+if (!response.choices?.[0]?.message?.content) {
+  throw new Error("Deepseek devolvió una respuesta vacía o incorrecta.");
+}
 
-      let jsonResponse: string = response.choices[0].message.content.trim();
+let jsonResponse: string = response.choices[0].message.content.trim();
+console.log(response)
+try {
       return this.sanitizeJSONResponse(jsonResponse);
     } catch (error: any) { // error: any
       console.error(`Error al extraer información del CV: ${error.message}`);
@@ -239,41 +229,67 @@ export class CVHandler {
     }
   }
 
-  async generarCVAdaptado(ofertaTexto: string, infoCV: any,plantilla?:string,infoAdiccional?:string): Promise<string> { 
+  async generarCVAdaptado(
+    ofertaTexto: string,
+    infoCV: any,
+    plantilla?: string,
+    infoAdiccional?: string
+  ): Promise<string> {
     console.log(plantilla);
+  
     try {
+ 
+  
+      const systemPrompt = `
+        Eres un asistente experto en la creación de CVs profesionales en **HTML con Tailwind CSS**.  
+        Tu tarea es generar un **CV de una sola página**, optimizado para la oferta de trabajo proporcionada,  
+        utilizando la información del CV del usuario.  
+  
+        ### Requisitos:
+        - **Formato**: **HTML semántico**, válido y listo para conversión a PDF.  
+        - **Diseño**: **Responsivo y profesional** con Tailwind CSS.  
+        - **Optimización**: Solo información relevante, evitando detalles innecesarios.  
+        - **Estructura**: Quepa en **una página A4**, bien organizada.  
+  
+        ### Consideraciones:
+        ${validation_prompt}
+  
+        ${infoAdiccional ? `Toma en cuenta esta información adicional del usuario: ${infoAdiccional}.` : ""}
+        
+        
+        📌 **IMPORTANTE:** Devuelve únicamente el código HTML sin ningún otro texto adicional ni etiquetas de lenguaje como \`'''html'''\`.
+      `.trim();
+  
+      const userPrompt = `
+        Genera un CV en **HTML con Tailwind CSS**, adaptado a esta oferta laboral:  
+        **${ofertaTexto}**  
+  
+        Usa la siguiente información del CV del usuario:  
+        ${JSON.stringify(infoCV)}  
+  
+        **Asegúrate de que el HTML sea válido, estructurado y listo para conversión a PDF.**
+      `.trim();
+  
       const response = await client.chat.completions.create({
         model: "deepseek-chat",
         messages: [
-          {
-            role: "system",
-            content: `Eres un asistente experto en la creación de CVs profesionales y efectivos en formato HTML con Tailwind CSS. 
-             Tu tarea principal es generar un CV de una sola página que esté altamente optimizado para la oferta de trabajo proporcionada,
-              utilizando la información del CV del usuario.  El CV debe ser conciso, bien estructurado, y visualmente atractivo,
-               utilizando Tailwind CSS para el diseño.  Prioriza la información más relevante para la oferta laboral, 
-               eliminando detalles innecesarios para asegurar que quepa en una página de PDF tamaño A4.  
-               El HTML generado debe ser válido, semántico y listo para ser convertido a PDF.solo devuelve el html de la oferta, 
-               no devuelva ningun otro texto,tampoco le pongas  '''html''', ${infoAdiccional ? `y tomando en cuenta esta info adicional del usuario ${infoAdiccional}` : ""}
-                Utiliza esta plantilla HTML como base: ${await plantillas.then(plantillaArray => plantillaArray.length > 0 ? plantillaArray[Math.floor(Math.random() * plantillaArray.length)] : '')}.`,
-          },
-          {
-            role: "user",
-            content: `Genera un CV de una página en HTML con Tailwind CSS, adaptado a esta oferta laboral: ${ofertaTexto}.  Utiliza la siguiente información de mi CV: ${JSON.stringify(infoCV)}.  Prioriza la relevancia para la oferta y asegúrate de que el resultado sea un HTML válido y profesional, listo para PDF.`,
-          },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
         ],
         stream: false,
       });
-
+  
       if (!response.choices?.[0]?.message?.content) {
         throw new Error("Deepseek devolvió una respuesta vacía o incorrecta.");
       }
-
+  
       return response.choices[0].message.content.trim();
-    } catch (error: any) { // error: any
-      console.error(`Error al generar el CV con IA: ${error.message}`);
+    } catch (error: any) {
+      console.error(`❌ Error al generar el CV: ${error.message}`);
       throw error;
     }
   }
+  
 
   async sanitizeJSONResponse(responseText: string): Promise<any> { 
     try {
@@ -286,18 +302,7 @@ export class CVHandler {
     }
   }
 
-  async generarPDFFromHTML(html: string, rutaPDF: string): Promise<void> { 
-    try {
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-      await page.setContent(html);
-      await page.pdf({ path: rutaPDF, format: "A4" });
-      await browser.close();
-    } catch (error: any) { // error: any
-      console.error("Error generando PDF:", error);
-      throw error;
-    }
-  }
+ 
 
   async crearCV(data: any, type: any, plantilla?: File, infoAdicional?: string): Promise<{ html: string }> {
     try {
@@ -306,6 +311,7 @@ export class CVHandler {
       const cvAdaptadoHTML = await this.generarCVAdaptado(data, infoCV, plantillaHTML as string, infoAdicional);
 
       return { html: cvAdaptadoHTML };
+
     } catch (error: any) {
       console.error("Error en crearCV:", error.message);
       throw error;

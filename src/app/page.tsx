@@ -1,25 +1,31 @@
-import Benefits from "./components/Benefits";
-import CallToAction from "./components/CallToAction";
-import Footer from "./components/Footer";
-import Header from "./components/Header";
-import HeroSection from "./components/HeroSection";
-import HowItWorks from "./components/HowItWorks";
-import Testimonials from "./components/Testimonials";
+import Benefits from "./components/Home/Benefits";
+import CallToAction from "./components/Home/CallToAction";
+import HeroSection from "./components/Home/HeroSection";
+import HowItWorks from "./components/Home/HowItWorks";
+import Testimonials from "./components/Home/Testimonials";
+
 
 
 export default function Home() {
+
   return (
     <div className="min-h-screen flex flex-col text-black">
-      <Header />
       <main>
         <HeroSection />
         <HowItWorks />
-        <Benefits />
+        <Benefits /> 
         <Testimonials />
         <CallToAction />
       </main>
-      <Footer />
     </div>
   )
 }
+
+
+
+//¡Oops! Error al generar CV: Error al procesar la solicitud para generar el CV. Detalles: invalid json response body at https://api.deepseek.com/chat/completions reason: Unexpected end of JSON input
+
+
+
+
 

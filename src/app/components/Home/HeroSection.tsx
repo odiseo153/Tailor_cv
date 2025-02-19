@@ -3,7 +3,8 @@
 import Link from "next/link"
 import  Image from "next/image";
 import { motion } from "framer-motion"
-import { nameApp } from "../utils/NameApp";
+import { nameApp } from "@/app/utils/NameApp";
+
 
 export default function HeroSection() {
   return (

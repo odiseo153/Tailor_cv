@@ -1,0 +1,17 @@
+name: CI Básico  # Nombre del workflow
+
+on: push  # Se ejecuta cada vez que se hace un push
+
+jobs:
+  test:  # Definimos un trabajo llamado "test"
+    runs-on: ubuntu-latest  # Corre en un entorno Ubuntu
+
+    steps:
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4  # Trae el código del repo
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Ejecutar script
+        run: echo "Ejecutando CI en GitHub Actions"

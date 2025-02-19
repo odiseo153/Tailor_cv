@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { EditorView } from "@codemirror/view"
 import { html } from "@codemirror/lang-html"
 import { dracula } from "@uiw/codemirror-theme-dracula"
 import CodeMirror from "@uiw/react-codemirror"

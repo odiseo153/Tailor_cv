@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db { 
+  provider = "postgresql"
+  url      = env("DATABASE_URL_LOCAL")
+}
+
+
+
+model User {
+  id             String       @id @default(uuid())
+  name           String
+  email          String       @unique
+  password       String
+  phone          String?
+  location       String?
+  profilePicture String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  workExperience WorkExperience[]
+  skills         Skill[]
+  education      Education[]
+  socialLinks    SocialLink[]
+  cvPreferences  CvPreferences?
+}
+
+model WorkExperience {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  company     String
+  jobTitle    String
+  startDate   DateTime
+  endDate     DateTime?
+  description String?
+  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model Skill {
+  id       String  @id @default(uuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name     String
+  level    Int     @default(1) // Nivel de habilidad, por ejemplo, de 1 a 5
+  createdAt DateTime @default(now())
+}
+
+model Education {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  institution String
+  degree      String
+  startDate   DateTime
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model SocialLink {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform  String   // LinkedIn, GitHub, Portfolio, etc.
+  url       String
+  createdAt DateTime @default(now())
+}
+
+model CvPreferences {
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template   String?  // Nombre de la plantilla preferida
+  font       String?  // Fuente del CV
+  color      String?  // Color principal del CV
+  createdAt  DateTime @default(now())
+}
