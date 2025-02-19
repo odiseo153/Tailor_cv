@@ -4,6 +4,7 @@
 /src/app/components/Profile
 /src/app/profile
 /src/app/Handler/PrismaHandler
+/src/app/api/apiHandler
 
 # dependencies
 /node_modules
