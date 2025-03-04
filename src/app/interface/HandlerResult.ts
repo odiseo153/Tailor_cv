@@ -1,6 +1,6 @@
 
 export interface HandlerResult {
     success:boolean;
-    data:any
+    data?:any
 }
 

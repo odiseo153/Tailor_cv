@@ -10,34 +10,29 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
 import { useAppContext } from "@/app/layout/AppContext"
+import { Education } from "@prisma/client"
  
-interface Education {
-  id: string
-  institution: string
-  degree: string
-  startDate: string
-  endDate: string
-}
 
-interface EducationProps {
-  education?: Education[]
-}
 
-const defaultEducation: Education[] = [
+
+
+const defaultEducation: any[] = [
   {
     id: "1",
     institution: "Default University",
     degree: "Default Degree",
-    startDate: "2016-09-01",
-    endDate: "2020-06-01",
+    userId: "",
+    startDate: new Date("2016-09-01"),
+    endDate: new Date("2020-06-01"),
   },
 ]
 
 export default function EducationInfo() {
   const {user} = useAppContext();
   const education = user?.education as Education[];
-  const [educationList, setEducationList] = useState<Education[]>(education.length > 0 ? education : defaultEducation)
-
+ 
+  const [educationList, setEducationList] = useState<Education[]>(education || defaultEducation)
+ 
   const handleAddEducation = (newEducation: Omit<Education, "id">) => {
     setEducationList([...educationList, { ...newEducation, id: Date.now().toString() }])
   }
@@ -76,7 +71,7 @@ export default function EducationInfo() {
                 <h3 className="font-bold">{edu.degree}</h3>
                 <p className="text-gray-600">{edu.institution}</p>
                 <p className="text-sm text-gray-500">
-                  {edu.startDate} - {edu.endDate}
+                  {edu.startDate.toString()} - {edu.endDate?.toString()}
                 </p>
               </div>
               <div>
@@ -114,22 +109,43 @@ interface EducationFormProps {
 }
 
 function EducationForm({ initialData, onSubmit }: EducationFormProps) {
-  const [formData, setFormData] = useState<Omit<Education, "id">>(
+  const {user} = useAppContext();
+  const [formData, setFormData] = useState<any>(
     initialData || {
       institution: "",
+      userId: user.id,
       degree: "",
-      startDate: "",
-      endDate: "",
+      startDate: new Date(),  // Ensuring the date is in YYYY-MM-DD format
     },
   )
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const value = e.target.type === 'date' ? new Date(e.target.value).toISOString().split('T')[0] : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try{
+      const request = await fetch("/api/apiHandler/education",{
+        method:"POST",
+        headers:{
+          "Content-Type": "application/json"
+        },
+        body:JSON.stringify(formData),
+      });
+
+      const response = await request.json();
+
+      console.log(response)
+
+     onSubmit(formData);
+    
+    }catch(error){
+      console.log(error);
+    }
+
   }
 
   return (

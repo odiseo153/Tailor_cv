@@ -23,8 +23,8 @@ model User {
   phone          String?
   location       String?
   profilePicture String?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  createdAt      DateTime?     @default(now())
+  updatedAt      DateTime?     @updatedAt
 
   workExperience WorkExperience[]
   skills         Skill[]
@@ -42,8 +42,8 @@ model WorkExperience {
   startDate   DateTime
   endDate     DateTime?
   description String?
-  updatedAt   DateTime     @updatedAt
-  createdAt   DateTime @default(now())
+  updatedAt   DateTime?     @updatedAt
+  createdAt   DateTime? @default(now())
 }
 
 model Skill {
@@ -52,7 +52,7 @@ model Skill {
   user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   name     String
   level    Int     @default(1) // Nivel de habilidad, por ejemplo, de 1 a 5
-  createdAt DateTime @default(now())
+  createdAt DateTime? @default(now())
 }
 
 model Education {
@@ -63,7 +63,7 @@ model Education {
   degree      String
   startDate   DateTime
   endDate     DateTime?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime? @default(now())
 }
 
 model SocialLink {
@@ -72,7 +72,7 @@ model SocialLink {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   platform  String   // LinkedIn, GitHub, Portfolio, etc.
   url       String
-  createdAt DateTime @default(now())
+  createdAt DateTime? @default(now())
 }
 
 model CvPreferences {
@@ -82,5 +82,5 @@ model CvPreferences {
   template   String?  // Nombre de la plantilla preferida
   font       String?  // Fuente del CV
   color      String?  // Color principal del CV
-  createdAt  DateTime @default(now())
+  createdAt  DateTime? @default(now())
 }

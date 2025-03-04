@@ -3,135 +3,126 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useAppContext } from "@/app/layout/AppContext"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { PencilIcon } from "lucide-react"
-import { useAppContext } from "@/app/layout/AppContext"
+import { Pencil } from "lucide-react"
 
-interface CVPreferences {
-  template: string
-  font: string
-  color: string
-}
-
-interface CVPreferencesProps { 
-  preferences?: Partial<CVPreferences>
-}
-
-const defaultPreferences: CVPreferences = {
-  template: "modern",
-  font: "Arial",
-  color: "#000000",
-}
-
-export default function CVPreferences({ preferences = {} }: CVPreferencesProps) {
-  const {user} = useAppContext();
-  const [cvPreferences, setCVPreferences] = useState<CVPreferences>({
-    ...defaultPreferences,
-    ...user.cvPreferences,
+export default function CVPreferences() {
+  const { user } = useAppContext()
+  const [isEditing, setIsEditing] = useState(false)
+  const [formData, setFormData] = useState({
+    template: user.cvPreferences.template,
+    font: user.cvPreferences.font,
+    color: user.cvPreferences.color,
   })
 
-  const handleUpdatePreferences = (updatedPreferences: CVPreferences) => {
-    setCVPreferences(updatedPreferences)
+  const handleTemplateChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, template: value }))
+  }
+
+  const handleFontChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, font: value }))
+  }
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, color: e.target.value }))
+  }
+
+  const handleSubmit = () => {
+    setIsEditing(false)
   }
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>CV Preferences</CardTitle>
-        <Dialog>
+        <Dialog open={isEditing} onOpenChange={setIsEditing}>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <PencilIcon className="h-4 w-4" />
+            <Button variant="outline" size="sm">
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Edit CV Preferences</DialogTitle>
             </DialogHeader>
-            <CVPreferencesForm initialData={cvPreferences} onSubmit={handleUpdatePreferences} />
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="template">Template</Label>
+                <Select value={formData.template} onValueChange={handleTemplateChange}>
+                  <SelectTrigger id="template">
+                    <SelectValue placeholder="Select a template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Modern">Modern</SelectItem>
+                    <SelectItem value="Classic">Classic</SelectItem>
+                    <SelectItem value="Minimalist">Minimalist</SelectItem>
+                    <SelectItem value="Creative">Creative</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="font">Font</Label>
+                <Select value={formData.font} onValueChange={handleFontChange}>
+                  <SelectTrigger id="font">
+                    <SelectValue placeholder="Select a font" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Roboto">Roboto</SelectItem>
+                    <SelectItem value="Open Sans">Open Sans</SelectItem>
+                    <SelectItem value="Montserrat">Montserrat</SelectItem>
+                    <SelectItem value="Lato">Lato</SelectItem>
+                    <SelectItem value="Poppins">Poppins</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="color">Color</Label>
+                <div className="flex gap-3">
+                  <Input
+                    id="color"
+                    type="color"
+                    value={formData.color}
+                    onChange={handleColorChange}
+                    className="w-12 h-10 p-1"
+                  />
+                  <Input value={formData.color} onChange={handleColorChange} className="flex-1" />
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button onClick={handleSubmit}>Save</Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <p>
-            <strong>Template:</strong> {cvPreferences.template}
-          </p>
-          <p>
-            <strong>Font:</strong> {cvPreferences.font}
-          </p>
-          <p>
-            <strong>Color:</strong> {cvPreferences.color}
-          </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="border rounded-lg p-4">
+            <p className="text-sm text-gray-500">Template</p>
+            <p className="font-medium">{user.cvPreferences.template}</p>
+          </div>
+          <div className="border rounded-lg p-4">
+            <p className="text-sm text-gray-500">Font</p>
+            <p className="font-medium">{user.cvPreferences.font}</p>
+          </div>
+          <div className="border rounded-lg p-4">
+            <p className="text-sm text-gray-500">Color</p>
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: user.cvPreferences.color }} />
+              <p className="font-medium">{user.cvPreferences.color}</p>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-interface CVPreferencesFormProps {
-  initialData: CVPreferences
-  onSubmit: (preferences: CVPreferences) => void
-}
-
-function CVPreferencesForm({ initialData, onSubmit }: CVPreferencesFormProps) {
-  const [formData, setFormData] = useState<CVPreferences>(initialData)
-
-  const handleChange = (name: keyof CVPreferences, value: string) => {
-    setFormData({ ...formData, [name]: value })
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="template">Template</Label>
-        <Select onValueChange={(value) => handleChange("template", value)} defaultValue={formData.template}>
-          <SelectTrigger id="template">
-            <SelectValue placeholder="Select a template" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="modern">Modern</SelectItem>
-            <SelectItem value="classic">Classic</SelectItem>
-            <SelectItem value="minimalist">Minimalist</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="font">Font</Label>
-        <Select onValueChange={(value) => handleChange("font", value)} defaultValue={formData.font}>
-          <SelectTrigger id="font">
-            <SelectValue placeholder="Select a font" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Arial">Arial</SelectItem>
-            <SelectItem value="Helvetica">Helvetica</SelectItem>
-            <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label htmlFor="color">Color</Label>
-        <Input
-          id="color"
-          name="color"
-          type="color"
-          value={formData.color}
-          onChange={(e) => handleChange("color", e.target.value)}
-          required
-        />
-      </div>
-      <Button type="submit">Save</Button>
-    </form>
   )
 }
 

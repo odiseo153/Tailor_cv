@@ -21,7 +21,6 @@ export default function RootLayout({
       >
         <title>TailorCV</title>
         <AppContextProvider>
-
           <Header />
           {children}
           <Footer />

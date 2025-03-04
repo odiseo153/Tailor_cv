@@ -1,11 +1,11 @@
 import { OpenAI } from "openai";
 import { jsonrepair } from "jsonrepair";
 import { validation_prompt } from "../utils/cv_validations";
+import { useAppContext } from "../layout/AppContext";
 
 const apiKey = process.env.NEXT_PUBLIC_API_URL_DEESEEK;
 const API_KEY_GEMINIS = process.env.NEXT_PUBLIC_API_URL_GEMINIS;
 const client = new OpenAI({ apiKey, baseURL: "https://api.deepseek.com",dangerouslyAllowBrowser:true });
-
 
 
 export class CVHandler {
@@ -139,9 +139,7 @@ export class CVHandler {
       const responseData = await response.json();
       const responseHTML = responseData.candidates[0].content.parts[0].text;
 
-
       return responseHTML;
-
 
     } catch (error: unknown) {
       let errorMessage = 'Error desconocido al procesar el archivo del CV y generar HTML';
@@ -235,33 +233,32 @@ try {
     plantilla?: string,
     infoAdiccional?: string
   ): Promise<string> {
-    console.log(plantilla);
+    console.log(infoAdiccional);
   
     try {
  
   
       const systemPrompt = `
-        Eres un asistente experto en la creación de CVs profesionales en **HTML con Tailwind CSS**.  
+        Eres un asistente experto en la creación de CVs profesionales en **HTML con Bootstrap**.  
         Tu tarea es generar un **CV de una sola página**, optimizado para la oferta de trabajo proporcionada,  
         utilizando la información del CV del usuario.  
   
         ### Requisitos:
         - **Formato**: **HTML semántico**, válido y listo para conversión a PDF.  
-        - **Diseño**: **Responsivo y profesional** con Tailwind CSS.  
+        - **Diseño**: **Responsivo y profesional** con Bootstrap.  
         - **Optimización**: Solo información relevante, evitando detalles innecesarios.  
         - **Estructura**: Quepa en **una página A4**, bien organizada.  
   
         ### Consideraciones:
         ${validation_prompt}
   
-        ${infoAdiccional ? `Toma en cuenta esta información adicional del usuario: ${infoAdiccional}.` : ""}
-        
+        ${infoAdiccional ? `Toma en cuenta esta información adicional del usuario, pon en el cv la info del usuario relevante para el puesto: ${infoAdiccional}.` : ""}
         
         📌 **IMPORTANTE:** Devuelve únicamente el código HTML sin ningún otro texto adicional ni etiquetas de lenguaje como \`'''html'''\`.
       `.trim();
   
       const userPrompt = `
-        Genera un CV en **HTML con Tailwind CSS**, adaptado a esta oferta laboral:  
+        Genera un CV en **HTML con Bootstrap**, adaptado a esta oferta laboral:  
         **${ofertaTexto}**  
   
         Usa la siguiente información del CV del usuario:  

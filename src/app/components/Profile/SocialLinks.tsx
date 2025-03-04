@@ -26,7 +26,8 @@ const defaultLinks: SocialLink[] = [{ id: "1", platform: "LinkedIn", url: "https
 export default function SocialLinks() {
   const {user} = useAppContext();
   const links = user?.links as SocialLink[];
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(links.length > 0 ? links : defaultLinks)
+
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(links || defaultLinks)
 
   const handleAddLink = (newLink: Omit<SocialLink, "id">) => {
     setSocialLinks([...socialLinks, { ...newLink, id: Date.now().toString() }])

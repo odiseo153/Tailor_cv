@@ -22,18 +22,14 @@ interface PersonalInfo {
   profilePicture: string
 }
 
-interface PersonalInfoProps {
-  user?: Partial<User>
-}
-
 const defaultUser: User = {
-  id:"ajiowaawndoawdn",
+  id:"a6464649-56c1-4a39-960f-4246c85fb79d",
   name: "John Doe",
   email: "john.doe@example.com",
   phone: "+1234567890",
   password: "1234567890",
   location: "New York, USA",
-  profilePicture: "/placeholder.svg?height=100&width=100",
+  profilePicture: "https://w0.peakpx.com/wallpaper/608/902/HD-wallpaper-businessman-business-man.jpg",
   createdAt: new Date(""),
   updatedAt: new Date(""),
 }
@@ -41,17 +37,15 @@ const defaultUser: User = {
 export default function PersonalInfo() {
   const {user} = useAppContext();
  
-  const [editedUser, setEditedUser] = useState<User>({
-    ...defaultUser,
-    ...user,
-  })
+  const [editedUser, setEditedUser] = useState<User>(user || defaultUser);
+  
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedUser({ ...editedUser, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit =async (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors: Record<string, string> = {}
 
@@ -68,10 +62,25 @@ export default function PersonalInfo() {
       return
     }
 
-    // Here you would typically send the updated data to your API
-    console.log("Updated user:", editedUser)
-    setIsEditing(false)
-    setErrors({})
+    try{
+
+      const request = await fetch('/api/apiHandler/user',{
+        method:"PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body:JSON.stringify(editedUser)
+      });
+
+      const response = await request.json();
+
+      console.log(response)
+      
+      setIsEditing(false)
+      setErrors({})
+    }catch(e){
+      console.log(e);
+    }
   }
 
   const [isEditing, setIsEditing] = useState(false)

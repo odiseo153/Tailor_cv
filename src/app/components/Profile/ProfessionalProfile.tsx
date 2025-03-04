@@ -9,11 +9,7 @@ import WorkExperienceInfo from "./WorkExperience"
 import { useAppContext } from "@/app/layout/AppContext"
 
 export default function ProfessionalProfile() {
-  const {user} = useAppContext();
-
-  if(!user){
-    window.location.href = '/';
-  }
+ //const {user} = useAppContext();
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -21,6 +17,7 @@ export default function ProfessionalProfile() {
         <PersonalInfo  />
         <WorkExperienceInfo  />
         <Skills/>
+        <SocialLinks/>
         <EducationInfo  />
         <CVPreferences  />
       </div>

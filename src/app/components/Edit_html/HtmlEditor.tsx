@@ -3,12 +3,10 @@
 import { useState, Suspense, lazy, useEffect } from "react"
 import { generatePdf } from "./htmlToPdf"
 import { Download } from "lucide-react"
-
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 
-const VisualEditor = lazy(() => import("./VisualEditor"))
 const CodeEditor = lazy(() => import("./CodeEditor"))
 
 interface HtmlEditorProps {
@@ -20,80 +18,79 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   const [activeTab, setActiveTab] = useState("preview")
 
   useEffect(() => {
-    const script = document.createElement('script')
-    script.src = 'https://cdn.tailwindcss.com'
+    const script = document.createElement('script');
+    const link = document.createElement('link');
+    script.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'
+    link.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css'
     document.head.appendChild(script)
+    document.head.appendChild(link)
 
     return () => {
       document.head.removeChild(script)
+      document.head.removeChild(link)
     }
   }, [])
 
-  const handleHtmlChange = (newHtml: string) => {
-    setHtml(newHtml)
-  }
+  const handleHtmlChange = (newHtml: string) => setHtml(newHtml)
 
-  const handleDownloadPdf = () => {
-    generatePdf(html)
-  }
+  const handleDownloadPdf = () => generatePdf(html)
 
   return (
-    <Card className="w-full min-h-screen sm:min-h-[600px] lg:min-h-[800px]">
-      <CardContent className="p-4 sm:p-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-          <TabsList className="flex flex-col sm:flex-row justify-between items-center border-b space-y-2 sm:space-y-0 w-full">
-            <div className="flex flex-wrap gap-2 sm:gap-4">
-              <TabsTrigger 
-                value="preview" 
-                className="text-sm sm:text-base px-4 py-2"
+    <Card className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl rounded-3xl">
+      <CardContent className="p-6 sm:p-10 flex flex-col gap-6">
+
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <Tabs>
+
+            <TabsList className="flex gap-2 bg-gray-200 p-1 rounded-full">
+              <TabsTrigger
+                value="preview"
+                className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition"
               >
                 Preview
               </TabsTrigger>
-              <TabsTrigger 
-                value="code" 
-                className="text-sm sm:text-base px-4 py-2"
+              <TabsTrigger
+                value="code"
+                className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition"
               >
                 Code Editor
               </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <Button
+            onClick={handleDownloadPdf}
+            className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-transform"
+          >
+            <Download className="w-5 h-5 animate-bounce" />
+            <span className="font-semibold tracking-wide">Download PDF</span>
+          </Button>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-grow">
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-96 text-gray-500">
+              Loading editor...
             </div>
-            <Button 
-              onClick={handleDownloadPdf} 
-              className="flex items-center h-8 sm:h-10 w-full sm:w-auto"
-            >
-              <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-          </TabsList>
-
-          <div className="flex-grow mt-8">
-            <Suspense fallback={
-              <div className="flex items-center justify-center h-full">
-                <div className="text-sm sm:text-base">Loading editor...</div>
+          }>
+            <TabsContent value="code" className="mt-6">
+              <div className="h-[500px] sm:h-[600px] lg:h-[700px] w-full rounded-lg overflow-hidden shadow-inner border">
+                <CodeEditor htmlView={html} onChange={handleHtmlChange} />
               </div>
-            }>
-              <TabsContent 
-                value="code" 
-                className="h-full"
-              >
-                <div className="h-[calc(100vh-200px)] sm:h-[500px] lg:h-[700px] w-full">
-                  <CodeEditor htmlView={html} onChange={handleHtmlChange} />
-                </div>
-              </TabsContent>
+            </TabsContent>
 
-              <TabsContent 
-                value="preview" 
-                className="h-full"
-              >
-                <div className="border rounded-md p-2 sm:p-4 h-[calc(100vh-200px)] sm:h-[500px] lg:h-[700px] w-full overflow-auto">
-                  <iframe
-                    srcDoc={html}
-                    className="w-full h-full"
-                    title="Preview"
-                  />
-                </div>
-              </TabsContent>
-            </Suspense>
-          </div>
+            <TabsContent value="preview" className="mt-6">
+              <div className="h-[500px] sm:h-[600px] lg:h-[700px] w-full rounded-lg overflow-hidden border shadow-inner bg-white">
+                <iframe
+                  srcDoc={html}
+                  className="w-full h-full"
+                  title="HTML Preview"
+                />
+              </div>
+            </TabsContent>
+          </Suspense>
         </Tabs>
+
       </CardContent>
     </Card>
   )
