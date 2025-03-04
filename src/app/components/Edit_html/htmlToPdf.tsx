@@ -146,7 +146,6 @@ export const generatePdf = async (html: string) => {
         imgHeight,
         undefined,
         'FAST',
-        0,
         -position
       );
       
@@ -167,7 +166,6 @@ export const generatePdf = async (html: string) => {
           imgHeight,
           undefined,
           'FAST',
-          0,
           -position
         );
         
