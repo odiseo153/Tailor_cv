@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Pencil, Plus, Trash2 } from "lucide-react"
-import { useAppContext } from "@/app/layout/AppContext"
 import { formatDate } from "@/lib/utils"
 import { WorkExperience } from "@prisma/client"
 
 
 export default function WorkExperienceInfo() {
-  const { user } = useAppContext()
+  //const { user } = useAppContext()
+  const experiences = [] as WorkExperience[];
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<Omit<WorkExperience, "id">>({
@@ -70,9 +70,7 @@ export default function WorkExperienceInfo() {
   }
 
   const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this work experience?")) {
-     // deleteWorkExperience(id)
-    }
+   console.log("Cosa eliminada");
   }
 
   return (
@@ -140,10 +138,10 @@ export default function WorkExperienceInfo() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {user.workExperience.length === 0 ? (
+          {experiences.length === 0 ? (
             <p className="text-center text-gray-500 py-4">No work experience added yet.</p>
           ) : (
-            user.workExperience.map((workExp:WorkExperience) => (
+            experiences.map((workExp) => (
               <div key={workExp.id} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start">
                   <div>

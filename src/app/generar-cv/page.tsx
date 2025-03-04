@@ -10,7 +10,7 @@ import { Card, CardHeader, CardContent, CardDescription, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Message } from "../utils/Message";
 import { CVHandler } from "../Handler/CVHandler";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { useAppContext } from "../layout/AppContext";
 
 
@@ -64,7 +64,7 @@ export default function GenerarCV() {
         ofertaLaboral,
         ofertaType,
         undefined,
-        user ? JSON.stringify(user) : ""
+        informacion
       );
       
       if (responseHtml) {

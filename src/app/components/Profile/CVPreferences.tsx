@@ -17,9 +17,9 @@ export default function CVPreferences() {
   const { user } = useAppContext()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
-    template: user.cvPreferences.template,
-    font: user.cvPreferences.font,
-    color: user.cvPreferences.color,
+    template:  "monte",
+    font:  "cap",
+    color:  "#f0000",
   })
 
   const handleTemplateChange = (value: string) => {
@@ -107,17 +107,17 @@ export default function CVPreferences() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Template</p>
-            <p className="font-medium">{user.cvPreferences.template}</p>
+            <p className="font-medium">{""}</p>
           </div>
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Font</p>
-            <p className="font-medium">{user.cvPreferences.font}</p>
+            <p className="font-medium">{"user.cvPreferences.font"}</p>
           </div>
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Color</p>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: user.cvPreferences.color }} />
-              <p className="font-medium">{user.cvPreferences.color}</p>
+              <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: "#f000" }} />
+              <p className="font-medium">{"user.cvPreferences.color"}</p>
             </div>
           </div>
         </div>
