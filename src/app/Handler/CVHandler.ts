@@ -6,6 +6,7 @@ import { useAppContext } from "../layout/AppContext";
 const apiKey = process.env.NEXT_PUBLIC_API_URL_DEESEEK;
 const API_KEY_GEMINIS = process.env.NEXT_PUBLIC_API_URL_GEMINIS;
 const client = new OpenAI({ apiKey, baseURL: "https://api.deepseek.com",dangerouslyAllowBrowser:true });
+const estilos = "tailwind";
 
 
 export class CVHandler {
@@ -94,7 +95,7 @@ export class CVHandler {
 
     try {
       const analysisPrompt: string = `
-        Eres un experto en diseño web y análisis de currículums vitae (CVs).  Tu tarea es analizar la imagen o PDF de un CV que se te proporciona y generar código HTML con Tailwind CSS que represente visualmente el CV de la manera más fiel posible.
+        Eres un experto en diseño web y análisis de currículums vitae (CVs). Tu tarea es analizar la imagen o PDF de un CV que se te proporciona y generar código HTML con ${estilos} que represente visualmente el CV de la manera más fiel posible.
 
         Analiza la estructura y el contenido del CV, incluyendo:
 
@@ -103,7 +104,7 @@ export class CVHandler {
         - Estilo de texto (fuente, tamaño, negrita, etc.)
         - Diseño general y disposición de los elementos
 
-        Genera el HTML utilizando clases de Tailwind CSS para el estilo.  Intenta replicar el diseño original del CV lo más fielmente posible usando Tailwind.  Devuelve **únicamente el código HTML**, sin texto adicional ni explicaciones.  Si no puedes replicar un aspecto específico del diseño, prioriza la representación clara y legible del contenido del CV.  Asegúrate de que el HTML sea válido y bien estructurado.
+        Genera el HTML utilizando clases de ${estilos} para el estilo.  Intenta replicar el diseño original del CV lo más fielmente posible usando ${estilos}.  Devuelve **únicamente el código HTML**, sin texto adicional ni explicaciones.  Si no puedes replicar un aspecto específico del diseño, prioriza la representación clara y legible del contenido del CV.  Asegúrate de que el HTML sea válido y bien estructurado.
         `;
 
       let mimeType = 'image/jpeg'; // Default to image, adjust if fileType is pdf
@@ -239,13 +240,13 @@ try {
  
   
       const systemPrompt = `
-        Eres un asistente experto en la creación de CVs profesionales en **HTML con Bootstrap**.  
+        Eres un asistente experto en la creación de CVs profesionales en **HTML con ${estilos}**.  
         Tu tarea es generar un **CV de una sola página**, optimizado para la oferta de trabajo proporcionada,  
         utilizando la información del CV del usuario.  
   
         ### Requisitos:
         - **Formato**: **HTML semántico**, válido y listo para conversión a PDF.  
-        - **Diseño**: **Responsivo y profesional** con Bootstrap.  
+        - **Diseño**: **Responsivo y profesional** con ${estilos}.  
         - **Optimización**: Solo información relevante, evitando detalles innecesarios.  
         - **Estructura**: Quepa en **una página A4**, bien organizada.  
   
@@ -258,7 +259,7 @@ try {
       `.trim();
   
       const userPrompt = `
-        Genera un CV en **HTML con Bootstrap**, adaptado a esta oferta laboral:  
+        Genera un CV en **HTML con ${estilos}**, adaptado a esta oferta laboral:  
         **${ofertaTexto}**  
   
         Usa la siguiente información del CV del usuario:  

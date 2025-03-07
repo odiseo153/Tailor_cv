@@ -40,7 +40,7 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
       <CardContent className="p-6 sm:p-10 flex flex-col gap-6">
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Tabs>
+          <Tabs onValueChange={setActiveTab}>
 
             <TabsList className="flex gap-2 bg-gray-200 p-1 rounded-full">
               <TabsTrigger
@@ -67,29 +67,36 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
           </Button>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-grow">
-          <Suspense fallback={
-            <div className="flex items-center justify-center h-96 text-gray-500">
-              Loading editor...
-            </div>
-          }>
-            <TabsContent value="code" className="mt-6">
-              <div className="h-[500px] sm:h-[600px] lg:h-[700px] w-full rounded-lg overflow-hidden shadow-inner border">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full h-full flex flex-col gap-4"
+        >
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center h-full text-gray-500">
+                Cargando editor...
+              </div>
+            }
+          >
+            <TabsContent value="code" className="flex-grow">
+              <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border">
                 <CodeEditor htmlView={html} onChange={handleHtmlChange} />
               </div>
             </TabsContent>
 
-            <TabsContent value="preview" className="mt-6">
-              <div className="h-[500px] sm:h-[600px] lg:h-[700px] w-full rounded-lg overflow-hidden border shadow-inner bg-white">
+            <TabsContent value="preview" className="flex-grow">
+              <div className="h-full w-full rounded-lg overflow-hidden border shadow-inner bg-white">
                 <iframe
                   srcDoc={html}
-                  className="w-full h-full"
+                  className="w-full h-[850px]"
                   title="HTML Preview"
                 />
               </div>
             </TabsContent>
           </Suspense>
         </Tabs>
+
 
       </CardContent>
     </Card>

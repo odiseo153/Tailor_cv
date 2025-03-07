@@ -1,19 +1,29 @@
-import { useEffect, useRef } from 'react';
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
-export const generatePdf = async (html: string) => {
-  // Asegurarse de que el código se ejecuta solo en el cliente
+export const generatePdf = async (html: string): Promise<{ blob: Blob; pageCount: number } | void> => {
+  // Se ejecuta solo en el cliente
   if (typeof window === "undefined") {
+    console.warn("generatePdf: Este método debe ejecutarse en el cliente.");
     return;
   }
 
-  // Crear un contenedor para el renderizado
+  // Crear contenedor y asignar el HTML (se espera que contenga código de Bootstrap)
   const container = document.createElement("div");
   container.innerHTML = html;
 
-  // Aplicar estilos adicionales para asegurar la correcta visualización en PDF
-  const style = document.createElement('style');
+  // Configurar el contenedor para que se encuentre fuera de la vista pero en el DOM
+  container.style.position = "absolute";
+  container.style.top = "-9999px";
+  container.style.left = "-9999px";
+  container.style.width = "794px"; // Ancho A4 en píxeles (~96 DPI)
+  container.style.margin = "0";
+  container.style.padding = "0";
+  container.style.backgroundColor = "white";
+  document.body.appendChild(container);
+
+  // Inyectar estilos adicionales para impresión y evitar cortes en elementos importantes
+  const style = document.createElement("style");
   style.textContent = `
     @media print {
       body { 
@@ -22,29 +32,23 @@ export const generatePdf = async (html: string) => {
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
       }
-      
       section {
         page-break-inside: avoid;
       }
-      
       h2, h3 {
         page-break-after: avoid;
       }
-      
       .border-l-4 {
         border-left-width: 4px !important;
         border-left-style: solid !important;
         border-left-color: #2563eb !important;
       }
-      
       .text-blue-600 {
         color: #2563eb !important;
       }
-      
       .border-blue-600 {
         border-color: #2563eb !important;
       }
-      
       .text-gray-700, .text-gray-600, .text-gray-800 {
         color: #000000 !important;
       }
@@ -52,99 +56,55 @@ export const generatePdf = async (html: string) => {
   `;
   container.appendChild(style);
 
-  // Establecer dimensiones adecuadas
-  container.style.width = "794px"; // Ancho A4 en píxeles a 96 DPI
-  container.style.margin = "0";
-  container.style.padding = "0";
-  container.style.backgroundColor = "white";
-
   try {
-    // Configuración de página A4
-    const pageWidth = 210; // A4 ancho en mm
-    const pageHeight = 297; // A4 alto en mm
-    const margin = 10; // margen en mm
+    // Esperar a que se apliquen los estilos (Bootstrap y los inyectados)
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Asegurar que los estilos se hayan aplicado
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Configuración de la página A4 en mm
+    const pageWidth = 210; // mm
+    const pageHeight = 297; // mm
+    const margin = 10; // mm
 
-    // Renderizar con html2canvas
+    // Renderizar el contenedor a canvas con html2canvas
     const canvas = await html2canvas(container, {
-      scale: 2, // Mayor escala para mejor resolución
+      scale: 2, // Escala para mayor resolución
       useCORS: true,
       allowTaint: true,
       backgroundColor: "#ffffff",
       logging: false,
-      width: 794, // Ancho A4
-      windowWidth: 794
+      width: container.clientWidth,
+      windowWidth: container.clientWidth,
     });
 
-    // Crear el PDF con jsPDF
+    // Crear documento PDF con jsPDF
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "mm",
       format: "a4",
       compress: true,
-      hotfixes: ["px_scaling"]
+      hotfixes: ["px_scaling"],
     });
 
-    // Calcular dimensiones manteniendo proporción
-    const imgWidth = pageWidth - (margin * 2);
+    // Calcular dimensiones de la imagen en el PDF
+    const imgWidth = pageWidth - margin * 2;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const pageCount = Math.ceil(imgHeight / (pageHeight - margin * 2));
+    const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
-    // Determinar si necesitamos múltiples páginas
-    const pageCount = Math.ceil(imgHeight / (pageHeight - (margin * 2)));
-
-    // Si el contenido cabe en una sola página
+    // Añadir la imagen al PDF (manejando múltiples páginas si es necesario)
     if (pageCount <= 1) {
-      pdf.addImage(
-        canvas.toDataURL('image/jpeg', 0.95),
-        'JPEG',
-        margin,
-        margin,
-        imgWidth,
-        imgHeight
-      );
+      pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
     } else {
-      // Manejar múltiples páginas
       let heightLeft = imgHeight;
       let position = 0;
-      let page = 1;
-
-      // Primera página
-      pdf.addImage(
-        canvas.toDataURL('image/jpeg', 0.95),
-        'JPEG',
-        margin,
-        margin,
-        imgWidth,
-        imgHeight,
-        undefined,
-        'FAST',
-        -position
-      );
-
-      heightLeft -= (pageHeight - (margin * 2));
-      position += (pageHeight - (margin * 2));
-
-      // Páginas adicionales
+      pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - margin * 2);
+      position += (pageHeight - margin * 2);
       while (heightLeft > 0) {
         pdf.addPage();
-        page++;
-
-        pdf.addImage(
-          canvas.toDataURL('image/jpeg', 0.95),
-          'JPEG',
-          margin,
-          margin,
-          imgWidth,
-          imgHeight,
-          undefined,
-          'FAST',
-          -position
-        );
-
-        heightLeft -= (pageHeight - (margin * 2));
-        position += (pageHeight - (margin * 2));
+        pdf.addImage(imgData, "JPEG", margin, margin, imgWidth, imgHeight, undefined, "FAST", 0);
+        heightLeft -= (pageHeight - margin * 2);
+        position += (pageHeight - margin * 2);
       }
     }
 
@@ -152,12 +112,15 @@ export const generatePdf = async (html: string) => {
     pdf.save("cv.pdf");
 
     return {
-      blob: pdf.output('blob'),
-      pageCount: pageCount
+      blob: pdf.output("blob"),
+      pageCount,
     };
+  } catch (error) {
+    console.error("Error al generar el PDF:", error);
   } finally {
-    // Limpiar
-    // No es necesario limpiar el DOM, porque ya no estamos manipulando document
+    // Limpiar el DOM: remover el contenedor temporal
+    if (document.body.contains(container)) {
+      document.body.removeChild(container);
+    }
   }
 };
-
