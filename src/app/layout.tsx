@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Home/Header";
-import { AppContextProvider } from "./layout/AppContext";
+import { AppContextProvider } from "./context/AppContext";
 import Footer from "./components/Home/Footer";
 
 
@@ -22,7 +22,9 @@ export default function RootLayout({
         <title>TailorCV</title>
         <AppContextProvider>
           <Header />
+          <div className="mt-7">
           {children}
+          </div>
           <Footer />
         </AppContextProvider>
       </body>

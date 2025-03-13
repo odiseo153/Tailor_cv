@@ -7,9 +7,9 @@ import PersonalInfo from "./PersonalInfo"
 import Skills from "./Skills"
 import SocialLinks from "./SocialLinks"
 import WorkExperienceInfo from "./WorkExperience"
-import { useAppContext } from "@/app/layout/AppContext"
 
 export default function ProfessionalProfile() {
+  
 
   return (
     <div className="container mx-auto px-4 py-8">

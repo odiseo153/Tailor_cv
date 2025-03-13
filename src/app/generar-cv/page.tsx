@@ -1,91 +1,83 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { FileIcon, UploadIcon, TextIcon, ImageIcon, Eye } from "lucide-react";
+import { useState } from "react";
+import {  UploadIcon, TextIcon, ImageIcon, Eye, FileMinus  } from "lucide-react";
 import ShowHtml from "../components/Edit_html/Index";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Message } from "../utils/Message";
 import { CVHandler } from "../Handler/CVHandler";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { useAppContext } from "../layout/AppContext";
+import Link from "next/link";
+import { useAppContext } from "../context/AppContext";
+
 
 
 export default function GenerarCV() {
   const [ofertaLaboral, setOfertaLaboral] = useState<File | string | null>(null);
-  const [plantillaCV, setPlantillaCV] = useState<File | null>(null);
-  const [foto, setFoto] = useState<string | null>(null);
+  const [plantillaCV, setPlantillaCV] = useState<File>();
+  const [foto, setFoto] = useState<string | undefined>();
   const [informacion, setInformacion] = useState("");
   const [data, setData] = useState<{ html: string }>();
   const [ofertaType, setOfertaType] = useState<'pdf' | 'image' | 'text'>("text");
   const [isLoading, setIsLoading] = useState(false);
-  const [templates, setTemplates] = useState<string[]>(['']);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [selectedTemplateContent, setSelectedTemplateContent] = useState<string | null>(null);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [timeLeft, setTimeLeft] = useState("");
 
   const cv_handler = new CVHandler();
-  const { user } = useAppContext();
+  const {template} = useAppContext();
 
-
-  useEffect(() => {
-    const loadTemplates = async () => {
-      try {
-        const request = await fetch("/api/templates");
-        const response = await request.json();
-        console.log(response.contentHtml);
-        setTemplates(response.contentHtml); // Actualiza con el contenido HTML
-      } catch (error) {
-        console.error("Error cargando las plantillas:", error);
-      }
-    };
-
-    loadTemplates();
-  }, []);
-
-  const handleTemplateClick = async (template: string) => {
-    setSelectedTemplate(template);
-    try {
-      setSelectedTemplateContent(template);
-    } catch (error) {
-      console.error("Error fetching template content:", error);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setProgress(0);
+    const start = Date.now();
+
+    //console.log(template);
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - start;
+      const estimatedTotal = (elapsed / (progress + 1)) * 100;
+      const remaining = estimatedTotal - elapsed;
+      
+      setTimeLeft(formatTime(remaining));
+      if (progress < 90) setProgress(prev => Math.min(prev + 10, 90));
+    }, 1000);
 
     try {
-      const responseHtml = await cv_handler.crearCV(
-        ofertaLaboral,
-        ofertaType,
-        undefined,
-        informacion
-      );
-
+      const responseHtml = await cv_handler.crearCV(ofertaLaboral, ofertaType, plantillaCV ?? template, informacion,foto);
+      clearInterval(interval);
+      
       if (responseHtml) {
+        setProgress(100);
+        setTimeLeft("Listo!");
+        setTimeout(() => setIsLoading(false), 500);
         setData(responseHtml);
-        Message.successMessage("CV Generado Exitosamente:");
-      } else {
-        Message.errorMessage("Error al procesar la respuesta del servidor. Detalles en la consola.");
+        Message.successMessage("CV Generado Exitosamente");
       }
     } catch (error) {
-      console.error("Error al generar CV:", error);
-      Message.errorMessage("Error al generar CV. Por favor, intenta nuevamente.");
-    } finally {
+      clearInterval(interval);
       setIsLoading(false);
+      Message.errorMessage("Error al generar CV");
     }
+  };
+
+  const formatTime = (ms: number): string => {
+    const seconds = Math.ceil(ms / 1000);
+    if (seconds <= 0) return "Listo!";
+    return `${Math.floor(seconds / 60)}m ${seconds % 60}s restantes`;
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setPlantillaCV(file);
-
+    
     if (file) {
+      setPlantillaCV(file);
       const reader = new FileReader();
       reader.onload = (event) => {
         setPreviewTemplate(event.target?.result as string);
@@ -102,29 +94,36 @@ export default function GenerarCV() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFoto(event.target?.result as string);
+        const photo = event.target?.result as string;
+        console.log(photo);
+        setFoto(photo);
       };
       reader.readAsDataURL(file);
     } else {
-      setFoto(null);
+      setFoto(undefined);
     }
   };
-
+  
   return (
-    <div className="min-h-screen flex flex-col ">
+    <div className="min-h-screen flex flex-col">
       <main className="flex-grow container mx-auto px-4 py-12">
         <h1 className="text-4xl font-extrabold text-gray-800 text-center mb-12">
           Genera tu <span className="text-blue-600">CV Personalizado</span>
         </h1>
 
         <div className="flex flex-col lg:flex-row gap-10">
-          {/* FORMULARIO */}
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-8 w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl"
-          >
-            {/* OFERTA */}
-            <Card className="border-none shadow-md rounded-xl">
+          <form onSubmit={handleSubmit} className="space-y-8 w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl">
+            
+            {/* Secciones del formulario... */}
+            <Link
+              href="/templates"
+              className="flex items-center gap-2 text-blue-600 hover:underline"
+            >
+              <FileMinus size={18} className="mr-2" />
+              Buscar una plantilla
+            </Link>
+
+       <Card className="border-none shadow-md rounded-xl">
               <CardHeader>
                 <CardTitle className="text-xl font-semibold">
                   Oferta Laboral
@@ -255,32 +254,42 @@ export default function GenerarCV() {
               </CardContent>
             </Card>
 
-            {/* BOTÓN */}
+            {isLoading && (
+              <div className="space-y-2">
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div 
+                    className="bg-green-500 h-2.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>{progress}%</span>
+                  <span>{timeLeft}</span>
+                </div>
+              </div>
+            )}
+
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 text-white text-lg font-semibold py-3 rounded-xl hover:bg-blue-700 transition"
+              className="w-full h-12 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors"
             >
               {isLoading ? (
-                <div>
-                  <div role="status">
-                    <span className="sr-only">Cargando...</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"/>
                   <span>Generando CV...</span>
                 </div>
               ) : "Generar CV"}
             </Button>
           </form>
 
-          {/* PREVIEW */}
           {data && (
-            <div className="w-full lg:w-2/4 mt-10 lg:mt-0 bg-white p-6 rounded-2xl shadow-xl">
-              <ShowHtml html={data?.html ?? ""} />
+            <div className="w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl">
+              <ShowHtml html={data.html} />
             </div>
           )}
         </div>
       </main>
     </div>
-
   );
 }

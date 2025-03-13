@@ -15,3 +15,11 @@ export function formatDate(dateString: string): string {
   return `${month} ${year}`
 }
 
+export function formatTimePetition(ms: number): string {
+  const seconds = Math.ceil(ms / 1000);
+  if (seconds <= 0) return "Listo!";
+  
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins > 0 ? `${mins}m ` : ""}${secs}s restantes`;
+};

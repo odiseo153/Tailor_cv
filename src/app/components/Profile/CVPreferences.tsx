@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useAppContext } from "@/app/layout/AppContext"
+import { useAppContext } from "@/app/context/AppContext"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,15 +12,46 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Pencil } from "lucide-react"
+import { Message } from "@/app/utils/Message"
 
 export default function CVPreferences() {
   const { user } = useAppContext()
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     template:  "monte",
+    id:  "",
     font:  "cap",
     color:  "#f0000",
   })
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+ 
+    try {
+      const url = isEditing ? `/api/apiHandler/skill/${formData.id}` : "/api/apiHandler/skill";
+      const method = isEditing ? "PUT" : "POST";
+      const message = isEditing ? "Skill Updated" : "Skill Added";
+
+      const response = await fetch(url, {
+        method:method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({formData}),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.data || "Failed to submit");
+      }
+
+      console.log(result);
+
+      Message.successMessage(message);
+      setIsEditing(false)
+    } catch (err: any) {
+      console.log(err.message);
+    }
+  };
 
   const handleTemplateChange = (value: string) => {
     setFormData((prev) => ({ ...prev, template: value }))
@@ -34,9 +65,6 @@ export default function CVPreferences() {
     setFormData((prev) => ({ ...prev, color: e.target.value }))
   }
 
-  const handleSubmit = () => {
-    setIsEditing(false)
-  }
 
   return (
     <Card>
@@ -107,17 +135,17 @@ export default function CVPreferences() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Template</p>
-            <p className="font-medium">{""}</p>
+            <p className="font-medium">{user.cvPreferences.template}</p>
           </div>
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Font</p>
-            <p className="font-medium">{"user.cvPreferences.font"}</p>
+            <p className="font-medium">{user.cvPreferences.font}</p>
           </div>
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Color</p>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: "#f000" }} />
-              <p className="font-medium">{"user.cvPreferences.color"}</p>
+              <p className="font-medium">{user.cvPreferences.color}</p>
             </div>
           </div>
         </div>

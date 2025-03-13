@@ -5,19 +5,25 @@ import {useState, createContext, useContext, useEffect } from 'react';
 
 interface AppContextType {
    theme: 'light' | 'dark';
+   template: string;
    user: any | null;
    setUser: (user:User) => void;
+   setTemplate: (html:string) => void;
 }
 
 const AppContext = createContext<AppContextType>({
   theme: 'light',
+  template: '',
   user: null,
-  setUser: () => {}
+  setUser: () => {},
+  setTemplate: () => {}
 });
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null); 
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
+   
+    const [template, setTemplate] = useState<string>('');
 
     /*
     useEffect(()=>{
@@ -25,7 +31,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         const formData = new FormData();
         formData.append('email','john.doe@example.com');
         formData.append('password','1234567890');
-
+        
         const request = await fetch('/api/apiHandler/login',{
           method:"POST",
           body:formData
@@ -41,7 +47,7 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   */
   
   return (
-    <AppContext.Provider value={{user,setUser,theme}}>
+    <AppContext.Provider value={{user,template,setUser,theme,setTemplate}}>
       {children}
     </AppContext.Provider> 
   );

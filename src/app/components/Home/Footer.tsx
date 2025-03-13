@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-gray-100 py-16">
+    <footer className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-gray-100 py-16 mt-auto">
       <div className="container mx-auto px-6 md:px-12 lg:px-20">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
 
@@ -20,7 +20,7 @@ export default function Footer() {
           </div>
 
           {/* Enlaces rápidos */}
-          <Card className="bg-gray-800/90 border border-gray-700 shadow-lg backdrop-blur-md">
+          <Card className="bg-gray-800/90 border border-gray-700 shadow-lg backdrop-blur-md hover:scale-105 transition-transform duration-300">
             <CardContent className="p-6 text-center space-y-4">
               <h3 className="text-xl font-semibold text-white">Enlaces Rápidos</h3>
               <ul className="space-y-2">

@@ -12,52 +12,97 @@ import { Textarea } from "@/components/ui/textarea"
 import { Pencil, Plus, Trash2 } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { WorkExperience } from "@prisma/client"
+import { useAppContext } from "@/app/context/AppContext"
+import { HandlerResult } from "@/app/interface/HandlerResult"
+import { Message } from "@/app/utils/Message"
 
 
 export default function WorkExperienceInfo() {
-  //const { user } = useAppContext()
-  const experiences = [] as WorkExperience[];
+  const { user } = useAppContext()
+  const experiencesUser = user.workExperience as WorkExperience[];
+  const [experiences,setExperiences] = useState<WorkExperience[]>(experiencesUser);
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState<Omit<WorkExperience, "id">>({
+  const [formData, setFormData] = useState<WorkExperience>({
+    id: "",
     company: "",
     jobTitle: "",
-    userId:"",
-    startDate:new Date("20-2-2024"),
-    endDate:new Date("20-2-2025"), 
+    userId: user.id,
+    startDate: new Date("20-2-2024"),
+    endDate: new Date("20-2-2025"),
     description: "",
-    createdAt:new Date("20-2-2024"),
-    updatedAt:new Date("20-2-2024")
-  }) 
+    createdAt: new Date("20-2-2024"),
+    updatedAt: new Date("20-2-2024")
+  })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleAddSubmit = () => {
-    setFormData({
-      company: "",
-      jobTitle: "",
-      userId:"",
-      startDate:new Date("20-2-2024"),
-      endDate:new Date("20-2-2025"), 
-      description: "",
-      updatedAt: new Date("20-2-2024"),
-      createdAt:new Date("20-2-2024"),
-    })
+  const handleAddSubmit = async () => {
+    try {
+      const request = await fetch(`/api/apiHandler/work`, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ formData }),
+      });
+
+      const result = await request.json() as HandlerResult;
+         console.log(result);
+      Message.successMessage("Experiencia agregada");
+
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setFormData({
+        id: "",
+        company: "",
+        jobTitle: "",
+        userId: user.id,
+        startDate: new Date("20-2-2024"),
+        endDate: new Date("20-2-2025"),
+        description: "",
+        updatedAt: new Date("20-2-2024"),
+        createdAt: new Date("20-2-2024"),
+      });
+    }
+
     setIsAddingNew(false)
   }
 
-  const handleEditSubmit = () => {
+  const handleEditSubmit = async () => {
     if (editingId) {
       setEditingId(null)
     }
-  } 
+    try {
+      const response = await fetch(`/api/apiHandler/work/${editingId}`,{
+         method:"PUT",
+         headers: {
+          'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({ formData }),
+       });
+     
+      const result = await response.json() as HandlerResult; 
 
-  const startEditing = (workExp: WorkExperience) => {
+      console.log(result);
+
+        Message.successMessage("Experiencia Actualizada");
+
+    } catch (err: any) {
+      console.log(err.message);
+      Message.errorMessage("La Experiencia no se pudo eliminar");
+
+    }
+  }
+
+  const startEditing =async (workExp: WorkExperience) => {
     setEditingId(workExp.id)
-    setFormData({
+      setFormData({
+      id: workExp.id,
       company: workExp.company,
       userId: workExp.userId,
       jobTitle: workExp.jobTitle,
@@ -69,8 +114,29 @@ export default function WorkExperienceInfo() {
     })
   }
 
-  const handleDelete = (id: string) => {
-   console.log("Cosa eliminada");
+  const handleDelete = async (id: string) => {
+    console.log("Cosa eliminada");
+    try {
+      const response = await fetch(`/api/apiHandler/work/${id}`,{
+         method:"DELETE",
+         headers: {
+          'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({ id }),
+       });
+     
+      const result = await response.json() as HandlerResult; 
+
+      console.log(result);
+
+        Message.successMessage("Experiencia eliminada");
+        setExperiences(experiences.filter((skill) => skill.id !== id));
+
+    } catch (err: any) {
+      console.log(err.message);
+      Message.errorMessage("La Experiencia no se pudo eliminar");
+
+    }
   }
 
   return (
@@ -91,7 +157,7 @@ export default function WorkExperienceInfo() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name</Label>
-                <Input id="companyName" name="companyName" value={formData.company} onChange={handleInputChange} />
+                <Input id="companyName" name="company" value={formData.company} onChange={handleInputChange} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="jobTitle">Job Title</Label>
@@ -103,8 +169,7 @@ export default function WorkExperienceInfo() {
                   <Input
                     id="startDate"
                     name="startDate"
-                    type="month"
-                    value={formatDate(formData.startDate.toDateString())}
+                    type="date"
                     onChange={handleInputChange}
                   />
                 </div>
@@ -113,8 +178,7 @@ export default function WorkExperienceInfo() {
                   <Input
                     id="endDate"
                     name="endDate"
-                    type="month"
-                    value={formatDate(formData.endDate?.toDateString() ?? "")}
+                    type="date"
                     onChange={handleInputChange}
                   />
                 </div>
@@ -147,11 +211,13 @@ export default function WorkExperienceInfo() {
                   <div>
                     <h3 className="font-bold text-lg">{workExp.company}</h3>
                     <p className="font-medium">{workExp.jobTitle}</p>
-                  
+
+                    {/*
                     <p className="text-sm text-gray-500">
                     {formatDate(workExp.startDate.toDateString())} - {workExp.endDate ? formatDate(workExp.endDate.toDateString()) : "Present"}
                     </p>
-                    
+                      */}
+
                     {workExp.description && <p className="mt-2 text-gray-700">{workExp.description}</p>}
                   </div>
                   <div className="flex space-x-2">
@@ -190,8 +256,7 @@ export default function WorkExperienceInfo() {
                               <Input
                                 id="edit-startDate"
                                 name="startDate"
-                                type="month"
-                                value={formatDate(formData.startDate.toDateString())}
+                                type="date"
                                 onChange={handleInputChange}
                               />
                             </div>
@@ -200,8 +265,7 @@ export default function WorkExperienceInfo() {
                               <Input
                                 id="edit-endDate"
                                 name="endDate"
-                                type="month"
-                                value={formatDate(formData.startDate.toDateString())}
+                                type="date"
                                 onChange={handleInputChange}
                               />
                             </div>

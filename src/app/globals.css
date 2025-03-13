@@ -70,3 +70,201 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 47.9 95.8% 53.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    /* ... keep existing code (remaining dark mode variables) */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    @apply box-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    @apply font-sans;
+    @apply antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl sm:text-5xl lg:text-6xl;
+  }
+
+  h2 {
+    @apply text-3xl sm:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl sm:text-3xl;
+  }
+
+  h4 {
+    @apply text-xl sm:text-2xl;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply px-4 sm:px-6 lg:px-8 mx-auto max-w-7xl;
+  }
+
+  .section {
+    @apply py-16 sm:py-24;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium text-white bg-gradient-to-r from-[#84cc16] to-[#22c55e] shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#22c55e];
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium text-primary bg-transparent border border-primary shadow-sm transition-all duration-300 hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:translate-y-[-4px];
+  }
+
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg;
+  }
+}
+
+.feature-icon {
+  @apply w-12 h-12 text-primary mb-4 transition-all duration-300 ease-in-out transform;
+}
+
+.feature-card:hover .feature-icon {
+  @apply scale-110 text-accent;
+}
+
+.mockup-frame {
+  @apply rounded-xl overflow-hidden shadow-xl border border-white/20 backdrop-blur-md bg-white/10;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+}
+
+/* Smooth transitions for all elements */
+* {
+  @apply transition-colors duration-200;
+}
+
+/* Scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Loading indicator animation */
+.loading-indicator::before {
+  content: "";
+  @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse;
+}
+
+/* Gradient border effect */
+.gradient-border {
+  position: relative;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: 0.75rem;
+  background: linear-gradient(to right, #2563eb, #7e22ce);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Percentage match indicator */
+.match-indicator {
+  height: 8px;
+  @apply rounded-full bg-gray-200 overflow-hidden relative;
+}
+
+.match-indicator::before {
+  content: "";
+  @apply absolute top-0 left-0 h-full bg-gradient-to-r from-green-500 to-green-300 rounded-full;
+  animation: match-progress 1.5s ease-out forwards;
+}
+
+@keyframes match-progress {
+  from { width: 0; }
+  to { width: 87%; }
+}

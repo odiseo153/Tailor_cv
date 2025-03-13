@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Message } from "@/app/utils/Message"
-import { useAppContext } from "@/app/layout/AppContext"
+import { useAppContext } from "@/app/context/AppContext"
+import { Separator } from "@/components/ui/separator"
+import { LucideLinkedin } from "lucide-react"
 
 
 const loginSchema = z.object({
@@ -17,203 +19,99 @@ const loginSchema = z.object({
   password: z.string().min(8, { message: "Password must be at least 8 characters long" }),
 })
 
-const registerSchema = loginSchema
-  .extend({
-    name: z.string().min(2, { message: "Name must be at least 2 characters long" }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  })
-
 type LoginFormData = z.infer<typeof loginSchema>
-type RegisterFormData = z.infer<typeof registerSchema>
 
 export default function AuthForm() {
-  const [isLogin, setIsLogin] = useState(true)
   const [isLoading, setIsLoading] = useState(false);
-  const {setUser} = useAppContext();
-
+  const { setUser } = useAppContext();
+  
   const loginForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   })
 
-  const registerForm = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-  })
-
   const onLoginSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    const formData = new FormData();
-
-    formData.append('email',data.email);
-    formData.append('password',data.password);
-
-    
     try {
-        const response = await fetch('/api/login',{
-            method:"POST",
-            body:formData
-        });
+      const response = await fetch('/api/login', {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
 
-        const authData = await response.json();
-
-        console.log(authData);
-        if(authData.resultado.success){
-            Message.successMessage(`Bienvenido ${authData.resultado.user.name}`);
-            setUser(authData.resultado.user);
-        }else{
-            Message.errorMessage("Credenciales invalidas");
-        }
+      const authData = await response.json();
+      if (authData.resultado.success) {
+        Message.successMessage(`Bienvenido ${authData.resultado.user.name}`);
+        setUser(authData.resultado.user);
+      } else {
+        Message.errorMessage("Credenciales inválidas");
+      }
     } catch (error) {
-        Message.errorMessage("Error de inicio de sesion");
-        console.error("Login error:", error);
+      Message.errorMessage("Error de inicio de sesión");
+      console.error("Login error:", error);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
+  };
 
-  }
+  const handleLinkedInLogin = () => {
+    const clientId = process.env.NEXT_PUBLIC_API_LINKEDIN_CLIENT_ID; 
+    const redirectUri = "http://localhost:3001/api/auth/linkedin/callback";
+    const linkedInAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=r_liteprofile`;
 
-  const onRegisterSubmit = async (data: RegisterFormData) => {
-    setIsLoading(true);
-    console.log("Register data:", data)
+    window.location.href = linkedInAuthUrl;
+  };
 
-    const formData = new FormData();
-
-    formData.append('email',data.email);
-    formData.append('password',data.password);
-    formData.append('name',data.name);
-
-    try {
-        // Simulating registration API call
-        const response = await fetch('/api/register',{
-            method:"POST",
-            body:formData
-        });
-
-        const authData = await response.json();
-        
-        Message.successMessage("Registro exitoso!");
-        setIsLogin(true);
-        console.log(authData);
-    } catch (error) {
-        Message.errorMessage("Error al registrar usuario");
-        console.error("Registration error:", error);
-    } finally {
-        setIsLoading(false);
-    }
-  }
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg ">
-      <h2 className="text-2xl font-bold mb-6 text-center">{isLogin ? "Login" : "Register"}</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
       <AnimatePresence mode="wait">
         <motion.div
-          key={isLogin ? "login" : "register"}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
         >
-          {isLogin ? (
-            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...loginForm.register("email")}
-                  defaultValue="test@gmail.com"
-                  className={loginForm.formState.errors.email ? "border-red-500" : ""}
-                />
-                {loginForm.formState.errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.email.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  defaultValue="password"
-                  type="password"
-                  {...loginForm.register("password")}
-                  className={loginForm.formState.errors.password ? "border-red-500" : ""}
-                />
-                {loginForm.formState.errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.password.message}</p>
-                )}
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Logging in..." : "Login"}
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  {...registerForm.register("name")}
-                  className={registerForm.formState.errors.name ? "border-red-500" : ""}
-                />
-                {registerForm.formState.errors.name && (
-                  <p className="text-red-500 text-sm mt-1">{registerForm.formState.errors.name.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...registerForm.register("email")}
-                  className={registerForm.formState.errors.email ? "border-red-500" : ""}
-                />
-                {registerForm.formState.errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{registerForm.formState.errors.email.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  {...registerForm.register("password")}
-                  className={registerForm.formState.errors.password ? "border-red-500" : ""}
-                />
-                {registerForm.formState.errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{registerForm.formState.errors.password.message}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  {...registerForm.register("confirmPassword")}
-                  className={registerForm.formState.errors.confirmPassword ? "border-red-500" : ""}
-                />
-                {registerForm.formState.errors.confirmPassword && (
-                  <p className="text-red-500 text-sm mt-1">{registerForm.formState.errors.confirmPassword.message}</p>
-                )}
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Registering..." : "Register"}
-              </Button>
-            </form>
-          )}
+          <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                {...loginForm.register("email")}
+                className={loginForm.formState.errors.email ? "border-red-500" : ""}
+              />
+              {loginForm.formState.errors.email && (
+                <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.email.message}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                {...loginForm.register("password")}
+                className={loginForm.formState.errors.password ? "border-red-500" : ""}
+              />
+              {loginForm.formState.errors.password && (
+                <p className="text-red-500 text-sm mt-1">{loginForm.formState.errors.password.message}</p>
+              )}
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
+            </Button>
+            <Separator className="my-4" />
+          </form>
+          <div className="mt-4 space-y-2 text-center">
+            <Button onClick={handleLinkedInLogin} className="w-full bg-blue-600 text-white hover:bg-blue-700">
+              <LucideLinkedin/> Iniciar sesión con LinkedIn
+            </Button>
+            <Button onClick={handleLinkedInLogin} className="w-full bg-yellow-600 text-white hover:bg-yellow-700">
+               Iniciar sesión con Google
+            </Button>
+          </div>
         </motion.div>
       </AnimatePresence>
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => setIsLogin(!isLogin)}
-          className="text-sm text-blue-600 hover:underline focus:outline-none"
-        >
-          {isLogin ? "Need an account? Register" : "Already have an account? Login"}
-        </button>
-      </div>
     </div>
-  )
+  );
 }
-

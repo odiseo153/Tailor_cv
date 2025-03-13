@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { useAppContext } from "@/app/layout/AppContext"
+import { useAppContext } from "@/app/context/AppContext"
 import { Skill } from "@prisma/client"
 import { HandlerResult } from "@/app/interface/HandlerResult"
 import { Message } from "@/app/utils/Message"

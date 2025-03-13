@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { useAppContext } from "@/app/layout/AppContext"
+import { useAppContext } from "@/app/context/AppContext"
 import { Education } from "@prisma/client"
+import { Message } from "@/app/utils/Message"
  
 
 
@@ -115,7 +116,7 @@ function EducationForm({ initialData, onSubmit }: EducationFormProps) {
       institution: "",
       userId: user.id,
       degree: "",
-      startDate: new Date(),  // Ensuring the date is in YYYY-MM-DD format
+      startDate: new Date("21-2-2023"),  // Ensuring the date is in YYYY-MM-DD format
     },
   )
 
@@ -124,39 +125,49 @@ function EducationForm({ initialData, onSubmit }: EducationFormProps) {
     setFormData({ ...formData, [e.target.name]: value });
   }
 
+ 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(formData);
+ 
+    try {
+      const url = initialData ? `/api/apiHandler/education/${formData.id}` : "/api/apiHandler/education";
+      const method = initialData ? "PUT" : "POST";
+      const message = initialData ? "Education Updated" : "Education Added";
 
-    try{
-      const request = await fetch("/api/apiHandler/education",{
-        method:"POST",
-        headers:{
-          "Content-Type": "application/json"
-        },
-        body:JSON.stringify(formData),
+      console.log(url,method);
+      const response = await fetch(url, {
+        method:method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({formData}),
       });
 
-      const response = await request.json();
+      const result = await response.json();
 
-      console.log(response)
+      if (!response.ok) {
+        throw new Error(result.data || "Failed to submit");
+      }
 
-     onSubmit(formData);
-    
-    }catch(error){
-      console.log(error);
+      console.log(result);
+
+      Message.successMessage(message);
+      onSubmit(formData); 
+    } catch (err: any) {
+      console.log(err);
+      Message.errorMessage("Sometime is wrong");
+
     }
-
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="institution">Institution</Label>
-        <Input id="institution" name="institution" value={formData.institution} onChange={handleChange} required />
+        <Input id="institution" name="institution" value={formData.institution} onChange={handleChange} required={initialData == undefined} />
       </div>
       <div>
         <Label htmlFor="degree">Degree</Label>
-        <Input id="degree" name="degree" value={formData.degree} onChange={handleChange} required />
+        <Input id="degree" name="degree" value={formData.degree} onChange={handleChange} required={initialData == undefined} />
       </div>
       <div>
         <Label htmlFor="startDate">Start Date</Label>
@@ -166,12 +177,12 @@ function EducationForm({ initialData, onSubmit }: EducationFormProps) {
           type="date"
           value={formData.startDate}
           onChange={handleChange}
-          required
+          required={initialData == undefined}
         />
       </div>
       <div>
         <Label htmlFor="endDate">End Date</Label>
-        <Input id="endDate" name="endDate" type="date" value={formData.endDate} onChange={handleChange} required />
+        <Input id="endDate" name="endDate" type="date" value={formData.endDate} onChange={handleChange} required={initialData == undefined} />
       </div>
       <Button type="submit">Save</Button>
     </form>

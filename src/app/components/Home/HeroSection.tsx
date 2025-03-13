@@ -15,7 +15,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="md:w-1/2 text-center md:text-left"
+          className="md:w-1/2 md:pr-16 text-center md:text-left"
         >
           <h1 className="text-5xl md:text-6xl font-extrabold text-gray-800 leading-tight mb-6">
             {nameApp} <span className="text-blue-600">- Tu CV Perfecto</span> en Minutos
@@ -38,15 +38,15 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="md:w-1/2"
         >
-          <div className="relative">
+          <div className="relative w-full">
             <Image
               src="https://c0.wallpaperflare.com/preview/535/539/778/resume-cv-resume-template-application.jpg"
               alt="CV Generation Illustration"
-              width={640}
-              height={420}
-              className="rounded-3xl shadow-2xl border-4 border-blue-100"
+              width={400}
+              height={260}
+              className="rounded-2xl shadow-2xl border-2 border-blue-100"
             />
-            <div className="absolute -top-4 -right-4 bg-blue-600 text-white text-sm px-3 py-1 rounded-full shadow-md">
+            <div className="absolute -top-4  bg-blue-600 text-white text-sm px-3 py-1 rounded-full shadow-md">
               Nuevo ✨
             </div>
           </div>

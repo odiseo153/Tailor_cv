@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { PencilIcon } from "lucide-react"
 import { validateEmail, validatePhone } from "@/app/utils/validation"
-import { useAppContext } from "@/app/layout/AppContext"
+import { useAppContext } from "@/app/context/AppContext"
 import { User } from "@prisma/client"
 
 interface PersonalInfo {

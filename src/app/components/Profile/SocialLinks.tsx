@@ -9,31 +9,34 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { useAppContext } from "@/app/layout/AppContext"
+import { useAppContext } from "@/app/context/AppContext"
+import { Message } from "@/app/utils/Message"
 
 interface SocialLink {
-  id: string
+  id?: string
   platform: string
   url: string
+  userId?: string
 }
 
 interface SocialLinksProps {
   links?: SocialLink[]
 }
 
-const defaultLinks: SocialLink[] = [{ id: "1", platform: "LinkedIn", url: "https://www.linkedin.com/" }]
+const defaultLinks: SocialLink[] = [{ platform: "LinkedIn", url: "https://www.linkedin.com/" }]
 
 export default function SocialLinks() {
   const {user} = useAppContext();
-  const links = user?.links as SocialLink[];
+  const links = user?.socialLinks as SocialLink[];
 
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(links || defaultLinks)
 
-  const handleAddLink = (newLink: Omit<SocialLink, "id">) => {
+  const handleAddLink = (newLink: SocialLink) => {
     setSocialLinks([...socialLinks, { ...newLink, id: Date.now().toString() }])
   }
 
   const handleEditLink = (updatedLink: SocialLink) => {
+    console.log(links);
     setSocialLinks(socialLinks.map((link) => (link.id === updatedLink.id ? updatedLink : link)))
   }
 
@@ -61,7 +64,7 @@ export default function SocialLinks() {
       </CardHeader>
       <CardContent>
         {socialLinks.map((link) => (
-          <div key={link.id} className="flex justify-between items-center mb-2 p-2 border rounded">
+          <div key={link.id ?? ""} className="flex justify-between items-center mb-2 p-2 border rounded">
             <div>
               <span className="font-semibold">{link.platform}</span>
               <a
@@ -90,7 +93,7 @@ export default function SocialLinks() {
                   />
                 </DialogContent>
               </Dialog>
-              <Button variant="ghost" size="icon" onClick={() => handleDeleteLink(link.id)}>
+              <Button variant="ghost" size="icon" onClick={() => handleDeleteLink(link.id ?? "")}>
                 <TrashIcon className="h-4 w-4" />
               </Button>
             </div>
@@ -102,26 +105,55 @@ export default function SocialLinks() {
 }
 
 interface SocialLinkFormProps {
-  initialData?: Omit<SocialLink, "id">
-  onSubmit: (link: Omit<SocialLink, "id">) => void
+  initialData?: SocialLink
+  onSubmit: (link:SocialLink) => void
 }
 
 function SocialLinkForm({ initialData, onSubmit }: SocialLinkFormProps) {
-  const [formData, setFormData] = useState<Omit<SocialLink, "id">>(
+  const {user} = useAppContext();
+
+  const [formData, setFormData] = useState<SocialLink>(
     initialData || {
       platform: "",
-      url: "",
-    },
+      url: "", 
+      userId: user.id, 
+    }, 
   )
-
+ 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(formData);
+ 
+    try {
+      const url = initialData ? `/api/apiHandler/social/${formData.id}` : "/api/apiHandler/social";
+      const method = initialData ? "PUT" : "POST";
+      const message = initialData ? "Social Link Updated" : "Social Link Added";
+
+      console.log(url,method);
+      const response = await fetch(url, {
+        method:method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({formData}),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.data || "Failed to submit");
+      }
+
+      console.log(result);
+
+      Message.successMessage(message);
+      onSubmit(formData); 
+    } catch (err: any) {
+      console.log(err);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

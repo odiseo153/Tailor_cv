@@ -1,244 +1,142 @@
 import { OpenAI } from "openai";
 import { jsonrepair } from "jsonrepair";
 import { validation_prompt } from "../utils/cv_validations";
-import { useAppContext } from "../layout/AppContext";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { useAppContext } from "../context/AppContext";
+
+
 
 const apiKey = process.env.NEXT_PUBLIC_API_URL_DEESEEK;
-const API_KEY_GEMINIS = process.env.NEXT_PUBLIC_API_URL_GEMINIS;
-const client = new OpenAI({ apiKey, baseURL: "https://api.deepseek.com",dangerouslyAllowBrowser:true });
-const estilos = "tailwind";
+const API_KEY_GEMINIS = process.env.NEXT_PUBLIC_API_URL_GEMINIS ?? "";
+const client = new OpenAI({ apiKey, baseURL: "https://api.deepseek.com", dangerouslyAllowBrowser: true });
+const estilos = "Tailwind CSS";
+
+const genAI = new GoogleGenerativeAI(API_KEY_GEMINIS);
+
+//https://accounts.google.com/o/oauth2/v2/auth?access_type=online&include_granted_scopes=false&response_type=code&client_id=254835202400-d75p1ad5n2lersu6gsdc81c2oe39ehka.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fuiverse.io%2Fauth%2Fgoogle%2Fcallback&state=c99ab984-7990-4b5b-89ff-410b21fe6546&scope=openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email
 
 
 export class CVHandler {
 
-  async getInfoFromFile(fileContentBase64: string, fileType: 'image' | 'pdf'): Promise<any> {
-    const URL: string = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY_GEMINIS}`;
+  async getInfoFromFile(file: File, fileType: 'image' | 'pdf'): Promise<any> {
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash-latest",
+    });
+
+    // Configurar el prompt
+    const analysisPrompt = `Extrae información de CV (${fileType}):\n
+        * Resumen o Perfil Profesional\n
+        * Experiencia Laboral\n
+        * Educación\n
+        * Habilidades\n
+        * Proyectos (opcional)\n
+        * Idiomas (opcional)\n\n
+        Devuelve SOLO un objeto JSON válido, sin markdown ni texto adicional.`;
+
+        const fileGoodFormat = await this.fileToBase64(file);
+
+    // Convertir archivo a formato compatible
+    const filePart = {
+        inlineData: {
+            data: fileGoodFormat,
+            mimeType: fileType === 'pdf' ? 'application/pdf' : 'image/jpeg'
+        }
+    };
 
     try {
-      const analysisPrompt: string = `
-        Eres un asistente especializado en analizar informacion para crear currículums vitae (CVs). Analiza el contenido proporcionado, que puede ser texto extraído de un PDF o el contenido de una imagen de un CV, y extrae la siguiente información relevante para un CV:
-
-        2. **Resumen o Perfil Profesional:**  Un breve párrafo que resume la experiencia y objetivos del candidato.
-        3. **Experiencia Laboral:**  Lista de puestos de trabajo anteriores, incluyendo nombre de la empresa, puesto, fechas de inicio y fin, y descripción de responsabilidades y logros.
-        4. **Educación:**  Títulos académicos, instituciones educativas, fechas de inicio y fin, y detalles relevantes como especializaciones o logros académicos.
-        5. **Habilidades:**  Lista de habilidades técnicas y blandas relevantes para el perfil profesional.
-        6. **Proyectos (opcional):**  Descripción de proyectos personales o profesionales relevantes que demuestren habilidades y experiencia.
-        7. **Idiomas (opcional):**  Idiomas que domina y su nivel.
-
-        Devuelve la información extraída en formato JSON válido. Si alguna sección no está presente en el CV o no se puede extraer, omite esa sección del JSON o devuelve un valor nulo o un array vacío según corresponda.  Asegúrate de que el JSON sea siempre válido y fácil de parsear.
-        `;
-
-      let mimeType = 'image/jpeg'; // Default to image, adjust if fileType is pdf
-      if (fileType === 'pdf') {
-        mimeType = 'application/pdf'; // Or 'text/plain' if sending extracted text as text part
-      }
-
-
-      const payload = {
-        contents: [{
-          role: "user",
-          parts: [
-            { text: analysisPrompt },
-            {
-              inline_data: {
-                mime_type: mimeType,
-                data: fileContentBase64
-              }
-            }
-          ]
-        }]
-      };
-
-      const response = await fetch(URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      const responseText = responseData.candidates[0].content.parts[0].text;
-
-      const cleanedResponse = responseText
-        .replace(/```json/g, '')
-        .replace(/```/g, '')
-        .trim();
-
-      try {
-        return JSON.parse(cleanedResponse);
-      } catch (jsonError) {
-        console.error("Error parsing JSON response:", jsonError);
-        console.error("Raw response text:", cleanedResponse);
+        const result = await model.generateContent([analysisPrompt, filePart]);
+        const response = await result.response;
+        
+        // Extraer y parsear JSON
+        const responseText = response.text();
+        const cleanJson = responseText.replace(/```json|```/g, '');
+        
+        return JSON.parse(cleanJson);
+        
+    } catch (error) {
+        console.error("Error en Gemini:", error);
         return {
-          error: "Error al parsear la respuesta JSON de Gemini.",
-          rawResponse: cleanedResponse
+            error: "Error procesando el archivo",
+            details: error
         };
-      }
-
-
-    } catch (error: unknown) {
-      let errorMessage = 'Error desconocido al procesar el archivo del CV';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      return {
-        error: errorMessage
-      };
     }
-  }
+}
 
-  async getPlantilla(fileContentBase64: string, fileType: 'image' | 'pdf'): Promise<any> {
-    const URL: string = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY_GEMINIS}`;
-
-    try {
-      const analysisPrompt: string = `
-        Eres un experto en diseño web y análisis de currículums vitae (CVs). Tu tarea es analizar la imagen o PDF de un CV que se te proporciona y generar código HTML con ${estilos} que represente visualmente el CV de la manera más fiel posible.
-
-        Analiza la estructura y el contenido del CV, incluyendo:
-
-        - Secciones principales (Información Personal, Resumen, Experiencia Laboral, Educación, Habilidades, etc.)
-        - Jerarquía de títulos y subtítulos
-        - Estilo de texto (fuente, tamaño, negrita, etc.)
-        - Diseño general y disposición de los elementos
-
-        Genera el HTML utilizando clases de ${estilos} para el estilo.  Intenta replicar el diseño original del CV lo más fielmente posible usando ${estilos}.  Devuelve **únicamente el código HTML**, sin texto adicional ni explicaciones.  Si no puedes replicar un aspecto específico del diseño, prioriza la representación clara y legible del contenido del CV.  Asegúrate de que el HTML sea válido y bien estructurado.
-        `;
-
-      let mimeType = 'image/jpeg'; // Default to image, adjust if fileType is pdf
-      if (fileType === 'pdf') {
-        mimeType = 'application/pdf';
+async getPlantillaFromPdf(file: File): Promise<string> {
+  const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-latest",
+      generationConfig: {
+          temperature: 0.3 // Más preciso para estructura HTML
       }
+  });
 
-      const payload = {
-        contents: [{
-          role: "user",
-          parts: [
-            { text: analysisPrompt },
-            {
-              inline_data: {
-                mime_type: mimeType,
-                data: fileContentBase64
-              }
-            }
-          ]
-        }]
-      };
+  const prompt = `Analiza este CV y genera código HTML válido con ${estilos} que replique fielmente:
+      - Jerarquía de secciones
+      - Layout (grid/flex)
+      - Tipografía y espaciado
+      - Elementos visuales clave
+      - Estilos específicos
+      
+      Reglas:
+      * Usa clases CSS de "${estilos}" exclusivamente
+      * HTML5 semántico y válido
+      * Responsive design básico
+      * SIN comentarios ni texto adicional`;
 
-      const response = await fetch(URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const responseData = await response.json();
-      const responseHTML = responseData.candidates[0].content.parts[0].text;
-
-      return responseHTML;
-
-    } catch (error: unknown) {
-      let errorMessage = 'Error desconocido al procesar el archivo del CV y generar HTML';
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-      return {
-        error: errorMessage
-      };
-    }
-  }
-
-  async extraerInfoCV(textoCV: string): Promise<any> {
-    const response = await client.chat.completions.create({
-      model: "deepseek-chat",
-      messages: [
+  try {
+      // Convertir File a base64 (versión browser)
+      const base64Data = await this.fileToBase64(file);
+      
+      // Construir partes del mensaje
+      const parts = [
+          { text: prompt },
           {
-            role: "system",
-            content: `Eres un asistente experto en extraer información de currículums (CVs) y devolverla en formato JSON.  Analiza el CV y extrae la siguiente información en JSON.  Si una sección no está presente, omítela o usa un array vacío si es una lista.  No incluyas texto adicional fuera del JSON.
+              inlineData: {
+                  mimeType: 'application/pdf',
+                  data: base64Data
+              }
+          }
+      ];
 
-**Estructura JSON esperada:**
-
-\`\`\`json
-{
-  "informacion_personal": {
-    "nombre_completo": "...",
-    "email": "...",
-    "telefono": "...",
-    "linkedin": "...",
-    "direccion": "..."
-  },
-  "resumen_profesional": "...",
-  "experiencia_laboral": [
-    {
-      "puesto": "...",
-      "empresa": "...",
-      "fecha_inicio": "...",
-      "fecha_fin": "...",
-      "descripcion_tareas": "..."
-    },
-    { ... }
-  ],
-  "educacion": [
-    {
-      "titulo": "...",
-      "institucion": "...",
-      "fecha_inicio": "...",
-      "fecha_fin": "...",
-      "descripcion_educacion": "..."
-    },
-    { ... }
-  ],
-  "habilidades": ["...", "..."],
-  "proyectos": [
-    {
-      "nombre_proyecto": "...",
-      "descripcion_proyecto": "...",
-      "tecnologias_utilizadas": ["...", "..."]
-    },
-    { ... }
-  ]
-}
-\`\`\`
-`,
-},
-{
-  role: "user",
-  content: `Extrae la información del siguiente CV en formato JSON, solo en formato JSON: ${textoCV}`,
-},
-],
-stream: false,
-});
-
-if (!response.choices?.[0]?.message?.content) {
-  throw new Error("Deepseek devolvió una respuesta vacía o incorrecta.");
-}
-
-let jsonResponse: string = response.choices[0].message.content.trim();
-console.log(response)
-try {
-      return this.sanitizeJSONResponse(jsonResponse);
-    } catch (error: any) { // error: any
-      console.error(`Error al extraer información del CV: ${error.message}`);
-      throw error;
-    }
+      // Generar contenido
+      const { response } = await model.generateContent(parts);
+      
+      // Limpiar y validar HTML
+      return this.cleanGeneratedHtml(response.text());
+      
+  } catch (error) {
+      throw new Error(`Error generando plantilla: ${error}`);
   }
+}
+
+// Helpers
+private async fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+  });
+}
+
+private cleanGeneratedHtml(rawHtml: string): string {
+  return rawHtml
+      .replace(/```html|```/g, '')
+      .trim()
+      .replace(/\n{3,}/g, '\n\n');
+}
+ 
 
   async generarCVAdaptado(
     ofertaTexto: string,
     infoCV: any,
     plantilla?: string,
-    infoAdiccional?: string
+    infoAdiccional?: string,
+    foto?: string
   ): Promise<string> {
-    console.log(infoAdiccional);
-  
+
+
     try {
- 
-  
       const systemPrompt = `
         Eres un asistente experto en la creación de CVs profesionales en **HTML con ${estilos}**.  
         Tu tarea es generar un **CV de una sola página**, optimizado para la oferta de trabajo proporcionada,  
@@ -254,10 +152,12 @@ try {
         ${validation_prompt}
   
         ${infoAdiccional ? `Toma en cuenta esta información adicional del usuario, pon en el cv la info del usuario relevante para el puesto: ${infoAdiccional}.` : ""}
+
+        ${plantilla ? `Toma en cuenta esta plantilla para el html: ${plantilla}.` :''}
         
         📌 **IMPORTANTE:** Devuelve únicamente el código HTML sin ningún otro texto adicional ni etiquetas de lenguaje como \`'''html'''\`.
       `.trim();
-  
+
       const userPrompt = `
         Genera un CV en **HTML con ${estilos}**, adaptado a esta oferta laboral:  
         **${ofertaTexto}**  
@@ -266,8 +166,10 @@ try {
         ${JSON.stringify(infoCV)}  
   
         **Asegúrate de que el HTML sea válido, estructurado y listo para conversión a PDF.**
+        **Asegúrate de que el cv sea en el idioma de la oferta**
+
       `.trim();
-  
+
       const response = await client.chat.completions.create({
         model: "deepseek-chat",
         messages: [
@@ -276,20 +178,20 @@ try {
         ],
         stream: false,
       });
-  
+
       if (!response.choices?.[0]?.message?.content) {
         throw new Error("Deepseek devolvió una respuesta vacía o incorrecta.");
       }
-  
+
       return response.choices[0].message.content.trim();
     } catch (error: any) {
       console.error(`❌ Error al generar el CV: ${error.message}`);
       throw error;
     }
   }
-  
 
-  async sanitizeJSONResponse(responseText: string): Promise<any> { 
+
+  async sanitizeJSONResponse(responseText: string): Promise<any> {
     try {
       responseText = responseText.replace(/```json|```/g, "").trim();
       const repairedJSON: string = jsonrepair(responseText);
@@ -300,13 +202,12 @@ try {
     }
   }
 
- 
 
-  async crearCV(data: any, type: any, plantilla?: File, infoAdicional?: string): Promise<{ html: string }> {
+  async crearCV(data: any, type: any, plantilla?: File | string, infoAdicional?: string,foto?:string): Promise<any> {
     try {
-      const infoCV = type == 'text' ? await this.extraerInfoCV(data) : await this.getInfoFromFile(data, type);
-      const plantillaHTML = type != 'text' ? await this.getPlantilla(data, type) : null;
-      const cvAdaptadoHTML = await this.generarCVAdaptado(data, infoCV, plantillaHTML as string, infoAdicional);
+      const infoCV = type == 'text' ? data : await this.getInfoFromFile(data, type);
+      const plantillaHTML = plantilla ? (typeof plantilla === 'string' ? plantilla : await this.getPlantillaFromPdf(plantilla)) : null;
+      const cvAdaptadoHTML = await this.generarCVAdaptado(data, infoCV, plantillaHTML as string, infoAdicional,foto);
 
       return { html: cvAdaptadoHTML };
 
@@ -315,5 +216,7 @@ try {
       throw error;
     }
   }
+
+  
 }
 
