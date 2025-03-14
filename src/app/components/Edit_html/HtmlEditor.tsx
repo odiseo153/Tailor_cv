@@ -1,11 +1,14 @@
 "use client"
 
-import { useState, Suspense, lazy, useEffect } from "react"
+import { useState, Suspense, lazy, useEffect, useRef } from "react"
 import { generatePdf } from "./htmlToPdf"
 import { Download } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
+import { Message } from "@/app/utils/Message"
+import jsPDF from "jspdf"
+import html2canvas from 'html2canvas';
 
 const CodeEditor = lazy(() => import("./CodeEditor"))
 
@@ -17,6 +20,7 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   const [html, setHtml] = useState(initialHtml)
   const [activeTab, setActiveTab] = useState("preview")
 
+  /*
   useEffect(() => {
     const script = document.createElement('script');
     const link = document.createElement('link');
@@ -30,10 +34,16 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
       document.head.removeChild(link)
     }
   }, [])
+  */
 
   const handleHtmlChange = (newHtml: string) => setHtml(newHtml)
 
-  const handleDownloadPdf = () => generatePdf(html)
+  const previewRef = useRef<HTMLDivElement>(null);
+
+
+  const handleDownloadPdf = async () => {
+    generatePdf(html)
+}
 
   return (
     <Card className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl rounded-3xl">
@@ -86,8 +96,9 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
             </TabsContent>
 
             <TabsContent value="preview" className="flex-grow">
-              <div className="h-full w-full rounded-lg overflow-hidden border shadow-inner bg-white">
+              <div  ref={previewRef} className="h-full w-full rounded-lg overflow-hidden border shadow-inner bg-white">
                 <iframe
+                  
                   srcDoc={html}
                   className="w-full h-[850px]"
                   title="HTML Preview"
