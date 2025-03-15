@@ -123,7 +123,7 @@ export default function GenerarCV() {
         <div className="flex flex-col lg:flex-row gap-10">
           <form onSubmit={handleSubmit} className="space-y-8 w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl">
             
-            {/* Secciones del formulario... */}
+            {/* Secciones del formulario... 
             <Link
               href="/templates"
               className="flex items-center gap-2 text-blue-600 hover:underline"
@@ -131,6 +131,7 @@ export default function GenerarCV() {
               <FileMinus size={18} className="mr-2" />
               Buscar una plantilla
             </Link>
+            */}
 
        <Card className="border-none shadow-md rounded-xl">
               <CardHeader>
@@ -191,7 +192,8 @@ export default function GenerarCV() {
               </CardContent>
             </Card>
 
-            {/* FOTO */}
+            {/* FOTO
+            
             <Card className="border-none shadow-md rounded-xl">
               <CardHeader>
                 <CardTitle className="text-xl font-semibold">
@@ -213,6 +215,7 @@ export default function GenerarCV() {
                 )}
               </CardContent>
             </Card>
+            */}
 
             {/* PLANTILLA */}
             <Card className="border-none shadow-md rounded-xl">
