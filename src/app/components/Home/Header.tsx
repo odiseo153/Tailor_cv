@@ -48,7 +48,7 @@ export default function Navbar(){
 
           <nav className="hidden md:flex items-center space-x-10">
             {items.map((item, i) => (
-              <Link key={i} href={item.href}>
+              <Link key={i} href={item.href} className="p-1 rounded bg-primary text-primary-foreground shadow hover:bg-primary/90">
                 <div className="text-dark hover:text-primary transition-colors">{item.name}</div>
               </Link>
             ))}
@@ -57,12 +57,14 @@ export default function Navbar(){
           <div className="hidden md:flex items-center space-x-4">
             {!user ? (
               <div className="space-x-3">
+                {/*
                 <Button
                   onClick={()=>setIsAuthModalOpen(true)}
                   className="text-dark hover:text-primary transition-colors"
                 >
                   Iniciar Sesion
                 </Button>
+                 */}
               </div>
             ) : (
               <DropdownMenu>
@@ -111,15 +113,18 @@ export default function Navbar(){
             ))}
             {!user && (
               <div className="pt-4 border-t flex flex-col space-y-4">
-                <Link href="/generar-cv">
+                <Link href="/generar-cv" className="bg-primary text-primary-foreground shadow hover:bg-primary/90">
                   <a className="text-dark hover:text-primary">Probar</a>
                 </Link>
+                
+                {/*
                 <Button
                   onClick={()=>setIsAuthModalOpen(true)}
                   className="text-dark hover:text-primary"
                 >
                   Iniciar Sesion
                 </Button>
+                 */}
               </div>
             )}
           </div>

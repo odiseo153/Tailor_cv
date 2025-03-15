@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Message } from "@/app/utils/Message"
 import jsPDF from "jspdf"
 import html2canvas from 'html2canvas';
+import { Editor } from "./EditView"
 
 const CodeEditor = lazy(() => import("./CodeEditor"))
 
@@ -39,8 +40,6 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   const handleHtmlChange = (newHtml: string) => setHtml(newHtml)
 
   const previewRef = useRef<HTMLDivElement>(null);
-
-
   const handleDownloadPdf = async () => {
     generatePdf(html)
 }
@@ -59,6 +58,14 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
               >
                 Preview
               </TabsTrigger>
+             {/*
+              <TabsTrigger
+                value="editor"
+                className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition"
+              >
+                Editor
+              </TabsTrigger>
+              */}
               <TabsTrigger
                 value="code"
                 className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition"
@@ -89,6 +96,12 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
               </div>
             }
           >
+            <TabsContent value="editor" className="flex-grow">
+              <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border">
+                <Editor html={html} />
+              </div>
+            </TabsContent>
+
             <TabsContent value="code" className="flex-grow">
               <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border">
                 <CodeEditor htmlView={html} onChange={handleHtmlChange} />

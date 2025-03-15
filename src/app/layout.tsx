@@ -6,6 +6,7 @@ import "./globals.css";
 import Header from "./components/Home/Header";
 import { AppContextProvider } from "./context/AppContext";
 import Footer from "./components/Home/Footer";
+import { SessionProvider } from "next-auth/react";
 
 
 
@@ -20,13 +21,16 @@ export default function RootLayout({
         className={` antialiased`}
       >
         <title>TailorCV</title>
-        <AppContextProvider>
+        <SessionProvider>
+
+        <AppContextProvider >
           <Header />
           <div className="mt-7">
           {children}
           </div>
           <Footer />
         </AppContextProvider>
+        </SessionProvider>
       </body>
     </html>
   );

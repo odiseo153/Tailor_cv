@@ -13,15 +13,15 @@ import { CVHandler } from "../Handler/CVHandler";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import Link from "next/link";
 import { useAppContext } from "../context/AppContext";
-
+import { useSession } from "next-auth/react";
 
 
 export default function GenerarCV() {
   const [ofertaLaboral, setOfertaLaboral] = useState<File | string | null>(null);
-  const [plantillaCV, setPlantillaCV] = useState<File>();
+  const [plantillaCV, setPlantillaCV] = useState<File | null>(null);
   const [foto, setFoto] = useState<string | undefined>();
   const [informacion, setInformacion] = useState("");
-  const [data, setData] = useState<{ html: string }>();
+  const [data, setData] = useState<{ html: string } | null>(null);
   const [ofertaType, setOfertaType] = useState<'pdf' | 'image' | 'text'>("text");
   const [isLoading, setIsLoading] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
@@ -30,6 +30,7 @@ export default function GenerarCV() {
 
   const cv_handler = new CVHandler();
   const {template} = useAppContext();
+  const { data: session } = useSession();
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,6 +50,14 @@ export default function GenerarCV() {
       if (progress < 90) setProgress(prev => Math.min(prev + 10, 90));
     }, 1000);
 
+    setOfertaLaboral(null);
+    setPlantillaCV(null);
+    setFoto(undefined);
+    setInformacion("");
+    setData(null);
+    setProgress(0);
+    setTimeLeft("");
+
     try {
       const responseHtml = await cv_handler.crearCV(ofertaLaboral, ofertaType, plantillaCV ?? template, informacion,foto);
       clearInterval(interval);
@@ -64,7 +73,7 @@ export default function GenerarCV() {
       clearInterval(interval);
       setIsLoading(false);
       Message.errorMessage("Error al generar CV");
-    }
+    } 
   };
 
   const formatTime = (ms: number): string => {

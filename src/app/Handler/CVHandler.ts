@@ -153,7 +153,8 @@ private cleanGeneratedHtml(rawHtml: string): string {
   
         ${infoAdiccional ? `Toma en cuenta esta información adicional del usuario, pon en el cv la info del usuario relevante para el puesto: ${infoAdiccional}.` : ""}
 
-        ${plantilla ? `Toma en cuenta esta plantilla para el html: ${plantilla}.` :''}
+        ${plantilla ? `Toma en cuenta esta plantilla para el html y si la plantilla requiere imagen y no se a proporcionado alguna imagen pues no la pongas en el cv: ${plantilla}.` :''}
+
         
         📌 **IMPORTANTE:** Devuelve únicamente el código HTML sin ningún otro texto adicional ni etiquetas de lenguaje como \`'''html'''\`.
       `.trim();

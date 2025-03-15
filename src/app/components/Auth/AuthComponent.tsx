@@ -12,7 +12,7 @@ import { Message } from "@/app/utils/Message"
 import { useAppContext } from "@/app/context/AppContext"
 import { Separator } from "@/components/ui/separator"
 import { LucideLinkedin } from "lucide-react"
-
+import { signIn } from "next-auth/react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -103,10 +103,10 @@ export default function AuthForm() {
             <Separator className="my-4" />
           </form>
           <div className="mt-4 space-y-2 text-center">
-            <Button onClick={handleLinkedInLogin} className="w-full bg-blue-600 text-white hover:bg-blue-700">
+            <Button onClick={() => signIn('linkedin')} className="w-full bg-blue-600 text-white hover:bg-blue-700">
               <LucideLinkedin/> Iniciar sesión con LinkedIn
             </Button>
-            <Button onClick={handleLinkedInLogin} className="w-full bg-yellow-600 text-white hover:bg-yellow-700">
+            <Button onClick={() => signIn('google')} className="w-full bg-yellow-600 text-white hover:bg-yellow-700">
                Iniciar sesión con Google
             </Button>
           </div>
