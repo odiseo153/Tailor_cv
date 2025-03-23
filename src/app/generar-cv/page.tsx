@@ -10,14 +10,73 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Message } from "../utils/Message";
 import { CVHandler } from "../Handler/CVHandler";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import Link from "next/link";
 import { useAppContext } from "../context/AppContext";
 import { useSession } from "next-auth/react";
+import CVSkeleton from "../components/Edit_html/CV_Skeleton";
+import HtmlToWord from "../components/Edit_html/HtmlToWord";
 
 
 export default function GenerarCV() {
-  const [ofertaLaboral, setOfertaLaboral] = useState<File | string | null>(null);
+  const [ofertaLaboral, setOfertaLaboral] = useState<File | string | null>(`
+    We are looking for a Backend Software Developer with expertise in Django, Python, SQLite, and PostgreSQL to design and develop scalable backend systems for cross-platform applications (Linux, macOS, Windows). The ideal candidate will also have experience working with backend packages, firmware development, CI/CD pipelines, and AWS services. Strong problem-solving skills, attention to detail, and excellent communication abilities are essential for success in this role.
+
+Key Responsibilities:
+
+ • Design, develop, and maintain backend applications using Django and Python.
+
+ • Build and optimize database structures using SQLite and PostgreSQL.
+
+ • Develop and integrate cross-platform backend solutions compatible with Linux, macOS, and Windows.
+
+ • Collaborate with frontend developers to provide efficient APIs and data services.
+
+ • Implement CI/CD pipelines to streamline deployment and testing processes.
+
+ • Work with AWS services to enhance scalability, security, and performance.
+
+ • Maintain and optimize backend infrastructure, ensuring reliability and efficiency.
+
+ • Debug and troubleshoot backend issues, ensuring high performance and security.
+
+ • Develop and support firmware integration within backend applications.
+
+ • Stay updated with emerging backend technologies, best practices, and security measures.
+
+ • Clearly communicate technical concepts and solutions to team members and stakeholders.
+
+Required Qualifications:
+
+ • 3+ years of professional experience in backend development.
+
+ • Proficiency in Django, Python, SQLite, and PostgreSQL.
+
+ • Experience with cross-platform development (Linux, macOS, Windows).
+
+ • Strong understanding of backend packages and modern development tools.
+
+ • Familiarity with firmware integration and low-level backend operations.
+
+ • Hands-on experience with CI/CD tools (GitHub Actions, GitLab CI, Jenkins, etc.).
+
+ • Knowledge of AWS services relevant to backend development.
+
+ • Strong debugging, problem-solving, and performance optimization skills.
+
+ • Excellent communication and collaboration skills.
+
+Preferred Qualifications:
+
+ • Experience with RESTful APIs, GraphQL, WebSockets, and real-time data handling.
+
+ • Knowledge of Docker, Kubernetes, and containerized deployments.
+
+ • Understanding of asynchronous programming in Python.
+
+ • Familiarity with unit testing and integration testing frameworks (PyTest, Unittest, etc.).
+
+ • Experience in Agile development environments.
+
+`);
   const [plantillaCV, setPlantillaCV] = useState<File | null>(null);
   const [foto, setFoto] = useState<string | undefined>();
   const [informacion, setInformacion] = useState("");
@@ -25,8 +84,6 @@ export default function GenerarCV() {
   const [ofertaType, setOfertaType] = useState<'pdf' | 'image' | 'text'>("text");
   const [isLoading, setIsLoading] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [timeLeft, setTimeLeft] = useState("");
 
   const cv_handler = new CVHandler();
   const {template} = useAppContext();
@@ -36,51 +93,27 @@ export default function GenerarCV() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setProgress(0);
-    const start = Date.now();
-
-    //console.log(template);
-
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - start;
-      const estimatedTotal = (elapsed / (progress + 1)) * 100;
-      const remaining = estimatedTotal - elapsed;
-      
-      setTimeLeft(formatTime(remaining));
-      if (progress < 90) setProgress(prev => Math.min(prev + 10, 90));
-    }, 1000);
-
+    
     setOfertaLaboral(null);
     setPlantillaCV(null);
     setFoto(undefined);
     setInformacion("");
     setData(null);
-    setProgress(0);
-    setTimeLeft("");
 
     try {
       const responseHtml = await cv_handler.crearCV(ofertaLaboral, ofertaType, plantillaCV ?? template, informacion,foto);
-      clearInterval(interval);
       
       if (responseHtml) {
-        setProgress(100);
-        setTimeLeft("Listo!");
-        setTimeout(() => setIsLoading(false), 500);
+        setIsLoading(false);
         setData(responseHtml);
         Message.successMessage("CV Generado Exitosamente");
       }
     } catch (error) {
-      clearInterval(interval);
       setIsLoading(false);
       Message.errorMessage("Error al generar CV");
     } 
   };
 
-  const formatTime = (ms: number): string => {
-    const seconds = Math.ceil(ms / 1000);
-    if (seconds <= 0) return "Listo!";
-    return `${Math.floor(seconds / 60)}m ${seconds % 60}s restantes`;
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -266,20 +299,69 @@ export default function GenerarCV() {
               </CardContent>
             </Card>
 
-            {isLoading && (
-              <div className="space-y-2">
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="bg-green-500 h-2.5 rounded-full transition-all duration-300" 
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>{progress}%</span>
-                  <span>{timeLeft}</span>
-                </div>
-              </div>
-            )}
+            <HtmlToWord 
+        initialHtml={`
+          <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Francisco Andrade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center py-10">
+    <div class="bg-white w-4/5 max-w-2xl shadow-lg p-8">
+        <header class="border-l-4 border-black pl-4 mb-6">
+            <h1 class="text-3xl font-bold">FRANCISCO <span class="block">ANDRADE</span></h1>
+            <p class="text-gray-600 uppercase tracking-wide text-sm">Programador Web</p>
+        </header>
+        
+        <section class="mb-6">
+            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Perfil</h2>
+            <p class="text-gray-700 text-sm">Me recibí de Diseñador Web en el año 2020 y estoy en busca de un nuevo trabajo. Actualmente estoy cursando en el área de Marketing, especializado en redes sociales. Me considero una persona responsable y creativa.</p>
+        </section>
+        
+        <section class="mb-6">
+            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Idiomas</h2>
+            <p class="text-sm text-gray-700">Inglés: <span class="font-semibold">Avanzado</span></p>
+            <p class="text-sm text-gray-700">Alemán: <span class="font-semibold">Intermedio</span></p>
+        </section>
+        
+        <section class="mb-6">
+            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Educación</h2>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Licenciatura en Diseño Web</span> - Universidad de Córdoba (2018-2020)</p>
+            <p class="text-sm text-gray-700 mt-2"><span class="font-semibold">Escuela Secundaria</span> - Colegio San Andrés (2010-2016)</p>
+        </section>
+        
+        <section class="mb-6">
+            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Experiencia</h2>
+            <div class="mb-4">
+                <p class="font-semibold">Asistente de Gerencia</p>
+                <p class="text-sm text-gray-700">Seguros de Agencia. Revisión de balances de documentos y control de facturación.</p>
+            </div>
+            <div class="mb-4">
+                <p class="font-semibold">Pasante Administrativo</p>
+                <p class="text-sm text-gray-700">Recepción en Clínicas. Organización de bases de datos y salas.</p>
+            </div>
+            <div>
+                <p class="font-semibold">Atención al Público</p>
+                <p class="text-sm text-gray-700">Mención en Clínicas personales. Asistencia y seguimiento de stock.</p>
+            </div>
+        </section>
+        
+        <section>
+            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Contacto</h2>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Dirección:</span> Calle Odugarse 125, Córdoba</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Teléfono:</span> (954) 123-4567</p>
+            <p class="text-sm text-gray-700"><span class="font-semibold">Email:</span> hola@hotashotmail.com</p>
+        </section>
+    </div>
+</body>
+</html>
+
+          `}
+      />
+           
 
             <Button
               type="submit"
@@ -295,11 +377,15 @@ export default function GenerarCV() {
             </Button>
           </form>
 
+          <div className="w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl">
           {data && (
-            <div className="w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl">
               <ShowHtml html={data.html} />
-            </div>
-          )}
+            )}
+
+            {isLoading && !data && (
+              <CVSkeleton />
+            )}
+          </div>
         </div>
       </main>
     </div>

@@ -10,6 +10,7 @@ import { Message } from "@/app/utils/Message"
 import jsPDF from "jspdf"
 import html2canvas from 'html2canvas';
 import { Editor } from "./EditView"
+import HtmlToWord from "./HtmlToWord"
 
 const CodeEditor = lazy(() => import("./CodeEditor"))
 
@@ -82,6 +83,9 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
             <Download className="w-5 h-5 animate-bounce" />
             <span className="font-semibold tracking-wide">Download PDF</span>
           </Button>
+        
+          
+
         </div>
 
         <Tabs

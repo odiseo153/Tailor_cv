@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { nameApp } from "@/app/utils/NameApp";
+import CVPreview from "./CVPreview";
 
 export default function HeroSection() {
   return (
@@ -18,7 +19,7 @@ export default function HeroSection() {
           className="md:w-1/2 md:pr-16 text-center md:text-left"
         >
           <h1 className="text-5xl md:text-6xl font-extrabold text-gray-800 leading-tight mb-6">
-            {nameApp} <span className="text-blue-600">- Tu CV Perfecto</span> en Minutos
+            <span className="text-blue-600">Tu CV Perfecto</span> en Minutos
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
             Crea CVs personalizados y optimizados para cada oferta laboral con la ayuda de inteligencia artificial.
@@ -39,16 +40,7 @@ export default function HeroSection() {
           className="md:w-1/2"
         >
           <div className="relative w-full">
-            <Image
-              src="https://c0.wallpaperflare.com/preview/535/539/778/resume-cv-resume-template-application.jpg"
-              alt="CV Generation Illustration"
-              width={400}
-              height={260}
-              className="rounded-2xl shadow-2xl border-2 border-blue-100"
-            />
-            <div className="absolute -top-4  bg-blue-600 text-white text-sm px-3 py-1 rounded-full shadow-md">
-              Nuevo ✨
-            </div>
+          <CVPreview />
           </div>
         </motion.div>
       </div>

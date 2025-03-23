@@ -150,7 +150,7 @@ export default function HowItWorks(){
 
         <div className="flex flex-wrap md:flex-nowrap gap-8">
           {/* Steps Navigation */}
-          <div className="w-full md:w-1/3">
+          <div className="w-full md:w-1/2">
             <div className="sticky top-24 space-y-4">
               {steps.map((step, index) => (
                 <button
