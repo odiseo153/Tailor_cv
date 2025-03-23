@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { nameApp } from "@/app/utils/NameApp";
-import { Card, CardContent } from "@/components/ui/card";
 
 export default function Footer() {
   return (
