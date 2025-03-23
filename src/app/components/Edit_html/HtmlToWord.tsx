@@ -71,7 +71,6 @@ const HtmlToWord = () => {
         switch(tag) {
           case 'h1':
             return new Paragraph({
-              heading: HeadingLevel.HEADING_1,
               children: [new TextRun({ text: node.textContent, ...styles })],
               spacing: { after: 400 },
             });
