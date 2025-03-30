@@ -22,7 +22,6 @@ export default function RootLayout({
       >
         <title>TailorCV</title>
         <SessionProvider>
-
         <AppContextProvider >
           <Header />
           <div className="mt-7">
