@@ -72,19 +72,6 @@ export const generatePdf = async (html: string): Promise<{ blob: Blob; pageCount
         0
       );
 
-      /* 
-      addImage(
-      imageData: string | HTMLImageElement | HTMLCanvasElement | Uint8Array | RGBAData,
-       format: string,
-        x: number,
-         y: number, 
-         w: number, 
-         h: number,
-          alias?: string,
-           compression?: ImageCompression,
-            rotation?: number)
-      */
-
       yPos += sectionHeight;
       currentPage++;
     }

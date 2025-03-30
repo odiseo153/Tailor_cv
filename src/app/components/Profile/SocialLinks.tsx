@@ -9,8 +9,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { useAppContext } from "@/app/context/AppContext"
+import { useStore } from "@/app/context/AppContext"
 import { Message } from "@/app/utils/Message"
+import { useSession } from "next-auth/react"
 
 interface SocialLink {
   id?: string
@@ -26,7 +27,8 @@ interface SocialLinksProps {
 const defaultLinks: SocialLink[] = [{ platform: "LinkedIn", url: "https://www.linkedin.com/" }]
 
 export default function SocialLinks() {
-  const {user} = useAppContext();
+  const { data: session } = useSession();
+  const user = session?.user;
   const links = user?.socialLinks as SocialLink[];
 
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(links || defaultLinks)
@@ -110,7 +112,8 @@ interface SocialLinkFormProps {
 }
 
 function SocialLinkForm({ initialData, onSubmit }: SocialLinkFormProps) {
-  const {user} = useAppContext();
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const [formData, setFormData] = useState<SocialLink>(
     initialData || {

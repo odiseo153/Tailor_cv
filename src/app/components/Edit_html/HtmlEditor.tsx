@@ -121,7 +121,7 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
                   title="HTML Preview"
                 />
               </div>
-            </TabsContent>
+            </TabsContent> 
           </Suspense>
         </Tabs>
 

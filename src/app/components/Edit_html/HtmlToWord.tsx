@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { twi } from "tw-to-css";
 import { saveAs } from "file-saver";
-import { Document, Packer, Paragraph, TextRun } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
 
 const HtmlToWord = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,81 +21,118 @@ const HtmlToWord = () => {
     </div>
   `;
 
-  const parseStyles = (element: HTMLElement) => {
+  const parseInlineStyles = (element: HTMLElement) => {
     const style: any = {};
-    const computedStyles = getComputedStyle(element);
+    const inlineStyles = element.style;
 
-    // Mapear estilos CSS a propiedades de docx
-    if (computedStyles.color !== 'rgba(0, 0, 0, 0)') {
-      style.color = computedStyles.color
-        .replace('rgba(', '')
-        .replace(')', '')
+    // Convertir color HEX
+    if (inlineStyles.color) {
+      style.color = inlineStyles.color
+        .replace(/[^0-9,]/g, '')
         .split(',')
         .slice(0, 3)
         .map(num => parseInt(num.trim()).toString(16).padStart(2, '0'))
         .join('');
     }
 
-    if (computedStyles.fontWeight === '700') style.bold = true;
-    if (computedStyles.fontSize) style.size = parseInt(computedStyles.fontSize) * 2;
+    // Tamaño de fuente en half-points (1px = 2 half-points)
+    if (inlineStyles.fontSize) {
+      const size = parseInt(inlineStyles.fontSize.replace('px', ''));
+      style.size = size * 2;
+    }
+
+    if (parseInt(inlineStyles.fontWeight) >= 600) style.bold = true;
 
     return style;
   };
 
+  const cleanHTML = (html: string) => {
+    // Remover todas las etiquetas no necesarias
+    return html
+      .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gi, '')
+      .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gi, '')
+      .replace(/ class="[^"]*"/g, '')
+      .replace(/<!--[\s\S]*?-->/g, '');
+  };
+
   const htmlToDocxElements = (html: string) => {
+    const cleanedHtml = cleanHTML(html);
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
+    const doc = parser.parseFromString(cleanedHtml, 'text/html');
     const elements: Paragraph[] = [];
 
-    const processNode = (node: Node) => {
+    const processNode = (node: Node): Paragraph[] => {
       if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent?.trim();
-        if (text) {
-          return new Paragraph({
-            children: [new TextRun({ text })],
-          });
-        }
-      } else if (node instanceof HTMLElement) {
-        const children: Paragraph[] = [];
-        
-        // Procesar hijos recursivamente
-        node.childNodes.forEach(child => {
-          const result = processNode(child);
-          if (result) children.push(result);
-        });
+        return text ? [new Paragraph({ children: [new TextRun({ text })] })] : [];
+      }
 
-        // Manejar elementos específicos
+      if (node instanceof HTMLElement) {
         const tag = node.tagName.toLowerCase();
-        const styles = parseStyles(node);
+        const styles = parseInlineStyles(node);
+        const children: Paragraph[] = [];
+
+        node.childNodes.forEach(child => {
+          children.push(...processNode(child));
+        });
 
         switch(tag) {
           case 'h1':
-            return new Paragraph({
-              children: [new TextRun({ text: node.textContent, ...styles })],
-              spacing: { after: 400 },
-            });
-          
-          case 'li':
-            return new Paragraph({
+            return [new Paragraph({
               children: [new TextRun({
-                text: `• ${node.textContent}`,
+                text: node.textContent || '',
+                bold: true,
+                size: 48, // 24px * 2
+                color: '1155CC' // blue-600 aproximado
+              })],
+              heading: HeadingLevel.HEADING_1,
+              spacing: { after: 400 }
+            })];
+
+          case 'h2':
+            return [new Paragraph({
+              children: [new TextRun({
+                text: node.textContent || '',
+                bold: true,
+                size: 32, // 16px * 2
+                color: '333333' // gray-800
+              })],
+              spacing: { after: 300 }
+            })];
+
+          case 'ul':
+            return children.map(child => new Paragraph({
+              ...child,
+              bullet: { level: 0 }
+            }));
+
+          case 'li':
+            return [new Paragraph({
+              children: [new TextRun({
+                text: node.textContent || '',
                 ...styles
               })],
-              indent: { left: 720 },
-            });
+              indent: { left: 720 }
+            })];
+
+          case 'div':
+            return children;
 
           default:
-            return new Paragraph({
-              children: [new TextRun({ text: node.textContent, ...styles })],
-            });
+            return [new Paragraph({
+              children: [new TextRun({
+                text: node.textContent || '',
+                ...styles
+              })]
+            })];
         }
       }
-      return null;
+
+      return [];
     };
 
     doc.body.childNodes.forEach(node => {
-      const element = processNode(node);
-      if (element) elements.push(element);
+      elements.push(...processNode(node));
     });
 
     return elements;
@@ -107,7 +144,8 @@ const HtmlToWord = () => {
       const convertedHtml = twi(html, {
         minify: true,
         merge: true,
-        ignoreMediaQueries: true
+        ignoreMediaQueries: true,
+        ignoreAttributes: ['class']
       });
 
       const docElements = htmlToDocxElements(convertedHtml);

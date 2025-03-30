@@ -1,56 +1,51 @@
 import { User } from '@prisma/client';
+import { useSession } from 'next-auth/react';
 import {useState, createContext, useContext, useEffect } from 'react';
+import { create } from 'zustand'
+
+
 
 
 
 interface AppContextType {
-   theme: 'light' | 'dark';
-   template: string;
-   user: any | null;
-   setUser: (user:User) => void;
-   setTemplate: (html:string) => void;
+  theme: 'light' | 'dark';
+  template: string;
+  user: any | null;
+  authOpen:boolean;
+  setAuthOpen: (authOpen:boolean) => void;
+  setUser: (user:User) => void;
+  setTemplate: (html:string) => void;
 }
+
+export const useStore = create<AppContextType>()((set) => ({
+  theme: 'light',
+  template: '',
+  user: null, 
+  authOpen: false,
+  setAuthOpen: (authOpen:boolean) => set({ authOpen }),
+  setUser: (user:User) => set({ user }),
+  setTemplate: (html:string) => set({ template: html }),
+}))
 
 const AppContext = createContext<AppContextType>({
   theme: 'light',
   template: '',
   user: null,
+  authOpen: false,
+  setAuthOpen: () => {},
   setUser: () => {},
   setTemplate: () => {}
 });
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null); 
-    const [theme, setTheme] = useState<'light' | 'dark'>('light');
-   
-    const [template, setTemplate] = useState<string>('');
+    const {user, setUser, theme, template, setTemplate,authOpen,setAuthOpen} = useStore();
+    
 
-    /*
-    useEffect(()=>{
-      const getData =async () =>{
-        const formData = new FormData();
-        formData.append('email','john.doe@example.com');
-        formData.append('password','1234567890');
-        
-        const request = await fetch('/api/apiHandler/login',{
-          method:"POST",
-          body:formData
-        });
-        
-        const response = await request.json();
-        
-        console.log(response)
-      setUser(response.resultado.user);
-    }
-    getData();
-  },[])
-  */
-  
   return (
-    <AppContext.Provider value={{user,template,setUser,theme,setTemplate}}>
+    <AppContext.Provider value={{user,template,setUser,theme,setTemplate,authOpen,setAuthOpen}}>
       {children}
     </AppContext.Provider> 
-  );
+  ); 
 };
 
 export const useAppContext = () => {

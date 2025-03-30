@@ -22,7 +22,7 @@ export default function Home() {
           <HowItWorks />
         </section>
         <section id="benefits">
-          <Benefits />
+          <Benefits /> 
         </section>
         <section id="contact">
           <ContactSection />

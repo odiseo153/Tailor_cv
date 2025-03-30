@@ -9,9 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { useAppContext } from "@/app/context/AppContext"
+import { useStore } from "@/app/context/AppContext"
 import { Education } from "@prisma/client"
 import { Message } from "@/app/utils/Message"
+import { useSession } from "next-auth/react"
  
 
 
@@ -29,7 +30,8 @@ const defaultEducation: any[] = [
 ]
 
 export default function EducationInfo() {
-  const {user} = useAppContext();
+  const { data: session } = useSession();
+  const user = session?.user;
   const education = user?.education as Education[];
  
   const [educationList, setEducationList] = useState<Education[]>(education || defaultEducation)
@@ -110,7 +112,7 @@ interface EducationFormProps {
 }
 
 function EducationForm({ initialData, onSubmit }: EducationFormProps) {
-  const {user} = useAppContext();
+  const {user} = useStore();
   const [formData, setFormData] = useState<any>(
     initialData || {
       institution: "",

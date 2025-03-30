@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { useAppContext } from "@/app/context/AppContext"
+import { useStore } from "@/app/context/AppContext"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,9 +13,12 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Pencil } from "lucide-react"
 import { Message } from "@/app/utils/Message"
+import { useSession } from "next-auth/react"
 
 export default function CVPreferences() {
-  const { user } = useAppContext()
+  const { data: session } = useSession();
+  const user = session?.user;
+  
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     template:  "monte",
@@ -135,17 +138,17 @@ export default function CVPreferences() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Template</p>
-            <p className="font-medium">{user.cvPreferences.template}</p>
+            <p className="font-medium">{user?.cvPreferences?.template}</p>
           </div>
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Font</p>
-            <p className="font-medium">{user.cvPreferences.font}</p>
+            <p className="font-medium">{user?.cvPreferences?.font}</p>
           </div>
           <div className="border rounded-lg p-4">
             <p className="text-sm text-gray-500">Color</p>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full border" style={{ backgroundColor: "#f000" }} />
-              <p className="font-medium">{user.cvPreferences.color}</p>
+              <p className="font-medium">{user?.cvPreferences?.color}</p>
             </div>
           </div>
         </div>

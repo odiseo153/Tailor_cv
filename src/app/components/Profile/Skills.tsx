@@ -9,10 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { useAppContext } from "@/app/context/AppContext"
 import { Skill } from "@prisma/client"
 import { HandlerResult } from "@/app/interface/HandlerResult"
 import { Message } from "@/app/utils/Message"
+import { useSession } from "next-auth/react"
 
 
 
@@ -20,7 +20,8 @@ const defaultSkills:Skill[] = [{ id: "1", name: "Default Skill", level: 3,userId
 
 
 export default function Skills() {
-    const {user} = useAppContext();
+  const { data: session } = useSession();
+  const user = session?.user;
     const skills = user?.skills;
  
     const [userSkills, setUserSkills] = useState<Skill[]>(skills || defaultSkills)
@@ -129,7 +130,8 @@ interface SkillFormProps {
 }
 
 function SkillForm({ initialData, onSubmit }: SkillFormProps) {
-  const {user} = useAppContext();
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const [formData, setFormData] = useState<any>(
     initialData || {

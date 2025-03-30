@@ -13,6 +13,7 @@ import { CVHandler } from "../Handler/CVHandler";
 import { useAppContext } from "../context/AppContext";
 import { useSession } from "next-auth/react";
 import CVSkeleton from "../components/Edit_html/CV_Skeleton";
+import HtmlToWord from "../components/Edit_html/HtmlToWord";
 
 
 export default function GenerarCV() {
@@ -248,6 +249,7 @@ Preferred Qualifications:
               </CardContent>
             </Card>
             */}
+
 
             {/* PLANTILLA */}
             <Card className="border-none shadow-md rounded-xl">

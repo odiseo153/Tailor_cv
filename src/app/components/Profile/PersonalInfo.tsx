@@ -11,8 +11,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { PencilIcon } from "lucide-react"
 import { validateEmail, validatePhone } from "@/app/utils/validation"
-import { useAppContext } from "@/app/context/AppContext"
+import { useStore } from "@/app/context/AppContext"
 import { User } from "@prisma/client"
+import { useSession } from "next-auth/react"
+import { Message } from "@/app/utils/Message"
 
 interface PersonalInfo {
   name: string
@@ -35,7 +37,8 @@ const defaultUser: User = {
 }
 
 export default function PersonalInfo() {
-  const {user} = useAppContext();
+  const { data: session } = useSession();
+  const user = session?.user;
  
   const [editedUser, setEditedUser] = useState<User>(user || defaultUser);
   
@@ -78,6 +81,7 @@ export default function PersonalInfo() {
       
       setIsEditing(false)
       setErrors({})
+      Message.successMessage("Datos actualizados");
     }catch(e){
       console.log(e);
     }
@@ -89,7 +93,7 @@ export default function PersonalInfo() {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Personal Information</CardTitle>
-        <Dialog>
+        <Dialog open={isEditing} onOpenChange={setIsEditing}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="icon">
               <PencilIcon className="h-4 w-4" />

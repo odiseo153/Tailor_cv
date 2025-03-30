@@ -12,13 +12,15 @@ import { Textarea } from "@/components/ui/textarea"
 import { Pencil, Plus, Trash2 } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { WorkExperience } from "@prisma/client"
-import { useAppContext } from "@/app/context/AppContext"
+import { useStore } from "@/app/context/AppContext"
 import { HandlerResult } from "@/app/interface/HandlerResult"
 import { Message } from "@/app/utils/Message"
+import { useSession } from "next-auth/react"
 
 
 export default function WorkExperienceInfo() {
-  const { user } = useAppContext()
+  const { data: session } = useSession();
+  const user = session?.user;
   const experiencesUser = user.workExperience as WorkExperience[];
   const [experiences,setExperiences] = useState<WorkExperience[]>(experiencesUser);
   const [isAddingNew, setIsAddingNew] = useState(false)
