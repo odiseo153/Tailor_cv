@@ -29,16 +29,16 @@ const defaultLinks: SocialLink[] = [{ platform: "LinkedIn", url: "https://www.li
 export default function SocialLinks() {
   const { data: session } = useSession();
   const user = session?.user;
-  const links = user?.socialLinks as SocialLink[];
+  //const links = user?.socialLinks as SocialLink[];
 
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>(links || defaultLinks)
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>( defaultLinks)
 
   const handleAddLink = (newLink: SocialLink) => {
     setSocialLinks([...socialLinks, { ...newLink, id: Date.now().toString() }])
   }
 
   const handleEditLink = (updatedLink: SocialLink) => {
-    console.log(links);
+    //console.log(links);
     setSocialLinks(socialLinks.map((link) => (link.id === updatedLink.id ? updatedLink : link)))
   }
 
@@ -119,7 +119,7 @@ function SocialLinkForm({ initialData, onSubmit }: SocialLinkFormProps) {
     initialData || {
       platform: "",
       url: "", 
-      userId: user.id, 
+      userId:" user.id", 
     }, 
   )
  

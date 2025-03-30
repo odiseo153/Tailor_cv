@@ -95,7 +95,8 @@ export default function AuthForm() {
                   />
                   {form.formState.errors.name && (
                     <p className="text-red-500 text-sm mt-1">
-                      {form.formState.errors.name.message}
+                      {typeof form.formState.errors.name.message === "string" &&
+                  form.formState.errors.name.message}
                     </p>
                   )}
                 </div>
@@ -111,7 +112,8 @@ export default function AuthForm() {
               />
               {form.formState.errors.email && (
                 <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.email.message}
+                  {typeof form.formState.errors.email.message === "string" &&
+                  form.formState.errors.email.message}
                 </p>
               )}
             </div>
@@ -123,11 +125,12 @@ export default function AuthForm() {
                 {...form.register("password")}
                 className={form.formState.errors.password ? "border-red-500" : ""}
               />
-              {form.formState.errors.password && (
-                <p className="text-red-500 text-sm mt-1">
-                  {form.formState.errors.password.message}
-                </p>
-              )}
+             {form.formState.errors.password && (
+              <p className="text-red-500 text-sm mt-1">
+                {typeof form.formState.errors.password.message === "string" &&
+                  form.formState.errors.password.message}
+              </p>
+            )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Cargando..." : isLogin ? "Iniciar Sesión" : "Registrarse"}

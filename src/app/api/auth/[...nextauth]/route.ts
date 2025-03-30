@@ -62,16 +62,15 @@ const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       // Persistir datos adicionales en el token JWT
       if (user) {
-        token.user = {...user };
+        token.user = {...user ,id:"odiseo"};
       }
       return token;
     },
     async session({ session, token }) {
       // Enviar datos del usuario a la sesión del cliente
       session.user = {
-        ...session.user,         // Datos básicos
-        ...token.user,           // Todos los datos del token
-        id: token?.user?.id,       // Asegurar que el id está incluido
+        ...session.user,   
+        ...token
       };
       
       return session;

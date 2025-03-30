@@ -7,7 +7,7 @@ import Header from "./components/Home/Header";
 import { AppContextProvider } from "./context/AppContext";
 import Footer from "./components/Home/Footer";
 import { SessionProvider } from "next-auth/react";
-
+import { Analytics } from "@vercel/analytics/react"
 
 
 export default function RootLayout({

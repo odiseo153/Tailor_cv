@@ -22,9 +22,9 @@ const defaultSkills:Skill[] = [{ id: "1", name: "Default Skill", level: 3,userId
 export default function Skills() {
   const { data: session } = useSession();
   const user = session?.user;
-    const skills = user?.skills;
+//    const skills = user?.skills;
  
-    const [userSkills, setUserSkills] = useState<Skill[]>(skills || defaultSkills)
+    const [userSkills, setUserSkills] = useState<Skill[]>(defaultSkills)
     const [editingSkill, setEditingSkill] = useState<Skill | null>(null)
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -136,7 +136,7 @@ function SkillForm({ initialData, onSubmit }: SkillFormProps) {
   const [formData, setFormData] = useState<any>(
     initialData || {
       name: "",
-      userId: user.id,
+      userId: "user.id",
       level: 1,
     },
   )

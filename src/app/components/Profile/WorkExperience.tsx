@@ -21,7 +21,7 @@ import { useSession } from "next-auth/react"
 export default function WorkExperienceInfo() {
   const { data: session } = useSession();
   const user = session?.user;
-  const experiencesUser = user.workExperience as WorkExperience[];
+  const experiencesUser = [] as WorkExperience[];
   const [experiences,setExperiences] = useState<WorkExperience[]>(experiencesUser);
   const [isAddingNew, setIsAddingNew] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -29,7 +29,7 @@ export default function WorkExperienceInfo() {
     id: "",
     company: "",
     jobTitle: "",
-    userId: user.id,
+    userId: "user.id",
     startDate: new Date("20-2-2024"),
     endDate: new Date("20-2-2025"),
     description: "",
@@ -63,7 +63,7 @@ export default function WorkExperienceInfo() {
         id: "",
         company: "",
         jobTitle: "",
-        userId: user.id,
+        userId: "user.id",
         startDate: new Date("20-2-2024"),
         endDate: new Date("20-2-2025"),
         description: "",

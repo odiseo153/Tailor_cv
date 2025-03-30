@@ -40,7 +40,7 @@ export default function PersonalInfo() {
   const { data: session } = useSession();
   const user = session?.user;
  
-  const [editedUser, setEditedUser] = useState<User>(user || defaultUser);
+  const [editedUser, setEditedUser] = useState<User>(defaultUser);
   
   const [errors, setErrors] = useState<Record<string, string>>({})
 

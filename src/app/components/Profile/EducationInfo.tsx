@@ -17,7 +17,7 @@ import { useSession } from "next-auth/react"
 
 
 
-
+ 
 const defaultEducation: any[] = [
   {
     id: "1",
@@ -32,9 +32,9 @@ const defaultEducation: any[] = [
 export default function EducationInfo() {
   const { data: session } = useSession();
   const user = session?.user;
-  const education = user?.education as Education[];
+ // const education = user?.education as Education[];
  
-  const [educationList, setEducationList] = useState<Education[]>(education || defaultEducation)
+  const [educationList, setEducationList] = useState<Education[]>(defaultEducation)
  
   const handleAddEducation = (newEducation: Omit<Education, "id">) => {
     setEducationList([...educationList, { ...newEducation, id: Date.now().toString() }])

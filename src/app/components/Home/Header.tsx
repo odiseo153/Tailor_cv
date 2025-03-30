@@ -34,7 +34,9 @@ const Navbar = () => {
       <DropdownMenuTrigger>
         <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
           <Avatar className="w-10 h-10">
+          {/*
             <AvatarImage src={user?.profilePicture || "/default-avatar.jpg"} alt="User" />
+           */}
           </Avatar>
           <span className="text-gray-900 dark:text-white font-medium">{user?.name}</span>
         </div>
@@ -73,12 +75,14 @@ const Navbar = () => {
       <a href="#contact" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
         Contáctanos
       </a>
+      {/*
       <Button
         onClick={() => setAuthOpen(true)}
         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
       >
         Iniciar Sesión
       </Button>
+       */}
     </div>
   );
 
@@ -137,12 +141,14 @@ const Navbar = () => {
               <a href="#contact" className="block text-gray-700 hover:text-blue-600">
                 Contáctanos
               </a>
+              {/*
               <Button
                 onClick={() => setAuthOpen(true)}
                 className="w-full bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Iniciar Sesión
               </Button>
+               */}
             </>
           )}
         </div>

@@ -34,6 +34,7 @@
     "@types/cheerio": "^0.22.35",
     "@uiw/codemirror-theme-dracula": "^4.23.8",
     "@uiw/react-codemirror": "^4.23.8",
+    "@vercel/analytics": "^1.5.0",
     "ace-builds": "^1.37.5",
     "autoprefixer": "^10.4.21",
     "axios": "^1.7.9",

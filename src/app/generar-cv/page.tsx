@@ -13,7 +13,6 @@ import { CVHandler } from "../Handler/CVHandler";
 import { useAppContext } from "../context/AppContext";
 import { useSession } from "next-auth/react";
 import CVSkeleton from "../components/Edit_html/CV_Skeleton";
-import HtmlToWord from "../components/Edit_html/HtmlToWord";
 
 
 export default function GenerarCV() {

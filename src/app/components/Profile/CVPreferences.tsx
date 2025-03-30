@@ -134,6 +134,7 @@ export default function CVPreferences() {
           </DialogContent>
         </Dialog>
       </CardHeader>
+      {/*
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border rounded-lg p-4">
@@ -153,6 +154,7 @@ export default function CVPreferences() {
           </div>
         </div>
       </CardContent>
+          */}
     </Card>
   )
 }
