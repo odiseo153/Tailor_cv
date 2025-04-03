@@ -74,7 +74,7 @@ export default function Benefits() {
             <p className="text-gray-600 mb-4">Personalice su currículum para diferentes industrias y regiones con un solo clic.</p>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <select className="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm">
+              <select name="." className="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm">
                 <option>Tecnología</option>
                 <option>Finanzas</option>
                 <option>Atención médica</option>

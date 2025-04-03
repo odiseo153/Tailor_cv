@@ -86,7 +86,7 @@ Preferred Qualifications:
 
   const cv_handler = new CVHandler();
   const {template} = useAppContext();
-  const { data: session } = useSession();
+ // const { data: session } = useSession();
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -153,7 +153,7 @@ Preferred Qualifications:
         </h1>
 
         <div className="flex flex-col lg:flex-row gap-10">
-          <form onSubmit={handleSubmit} className="space-y-8 w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl">
+          <form onSubmit={handleSubmit} className="space-y-8 w-full lg:w-2/4  p-6 rounded-2xl shadow-xl">
             
             {/* Secciones del formulario... 
             <Link
@@ -208,7 +208,7 @@ Preferred Qualifications:
                      type="file"
                      required
                      accept={ofertaType === "pdf" ? ".pdf" : "image/*"}
-                     className="flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm text-gray-400 file:border-0 file:bg-transparent file:text-gray-600 file:text-sm file:font-medium"
+                     className="flex h-10 w-full rounded-md border border-input  px-3 py-2 text-sm text-gray-400 file:border-0 file:bg-transparent file:text-gray-600 file:text-sm file:font-medium"
                      id="picture"
                     />
                   </div>
@@ -313,7 +313,7 @@ Preferred Qualifications:
             </Button>
           </form>
 
-          <div className="w-full lg:w-2/4 bg-white p-6 rounded-2xl shadow-xl">
+          <div className="w-full lg:w-2/4  p-6 rounded-2xl shadow-xl">
           {data && (
               <ShowHtml html={data.html} />
             )}

@@ -1,15 +1,14 @@
 "use client"
 
-import { useState, Suspense, lazy, useEffect, useRef } from "react"
+import { useState, Suspense, lazy, useRef } from "react"
 import { generatePdf } from "./htmlToPdf"
+import { generateWord } from "./htmlToWord"
 import { Download } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { Message } from "@/app/utils/Message"
-import jsPDF from "jspdf"
-import html2canvas from 'html2canvas';
 import { Editor } from "./EditView"
+
 
 const CodeEditor = lazy(() => import("./CodeEditor"))
 
@@ -17,9 +16,13 @@ interface HtmlEditorProps {
   initialHtml: string
 }
 
+
+
+
 export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   const [html, setHtml] = useState(initialHtml)
   const [activeTab, setActiveTab] = useState("preview")
+  const [downloadType, setDownloadType] = useState("pdf")
 
   /*
   useEffect(() => {
@@ -40,10 +43,14 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   const handleHtmlChange = (newHtml: string) => setHtml(newHtml)
 
   const previewRef = useRef<HTMLDivElement>(null);
-  const handleDownloadPdf = async () => {
-    generatePdf(html)
-}
-
+  const handleDownload = async () => {
+    if (downloadType === "pdf") {
+      generatePdf(html)
+    } else if (downloadType === "word") {
+      generateWord(html)
+    }
+  }
+  
   return (
     <Card className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl rounded-3xl">
       <CardContent className="p-6 sm:p-10 flex flex-col gap-6">
@@ -75,13 +82,19 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
             </TabsList>
           </Tabs>
 
-          <Button
-            onClick={handleDownloadPdf}
-            className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-transform"
-          >
-            <Download className="w-5 h-5 animate-bounce" />
-            <span className="font-semibold tracking-wide">Download PDF</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <select value={downloadType} onChange={(e) => setDownloadType(e.target.value)} className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition">
+              <option value="pdf">PDF</option>
+              <option value="word">Word</option>
+            </select>
+            <Button
+              onClick={handleDownload}
+              className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-transform"
+            >
+              <Download className="w-5 h-5 animate-bounce" />
+              <span className="font-semibold tracking-wide">Download {downloadType.toUpperCase()}</span>
+            </Button>
+          </div>
         
           
 

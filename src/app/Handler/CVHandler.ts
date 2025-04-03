@@ -127,70 +127,84 @@ private cleanGeneratedHtml(rawHtml: string): string {
 }
  
 
-  async generarCVAdaptado(
-    ofertaTexto: string,
-    infoCV: any,
-    plantilla?: string,
-    infoAdiccional?: string,
-    foto?: string
-  ): Promise<string> {
 
+async generarCVAdaptado(
+  ofertaTexto: string,
+  infoCV: any,
+  plantilla: string = "",
+  infoAdiccional: string = "",
+  foto: string = ""
+): Promise<string> {
+  try {
+    const estilos = "Tailwind CSS"; // Default style framework
+    const validation_prompt = `
+      - Valida que los datos del CV sean relevantes para la oferta.
+      - Prioriza experiencia y habilidades que coincidan con las palabras clave de la oferta.
+      - Evita incluir información personal sensible (e.g., dirección completa, número de identificación).
+      - Asegúrate de que el idioma del CV coincida con el de la oferta.
+      - Si no hay suficiente información, genera contenido plausible pero genérico (e.g., "Experiencia en desarrollo de software" si no se proporciona).
+    `.trim();
 
-    try {
-      const systemPrompt = `
-        Eres un asistente experto en la creación de CVs profesionales en **HTML con ${estilos}**.  
-        Tu tarea es generar un **CV de una sola página**, optimizado para la oferta de trabajo proporcionada,  
-        utilizando la información del CV del usuario.  
-  
-        ### Requisitos:
-        - **Formato**: **HTML semántico**, válido y listo para conversión a PDF.  
-        - **Diseño**: **Responsivo y profesional** con ${estilos}.  
-        - **Optimización**: Solo información relevante, evitando detalles innecesarios.  
-        - **Estructura**: Quepa en **una página A4**, bien organizada.  
-  
-        ### Consideraciones:
-        ${validation_prompt}
-  
-        ${infoAdiccional ? `Toma en cuenta esta información adicional del usuario, pon en el cv la info del usuario relevante para el puesto: ${infoAdiccional}.` : ""}
+    const systemPrompt = `
+      Eres un asistente experto en la creación de CVs profesionales en HTML con ${estilos}.  
+      Tu tarea es generar un CV de una sola página, optimizado para la oferta de trabajo proporcionada,  
+      utilizando la información del CV del usuario y adaptándolo al contexto.  
 
-        ${plantilla ? `Toma en cuenta esta plantilla para el html y si la plantilla requiere imagen y no se a proporcionado alguna imagen pues no la pongas en el cv: ${plantilla}.` :''}
+      ### Requisitos:
+      - **Formato**: HTML semántico, válido y optimizado para conversión a PDF o Word.
+      - **Diseño**: Responsivo, limpio y profesional utilizando ${estilos}.
+      - **Optimización**: Incluir solo información relevante, eliminando detalles innecesarios.
+      - **Estructura**: Diseña para que quepa en una página A4 con márgenes estándar (10mm), usando una tipografía legible (e.g., sans-serif).
+      - **Accesibilidad**: Usa etiquetas semánticas (e.g., <header>, <section>) y atributos ARIA si aplica.
 
-        
-        📌 **IMPORTANTE:** Devuelve únicamente el código HTML sin ningún otro texto adicional ni etiquetas de lenguaje como \`'''html'''\`.
-      `.trim();
+      ### Consideraciones:
+      ${validation_prompt}
 
-      const userPrompt = `
-        Genera un CV en **HTML con ${estilos}**, adaptado a esta oferta laboral:  
-        **${ofertaTexto}**  
-  
-        Usa la siguiente información del CV del usuario:  
-        ${JSON.stringify(infoCV)}  
-  
-        **Asegúrate de que el HTML sea válido, estructurado y listo para conversión a PDF.**
-        **Asegúrate de que el cv sea en el idioma de la oferta**
+      ${infoAdiccional ? `Incorpora esta información adicional del usuario de manera relevante para el puesto: ${infoAdiccional}.` : ""}
+      ${plantilla ? `Utiliza esta plantilla HTML como base (si requiere imagen y no se proporciona una, omite la sección de imagen): ${plantilla}.` : ""}
+      ${foto ? `Incluye esta imagen en el CV si la plantilla lo permite: ${foto}.` : ""}
 
-      `.trim();
+      📌 **IMPORTANTE:** Devuelve únicamente el código HTML limpio, sin texto adicional ni marcadores de lenguaje (e.g., \`'''html\`\`).
+    `.trim();
 
-      const response = await client.chat.completions.create({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        stream: false,
-      });
+    const userPrompt = `
+      Genera un CV en HTML con ${estilos}, adaptado a esta oferta laboral:  
+      **${ofertaTexto}**
 
-      if (!response.choices?.[0]?.message?.content) {
-        throw new Error("Deepseek devolvió una respuesta vacía o incorrecta.");
-      }
+      Usa la siguiente información del CV del usuario:  
+      ${JSON.stringify(infoCV, null, 2)}
 
-      return response.choices[0].message.content.trim();
-    } catch (error: any) {
-      console.error(`❌ Error al generar el CV: ${error.message}`);
-      throw error;
+      **Instrucciones:**
+      - Asegúrate de que el HTML sea válido, bien estructurado y optimizado para exportación a PDF o Word.
+      - Adapta el contenido al idioma detectado en la oferta (e.g., español si la oferta está en español).
+      - Destaca habilidades y experiencia relevantes para la oferta usando ${estilos} (e.g., negritas, colores sutiles).
+      - Si la oferta enfatiza ciertas competencias, priorízalas en el diseño (e.g., "desarrollo web" como sección principal).
+    `.trim();
+
+    const response = await client.chat.completions.create({
+      model: "deepseek-chat",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      stream: false,
+      temperature: 0.7, // Ajuste para mayor consistencia
+      max_tokens: 2000, // Límite razonable para un CV de una página
+    });
+
+    if (!response.choices?.[0]?.message?.content) {
+      throw new Error("El modelo devolvió una respuesta vacía o incorrecta.");
     }
-  }
 
+    const htmlContent = response.choices[0].message.content.trim();
+  
+
+    return htmlContent;
+  } catch (error: any) {
+    console.error(`❌ Error al generar el CV: ${error.message}`);
+    throw new Error(`Fallo en la generación del CV: ${error.message}`);
+  }
+}
 
   async sanitizeJSONResponse(responseText: string): Promise<any> {
     try {

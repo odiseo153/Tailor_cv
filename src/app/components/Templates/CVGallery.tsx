@@ -148,6 +148,7 @@ export default function CVGallery({ templates }: CVGalleryProps) {
             {templates.map((template) => (
               <div key={template.id} className=" items-center gap-4">
                 <input
+                  placeholder="."
                   checked={selectedTemplate?.id === template.id}
                   type="radio"
                   name="selected-template"
