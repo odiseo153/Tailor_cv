@@ -1,36 +1,28 @@
 "use client"
 
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import Header from "./components/Home/Header";
-import { AppContextProvider } from "./context/AppContext";
-import Footer from "./components/Home/Footer";
-import { SessionProvider } from "next-auth/react";
 import { Analytics } from "@vercel/analytics/react"
+import { SessionProvider } from "next-auth/react"
+import { AppContextProvider } from "./context/AppContext"
+import Header from "./components/Home/Header"
+import Footer from "./components/Home/Footer"
+import "./globals.css"
 
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={` antialiased`}
-      >
+      <body className="antialiased min-h-screen flex flex-col ">
         <title>TailorCV</title>
         <SessionProvider>
-        <AppContextProvider >
-          <Header />
-          <div className="mt-7">
-          {children}
-          </div>
-          <Footer />
-        </AppContextProvider>
+          <AppContextProvider>
+            <Header />
+            <main className="flex-grow container mx-auto px-4 py-7">
+              {children}
+            </main>
+            <Footer />
+          </AppContextProvider>
         </SessionProvider>
+        <Analytics />
       </body>
     </html>
-  );
+  )
 }

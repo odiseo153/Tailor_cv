@@ -1,10 +1,7 @@
 import { User } from '@prisma/client';
-import { useSession } from 'next-auth/react';
 import {useState, createContext, useContext, useEffect } from 'react';
 import { create } from 'zustand'
-
-
-
+import { useSession } from "next-auth/react"
 
 
 interface AppContextType {
@@ -38,14 +35,23 @@ const AppContext = createContext<AppContextType>({
 });
 
 export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const {user, setUser, theme, template, setTemplate,authOpen,setAuthOpen} = useStore();
-    
+  const { user, setUser, theme, template, setTemplate, authOpen, setAuthOpen } = useStore();
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      setUser(session?.user as User);
+      console.log(session?.user);
+    } else {
+      setUser(null);
+    }
+  }, [status, session, setUser]);
 
   return (
-    <AppContext.Provider value={{user,template,setUser,theme,setTemplate,authOpen,setAuthOpen}}>
+    <AppContext.Provider value={{ user, template, setUser, theme, setTemplate, authOpen, setAuthOpen }}>
       {children}
-    </AppContext.Provider> 
-  ); 
+    </AppContext.Provider>
+  );
 };
 
 export const useAppContext = () => {

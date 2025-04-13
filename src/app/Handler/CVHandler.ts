@@ -199,7 +199,9 @@ async generarCVAdaptado(
     const htmlContent = response.choices[0].message.content.trim();
   
 
-    return htmlContent;
+    return htmlContent
+    .replace('```html','')
+    .replace('```','');
   } catch (error: any) {
     console.error(`❌ Error al generar el CV: ${error.message}`);
     throw new Error(`Fallo en la generación del CV: ${error.message}`);

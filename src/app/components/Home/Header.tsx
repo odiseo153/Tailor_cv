@@ -1,171 +1,140 @@
-'use client';
+"use client"
 
-import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
-import Link from 'next/link';
-import { nameApp } from "@/app/utils/NameApp";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import AuthForm from "../Auth/AuthComponent";
-import { Dialog, DialogContent, DialogOverlay, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useStore } from "@/app/context/AppContext";
-import { useSession, signOut } from 'next-auth/react';
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { Menu, X } from "lucide-react"
+import Link from "next/link"
+import { nameApp } from "@/app/utils/NameApp"
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
+import { Avatar } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { useStore } from "@/app/context/AppContext"
+import { useSession, signOut } from "next-auth/react"
+import AuthForm from "../Auth/AuthComponent"
 
-const Navbar = () => {
-  const { authOpen, setAuthOpen } = useStore();
-  const { data: session } = useSession();
-  const user = session?.user;
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+export default function Navbar() {
+  const { authOpen, setAuthOpen } = useStore()
+  const { data: session } = useSession()
+  const user = session?.user
+  const [isOpen, setIsOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const menuItems = user
+    ? [
+        { label: "Perfil", href: "/profile" },
+        { label: "Cerrar Sesión", onClick: () => signOut() },
+        { label: "Contacto", href: "/contacto" },
+      ]
+    : [
+        { label: "Cómo Funciona", href: "#how-it-works" },
+        { label: "¿Por qué TailorCV?", href: "#benefits" },
+        { label: "Contáctanos", href: "#contact" },
+      ]
 
-  const AuthenticatedMenu = () => (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <div className="flex items-center space-x-3 cursor-pointer p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-          <Avatar className="w-10 h-10">
-          {/*
-            <AvatarImage src={user?.profilePicture || "/default-avatar.jpg"} alt="User" />
-           */}
-          </Avatar>
-          <span className="text-gray-900 dark:text-white font-medium">{user?.name}</span>
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60 bg-white shadow-2xl rounded-xl dark:bg-gray-800 p-2">
-        <DropdownMenuItem className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
-          <Link href="/profile" className="block w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-            Perfil
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
-          <button
-            onClick={() => signOut()}
-            className="block w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 text-left"
-          >
-            Cerrar Sesión
-          </button>
-        </DropdownMenuItem>
-        <DropdownMenuItem className="hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
-          <Link href="/contacto" className="block w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
-            Contacto
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-
-  const UnauthenticatedMenu = () => (
-    <div className="space-x-5">
-      <a href="#how-it-works" className="text-black hover:text-blue-700">
-        Como Funciona
-      </a>
-      <a href="#benefits" className="text-black hover:text-blue-700">
-        ¿Por qué TailorCV?
-      </a>
-      <a href="#contact" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-        Contáctanos
-      </a>
-      {/*
-      <Button
-        onClick={() => setAuthOpen(true)}
-        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Iniciar Sesión
-      </Button>
-       */}
-    </div>
-  );
+  const fadeIn = { hidden: { opacity: 0 }, visible: { opacity: 1 } }
 
   return (
-    <header
+    <motion.header
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/80 backdrop-blur-md shadow-sm' : 'bg-transparent'
+        scrolled ? "bg-white/90 backdrop-blur-md shadow-md" : "bg-transparent"
       }`}
     >
-      <div className="container-custom">
-        <div className="flex items-center justify-between py-4">
-          <Link href="/">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-                {nameApp}
-              </span>
-            </div>
-          </Link>
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <Link href="/" className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+          {nameApp}
+        </Link>
 
-          <div className="hidden md:flex items-center space-x-4">
-            {user ? <AuthenticatedMenu /> : <UnauthenticatedMenu />}
-          </div>
+        {/* Desktop Menu */}
+        <nav className="hidden md:flex items-center gap-6">
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition">
+                <Avatar className="w-8 h-8" />
+                <span className="font-medium text-gray-800">{user.name}</span>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-48 bg-white rounded-xl shadow-lg p-1">
+                {menuItems.map((item, i) => (
+                  <DropdownMenuItem key={i} className="rounded-md hover:bg-gray-100">
+                    {item.href ? (
+                      <Link href={item.href} className="block w-full py-2 px-3 text-sm text-gray-700">
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <button onClick={item.onClick} className="block w-full py-2 px-3 text-sm text-gray-700 text-left">
+                        {item.label}
+                      </button>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              {menuItems.map((item, i) => (
+                <Link key={i} href={item.href || ""} className="text-gray-700 hover:text-blue-600">
+                  {item.label}
+                </Link>
+              ))}
+              {/*
+              <Button onClick={() => setAuthOpen(true)} className="bg-blue-600 hover:bg-blue-700 rounded-lg">
+                Iniciar Sesión
+              </Button>
+              */}
+            </>
+          )}
+        </nav>
 
-          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden text-dark">
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
+        {/* Mobile Toggle */}
+        <Button variant="ghost" onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2">
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </Button>
       </div>
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-white shadow-lg rounded-lg p-4 space-y-4">
-          {user ? (
-            <>
-              <Link href="/profile" className="block text-gray-700 hover:text-blue-600">
-                Perfil
-              </Link>
-              <button
-                onClick={() => signOut()}
-                className="block text-gray-700 hover:text-blue-600 text-left w-full"
-              >
-                Cerrar Sesión
-              </button>
-              <Link href="/contacto" className="block text-gray-700 hover:text-blue-600">
-                Contacto
-              </Link>
-            </>
-          ) : (
-            <>
-              <a href="#how-it-works" className="block text-gray-700 hover:text-blue-600">
-                Como Funciona
-              </a>
-              <a href="#benefits" className="block text-gray-700 hover:text-blue-600">
-                ¿Por qué TailorCV?
-              </a>
-              <a href="#contact" className="block text-gray-700 hover:text-blue-600">
-                Contáctanos
-              </a>
-              {/*
-              <Button
-                onClick={() => setAuthOpen(true)}
-                className="w-full bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Iniciar Sesión
-              </Button>
-               */}
-            </>
+        <motion.nav
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
+          className="md:hidden bg-white shadow-lg rounded-b-xl p-4 space-y-3"
+        >
+          {menuItems.map((item, i) => (
+            <div key={i}>
+              {item.href ? (
+                <Link href={item.href} className="block py-2 text-gray-700 hover:text-blue-600">
+                  {item.label}
+                </Link>
+              ) : (
+                <button onClick={item.onClick} className="block py-2 text-gray-700 hover:text-blue-600 w-full text-left">
+                  {item.label}
+                </button>
+              )}
+            </div>
+          ))}
+          {!user && (
+            <Button onClick={() => setAuthOpen(true)} className="w-full bg-blue-600 hover:bg-blue-700 rounded-lg">
+              Iniciar Sesión
+            </Button>
           )}
-        </div>
+        </motion.nav>
       )}
 
       {/* Auth Dialog */}
-      <Dialog open={authOpen} onOpenChange={() => setAuthOpen(!authOpen)}>
-        <DialogOverlay className="fixed inset-0 bg-black/60 z-50 backdrop-blur-sm" />
-        <DialogContent className="top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-2xl z-50 max-w-sm w-full">
-          <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Inicia sesión
-          </DialogTitle>
+      <Dialog open={authOpen} onOpenChange={setAuthOpen}>
+        <DialogContent className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+          <h2 className="text-lg font-semibold mb-4">Inicia Sesión</h2>
           <AuthForm />
         </DialogContent>
       </Dialog>
-    </header>
-  );
-};
-
-export default Navbar;
+    </motion.header>
+  )
+}

@@ -83,9 +83,11 @@ export const generatePdf = async (html: string): Promise<{ blob: Blob; pageCount
       const remainingHeight = imgHeight - yPos;
       const sectionHeight = Math.min(remainingHeight, PRINTABLE_HEIGHT);
 
+      /*
       if (currentPage > 1) {
         pdf.addPage();
       }
+      */
 
       // Añadir imagen con coordenadas precisas
       pdf.addImage(
@@ -107,7 +109,7 @@ export const generatePdf = async (html: string): Promise<{ blob: Blob; pageCount
     // Generar blob y descargar
     const blob = pdf.output("blob");
     if (process.env.NODE_ENV !== "test") {
-      pdf.save("cv-profesional.pdf");
+      pdf.save("cv.pdf");
     }
 
     return { blob, pageCount: totalPages };

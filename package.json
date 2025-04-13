@@ -7,11 +7,11 @@
     "build": "prisma generate && next build",
     "build_local": "next build",
     "start": "next start",
+    "seed": "node .\\prisma\\seed.js",
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
   "prisma": {
-    "seed": "node .\\prisma\\seed.js"
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.9",
@@ -46,6 +46,7 @@
     "clsx": "^2.1.1",
     "docx": "^9.3.0",
     "file-saver": "^2.0.5",
+    "formidable": "^3.5.2",
     "framer-motion": "^12.4.2",
     "fs-extra": "^11.3.0",
     "html-docx-js": "^0.3.1",
@@ -62,6 +63,7 @@
     "openai": "^4.83.0",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
+    "pdf2pic": "^3.1.4",
     "pdfjs-dist": "^3.11.174",
     "phantomjs-prebuilt": "^2.1.16",
     "puppeteer": "^24.2.0",
@@ -81,6 +83,7 @@
   },
   "devDependencies": {
     "@types/file-saver": "^2.0.7",
+    "@types/formidable": "^3.4.5",
     "@types/fs-extra": "^11.0.4",
     "@types/html-docx-js": "^0.3.4",
     "@types/html-pdf": "^3.0.3",

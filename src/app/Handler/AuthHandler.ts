@@ -52,6 +52,7 @@ class AuthHandler {
                     cvPreferences: true,
                 }
             });
+            console.log(user);
             if (!user) {
                 return { success: false, error: "Invalid credentials" };
             }

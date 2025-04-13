@@ -124,7 +124,7 @@ export const generateWord = async (html: string): Promise<void> => {
     const blob = await Packer.toBlob(doc);
 
     // Download the file
-    saveAs(blob, "documento.docx");
+    saveAs(blob, "cv.docx");
 
   } catch (error) {
     console.error("Error generando Word:", error);

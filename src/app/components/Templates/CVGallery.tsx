@@ -1,169 +1,148 @@
-'use client'
+"use client"
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import CVModal from "./CVModal";
-import CVPreview from "./CVPreview";
-import { Message } from "@/app/utils/Message";
-import { useAppContext } from "@/app/context/AppContext";
+import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
+import { ChevronDown, ChevronUp, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import CVModal from "./CVModal"
+import CVPreview from "./CVPreview"
+import { Message } from "@/app/utils/Message"
+import { useAppContext } from "@/app/context/AppContext"
 
 interface CVTemplate {
-  id: number;
-  name: string;
-  html: string;
-  image: string;
-  author: string;
+  id: number
+  name: string
+  html: string
+  image: string
+  author: string
 }
 
-interface CVGalleryProps {
-  templates: CVTemplate[];
-}
+export default function CVGallery() {
+  const [isExpanded, setIsExpanded] = useState(true)
+  const [selectedCV, setSelectedCV] = useState<CVTemplate | null>(null)
+  const [newTemplate, setNewTemplate] = useState<File | null>(null)
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
+  const [templates, setTemplates] = useState<CVTemplate[]>([])
+  const { setTemplate } = useAppContext()
 
-export default function CVGallery({ templates }: CVGalleryProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [selectedCV, setSelectedCV] = useState<CVTemplate | null>(null);
-  const [newTemplate, setNewTemplate] = useState<File | null>(null);
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(null);
+  // Cargar templates desde la API
+  useEffect(() => {
+    fetch("/api/templates")
+      .then((res) => res.json())
+      .then((data) =>
+        setTemplates(
+          data.pdfFiles.map((file: any, index: number) => ({
+            id: index,
+            name: file.name,
+            html: "", // Si tienes HTML asociado, agrégalo aquí
+            image: file.pngUrl || file.pdfUrl, // Prioriza PNG, fallback a PDF
+            author: "Odiseo", // Ajusta según tus datos
+          }))
+        )
+      )
+      .catch((e) => console.error("Error fetching templates:", e))
+  }, [])
 
-  const {setTemplate} = useAppContext();
+  const toggleExpand = () => setIsExpanded(!isExpanded)
 
-  const toggleExpand = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const openCVModal = (cv: CVTemplate) => {
-    setSelectedCV(cv);
-    setSelectedTemplate(cv);
-  };
-
-  const closeCVModal = () => {
-    setSelectedCV(null);
-    setSelectedTemplate(null);
-  };
-
-  const changeTemplate = (template:CVTemplate) => {
-    setSelectedTemplate(template)
-    setTemplate(template.html)
-   // const po = localStorage.setItem("template", template.html);
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (file) {
-      setNewTemplate(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPdfPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setNewTemplate(file)
+      const reader = new FileReader()
+      reader.onloadend = () => setPdfPreviewUrl(reader.result as string)
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const submitTemplate = async () => {
-    if (!newTemplate) {
-      Message.errorMessage("Debes seleccionar un archivo antes de subirlo.");
-      return;
-    }
+    if (!newTemplate) return Message.errorMessage("Selecciona un archivo primero.")
 
-    const formData = new FormData();
-    formData.append("template", newTemplate);
+    const formData = new FormData()
+    formData.append("template", newTemplate)
 
     try {
-      const request = await fetch("/api/templates", {
-        method: "POST",
-        body: formData, 
-      });
-
-      const response = await request.json();
-      console.log(response);
-
-      Message.successMessage("Template subida con éxito"); // Alerta de éxito
-      setNewTemplate(null); // Resetea el estado
-      setPdfPreviewUrl(null); // Limpiar el preview
+      const response = await fetch("/api/templates", { method: "POST", body: formData })
+      const { pngUrl, pdfUrl } = await response.json()
+      Message.successMessage("Template subido y convertido a PNG con éxito")
+      setTemplates((prev) => [
+        ...prev,
+        { id: prev.length, name: newTemplate.name, html: "", image: pngUrl || pdfUrl, author: "Odiseo" },
+      ])
+      setNewTemplate(null)
+      setPdfPreviewUrl(null)
     } catch (e) {
-      console.error("Error al subir el template:", e);
-      Message.errorMessage("Error al subir el template, intenta nuevamente.");
+      Message.errorMessage("Error al subir el template.")
     }
-  };
+  }
 
-  
+  const changeTemplate = (template: CVTemplate) => {
+    setTemplate(template.html)
+    setSelectedCV(template)
+  }
 
- 
   return (
-    <div className="w-full">
-      {/* Header section */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <button onClick={toggleExpand} className="flex items-center text-xl font-bold">
-            {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
-            <span className="ml-2">Plantillas de CV</span>
-            <span className="ml-2 text-gray-500 font-normal">({templates.length})</span>
-          </button>
-        </div>
- 
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="w-full p-4 bg-gradient-to-b from-gray-50 to-white rounded-xl shadow-lg"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={toggleExpand} className="flex items-center gap-2 text-xl font-bold text-gray-800">
+          {isExpanded ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
+          Plantillas de CV <span className="text-gray-500">({templates.length})</span>
+        </button>
       </div>
 
       {isExpanded && (
         <>
           <p className="text-sm text-gray-600 mb-4">Hecho por Odiseo</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {/* Create from scratch card */}
-            <Card className="flex flex-col items-center justify-center p-6 h-[300px] cursor-pointer hover:shadow-md transition-shadow">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-gray-100">
-                <label htmlFor="upload-template" className="flex items-center justify-center cursor-pointer">
-                  <input
-                  placeholder="p"
-                    id="upload-template"
-                    type="file"
-                    accept=".pdf"
-                    className="hidden"
-                    onChange={handleFileChange}
-                  />
-                  <Plus className="w-8 h-8 text-gray-500" />
-                </label>
-              </div>
-              <p className="mt-4 text-center">{newTemplate ? newTemplate.name : "Subir Archivo"}</p>
-
-              {/* Display PDF preview if available */}
-              {pdfPreviewUrl && (
-                <div className="mt-4 w-full h-64 border border-gray-300 rounded">
-                  <iframe
-                    src={pdfPreviewUrl}
-                    width="100%"
-                    height="100%"
-                    frameBorder="0"
-                  />
+            <Card className="flex flex-col items-center justify-center p-4 h-[280px] bg-white rounded-lg hover:shadow-xl transition-shadow">
+              <label htmlFor="upload-template" className="cursor-pointer">
+                <input
+                placeholder="."
+                  id="upload-template"
+                  type="file"
+                  accept=".pdf"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Plus className="w-6 h-6 text-blue-600" />
                 </div>
+              </label>
+              <p className="mt-2 text-sm text-gray-700">{newTemplate?.name || "Subir PDF"}</p>
+              {pdfPreviewUrl && (
+                <img src={pdfPreviewUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded" />
               )}
-
-              <Button className="mt-2" onClick={submitTemplate}>
+              <Button
+                onClick={submitTemplate}
+                className="mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg"
+              >
                 Subir
               </Button>
             </Card>
 
-            {/* CV templates */}
             {templates.map((template) => (
-              <div key={template.id} className=" items-center gap-4">
+              <motion.div key={template.id} whileHover={{ scale: 1.05 }} className="relative group">
                 <input
-                  placeholder="."
-                  checked={selectedTemplate?.id === template.id}
+                placeholder="."
                   type="radio"
                   name="selected-template"
-                  id={`template-${template.id}`}
-                  className=""
+                  checked={selectedCV?.id === template.id}
                   onChange={() => changeTemplate(template)}
+                  className="absolute top-2 left-2 z-10"
                 />
-                <CVPreview template={template} onClick={() => openCVModal(template)} />
-              </div>
+                <CVPreview template={template} onClick={() => setSelectedCV(template)} />
+              </motion.div>
             ))}
           </div>
         </>
       )}
 
-      {selectedCV && <CVModal template={selectedCV} onClose={closeCVModal} />}
-    </div>
-  );
+      {selectedCV && <CVModal template={selectedCV} onClose={() => setSelectedCV(null)} />}
+    </motion.div>
+  )
 }
