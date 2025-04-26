@@ -124,11 +124,12 @@ export default function SocialLinks() {
   }, [status, session]);
 
   const handleSubmitLink = async (
-    linkData: Omit<SocialLink, "id" | "createdAt" | "updatedAt">,
+    linkData: Omit<SocialLink,  "createdAt" | "id" | "updatedAt">,
     linkId?: string
   ) => {
     setRefreshing(true);
     try {
+      console.log(linkId);
       const isEditing = !!linkId;
       const url = isEditing
         ? `/api/apiHandler/social/${linkId}`
@@ -147,20 +148,20 @@ export default function SocialLinks() {
         throw new Error(errorData.data || `Failed to ${isEditing ? "update" : "add"} social link`);
       }
 
-      const result = await response.json();
-      console.log(result);
+      const {resultado} = await response.json();
+      const result = resultado.data;
 
       let updatedLinks: SocialLink[];
 
       if (isEditing) {
-        const updatedLink: SocialLink = result.data;
+        const updatedLink: SocialLink = result;
 
         updatedLinks = socialLinks.map((link) =>
           link.id === linkId ? updatedLink : link
         );
       } else {
       
-        updatedLinks = [...socialLinks, result.data];
+        updatedLinks = [...socialLinks, result];
       }
 
       setSocialLinks(updatedLinks);
@@ -184,7 +185,10 @@ export default function SocialLinks() {
         headers: { "Content-Type": "application/json" },
       });
 
-      if (!response.ok) throw new Error("Failed to delete social link");
+      if (!response.ok){
+      Message.errorMessage("Fallo al realizar la peticion");
+       return 
+      };
 
       const updatedLinks = socialLinks.filter((link) => link.id !== id);
       setSocialLinks(updatedLinks);
@@ -218,12 +222,10 @@ export default function SocialLinks() {
             </Button>
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
               <DialogTitle>Add Social Link</DialogTitle>
-            </DialogHeader>
             <SocialLinkForm onSubmit={handleSubmitLink} />
           </DialogContent>
-        </Dialog>
+        </Dialog> 
       </CardHeader>
       <CardContent>
         {socialLinks.length === 0 ? (

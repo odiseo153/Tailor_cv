@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { ExtendedSession } from "@/app/api/auth/[...nextauth]/route";
 import { Button } from "@/components/ui/button";
 
 import {
@@ -23,110 +24,37 @@ import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react";
 import { Message } from "@/app/utils/Message";
 import { Skill } from "@prisma/client";
 
-interface SkillFormProps {
-  initialData?: Skill;
-  onSubmit: (skill: Omit<Skill, "id" | "createdAt" | "updatedAt">, id?: string) => void;
-}
 
-function SkillForm({ initialData, onSubmit }: SkillFormProps) {
-  const { data: session } = useSession();
-  const [formData, setFormData] = useState<Omit<Skill, "id" | "createdAt" | "updatedAt">>(
-    initialData
-      ? {
-          name: initialData.name,
-          level: initialData.level,
-          userId: initialData.userId,
-        }
-      : {
-          name: "",
-          level: 1,
-          userId: session?.user?.id || "",
-        }
-  );
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value =
-      e.target.name === "level"
-        ? Number.parseInt(e.target.value)
-        : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    try {
-      if (!formData.name.trim()) {
-        throw new Error("El nombre de la habilidad es requerido");
-      }
-      if (formData.level < 1 || formData.level > 5) {
-        throw new Error("El nivel debe estar entre 1 y 5");
-      }
-
-      onSubmit(formData, initialData?.id);
-    } catch (err: any) {
-      console.error(err.message);
-      Message.errorMessage(err.message || "Error al procesar la habilidad");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="name">Skill Name</Label>
-        <Input
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="level">Skill Level (1-5)</Label>
-        <Input
-          id="level"
-          name="level"
-          type="number"
-          min="1"
-          max="5"
-          value={formData.level}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <Button type="submit" disabled={submitting}>
-        {submitting ? (
-          <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
-        ) : (
-          "Save"
-        )}
-      </Button>
-    </form>
-  );
-}
 
 export default function Skills() {
   const { data: session, status, update } = useSession() as {
-    data: any | null;
+    data: ExtendedSession | null;
     status: string;
-    update: (data: any) => Promise<any | null>;
+    update: (data: Partial<ExtendedSession["user"]>) => Promise<ExtendedSession | null>;
   };
-  const [userSkills, setUserSkills] = useState<Skill[]>([]);
+  const [userSkills, setUserSkills] = useState<Skill[]>([
+    {
+      name:"odi",
+      userId:"odi",
+      level:2,
+      createdAt:new Date(),
+      id:"odi"
+    }
+  ]);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
 
-  // Inicializar habilidades desde la sesión
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.skills) {
-      setUserSkills(session.user.skills);
+    if (status === "loading") {
+      setLoading(true);
+    } else if (status === "authenticated") {
+      setUserSkills(session?.user?.skills || []);
+      setLoading(false);
+    } else {
+      setUserSkills([]);
       setLoading(false);
     }
   }, [status, session]);
@@ -155,21 +83,20 @@ export default function Skills() {
         throw new Error(errorData.data || `Failed to ${isEditing ? "update" : "add"} skill`);
       }
 
-      const result = await response.json();
+      const {resultado} = await response.json();
+      const result =await resultado.data;
       let updatedSkills: Skill[];
       
       console.log(result);
 
       if (isEditing) {
-        // Editar habilidad existente
-        const updatedSkill: Skill = result.data;
+        const updatedSkill: Skill = result;
         updatedSkills = userSkills.map((skill) =>
           skill.id === skillId ? updatedSkill : skill
         );
       } else {
-        // Agregar nueva habilidad
         const newSkill: Skill = {
-          ...result.data,
+          ...result,
         };
         updatedSkills = [...userSkills, newSkill];
       }
@@ -288,5 +215,93 @@ export default function Skills() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+
+interface SkillFormProps {
+  initialData?: Skill;
+  onSubmit: (skill: Omit<Skill, "id" | "createdAt" | "updatedAt">, id?: string) => void;
+}
+
+function SkillForm({ initialData, onSubmit }: SkillFormProps) {
+  const { data: session } = useSession() as { data: ExtendedSession | null };
+  const [formData, setFormData] = useState<Omit<Skill, "id" | "createdAt" | "updatedAt">>(
+    initialData
+      ? {
+          name: initialData.name,
+          level: initialData.level,
+          userId: initialData.userId,
+        }
+      : {
+          name: "",
+          level: 1,
+          userId: session?.user?.id || "",
+        }
+  );
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value =
+      e.target.name === "level"
+        ? Number.parseInt(e.target.value)
+        : e.target.value;
+    setFormData({ ...formData, [e.target.name]: value });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      if (!formData.name.trim()) {
+        throw new Error("El nombre de la habilidad es requerido");
+      }
+      if (formData.level < 1 || formData.level > 5) {
+        throw new Error("El nivel debe estar entre 1 y 5");
+      }
+
+      onSubmit(formData, initialData?.id);
+    } catch (err: any) {
+      console.error(err.message);
+      Message.errorMessage(err.message || "Error al procesar la habilidad");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="name">Skill Name</Label>
+        <Input
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <div>
+        <Label htmlFor="level">Skill Level (1-5)</Label>
+        <Input
+          id="level"
+          name="level"
+          type="number"
+          min="1"
+          max="5"
+          value={formData.level}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <Button type="submit" disabled={submitting}>
+        {submitting ? (
+          <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+        ) : (
+          "Save"
+        )}
+      </Button>
+    </form>
   );
 }

@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,15 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react"
-import { useStore } from "@/app/context/AppContext"
 import { Education } from "@prisma/client"
 import { Message } from "@/app/utils/Message"
 import { useSession } from "next-auth/react"
- 
+import { ExtendedSession } from "@/app/api/auth/[...nextauth]/route"
 
-
-
- 
 const defaultEducation: any[] = [
   {
     id: "1",
@@ -30,23 +25,54 @@ const defaultEducation: any[] = [
 ]
 
 export default function EducationInfo() {
-  const { data: session } = useSession();
-  const user = session?.user;
- // const education = user?.education as Education[];
- 
-  const [educationList, setEducationList] = useState<Education[]>(defaultEducation)
- 
-  const handleAddEducation = (newEducation: Omit<Education, "id">) => {
-    setEducationList([...educationList, { ...newEducation, id: Date.now().toString() }])
+  const { data: session,  update } = useSession() as {
+    data: ExtendedSession | null;
+    update: (data: Partial<ExtendedSession["user"]>) => Promise<ExtendedSession | null>;
+  }
+  const user = session?.user
+  // fallback to defaultEducation if user.education is undefined
+  const education = (user?.education as Education[]) || defaultEducation
+
+  const [educationList, setEducationList] = useState<Education[]>(education)
+
+  const handleAddEducation = async (newEducation: Education) => {
+    const newEducationList = [...educationList, newEducation]
+    setEducationList(newEducationList)
+    await update({ education: newEducationList })
   }
 
-  const handleEditEducation = (updatedEducation: Education) => {
-    setEducationList(educationList.map((edu) => (edu.id === updatedEducation.id ? updatedEducation : edu)))
+  const handleEditEducation = async (updatedEducation: Education) => {
+    const newEducationList = educationList.map((edu) =>
+      edu.id === updatedEducation.id ? updatedEducation : edu
+    );
+    setEducationList(newEducationList)
+    await update({ education: newEducationList })
   }
 
-  const handleDeleteEducation = (id: string) => {
-    setEducationList(educationList.filter((edu) => edu.id !== id))
-  }
+  const handleDeleteEducation = async (id: string) => {
+    try {
+      const response = await fetch(`/api/apiHandler/education/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Error al procesar la solicitud");
+      }
+
+      const { resultado } = await response.json();
+      console.log("Deleted education record:", resultado);
+
+      const updatedEducationList = educationList.filter((edu) => edu.id !== id);
+
+      Message.successMessage("Educacion borrada correctamente");
+      setEducationList(updatedEducationList);
+      await update({ education: updatedEducationList });
+    } catch (error) {
+      console.error("Failed to delete education:", error);
+      // Optionally, display an error message to the user
+      // Message.errorMessage("Failed to delete education");
+    }
+  };
 
   return (
     <Card>
@@ -74,10 +100,11 @@ export default function EducationInfo() {
                 <h3 className="font-bold">{edu.degree}</h3>
                 <p className="text-gray-600">{edu.institution}</p>
                 <p className="text-sm text-gray-500">
-                  {edu.startDate.toString()} - {edu.endDate?.toString()}
+                  {new Date(edu.startDate).toLocaleDateString()} -{" "}
+                  {edu.endDate ? new Date(edu.endDate).toLocaleDateString() : ""}
                 </p>
               </div>
-              <div>
+              <div className="flex items-center">
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" className="mr-2">
@@ -88,10 +115,7 @@ export default function EducationInfo() {
                     <DialogHeader>
                       <DialogTitle>Edit Education</DialogTitle>
                     </DialogHeader>
-                    <EducationForm
-                      initialData={edu}
-                      onSubmit={(updatedEdu) => handleEditEducation({ ...updatedEdu, id: edu.id })}
-                    />
+                    <EducationForm initialData={edu} onSubmit={handleEditEducation} />
                   </DialogContent>
                 </Dialog>
                 <Button variant="ghost" size="icon" onClick={() => handleDeleteEducation(edu.id)}>
@@ -107,69 +131,80 @@ export default function EducationInfo() {
 }
 
 interface EducationFormProps {
-  initialData?: Omit<Education, "id">
-  onSubmit: (education: Omit<Education, "id">) => void
+  initialData?: Education
+  onSubmit: (education: Education) => void
 }
 
 function EducationForm({ initialData, onSubmit }: EducationFormProps) {
-  const {user} = useStore();
-  const [formData, setFormData] = useState<any>(
-    initialData || {
-      institution: "",
-      userId: user.id,
-      degree: "",
-      startDate: new Date("21-2-2023"),  // Ensuring the date is in YYYY-MM-DD format
-    },
-  )
+  const { data: session } = useSession() as {
+    data: ExtendedSession | null
+  }
+  const user = session?.user
+
+  const [formData, setFormData] = useState({
+    institution: initialData?.institution || "",
+    userId: user?.id || "",
+    degree: initialData?.degree || "",
+    startDate: initialData ? new Date(initialData.startDate).toISOString().split("T")[0] : "",
+    endDate:
+      initialData && initialData.endDate
+        ? new Date(initialData.endDate).toISOString().split("T")[0]
+        : "",
+    id: initialData?.id || ""
+  })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.type === 'date' ? new Date(e.target.value).toISOString().split('T')[0] : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
+    const { name, value, type } = e.target
+    const newValue = type === "date" ? new Date(value).toISOString().split("T")[0] : value
+    setFormData((prev) => ({ ...prev, [name]: newValue }))
   }
 
- 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(formData);
- 
+    e.preventDefault()
     try {
-      const url = initialData ? `/api/apiHandler/education/${formData.id}` : "/api/apiHandler/education";
-      const method = initialData ? "PUT" : "POST";
-      const message = initialData ? "Education Updated" : "Education Added";
+      const isEdit = Boolean(initialData)
+      const url = isEdit ? `/api/apiHandler/education/${formData.id}` : "/api/apiHandler/education"
+      const method = isEdit ? "PUT" : "POST"
+      const message = isEdit ? "Educación actualizada" : "Educación agregada"
 
-      console.log(url,method);
+      console.log(url,method,initialData,formData)
       const response = await fetch(url, {
-        method:method,
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({formData}),
-      });
-
-      const result = await response.json();
+        body: JSON.stringify(formData)
+      })
 
       if (!response.ok) {
-        throw new Error(result.data || "Failed to submit");
+        throw new Error( "Error al procesar la solicitud")
       }
 
-      console.log(result);
+      const {resultado} = await response.json();
+      console.log(resultado);
 
-      Message.successMessage(message);
-      onSubmit(formData); 
-    } catch (err: any) {
-      console.log(err);
-      Message.errorMessage("Sometime is wrong");
-
+      const updatedEducation: Education = await resultado.data
+      Message.successMessage(message)
+      onSubmit(updatedEducation)
+    } catch (error: any) {
+      console.error(error.message)
+      Message.errorMessage("Algo salió mal: " + error.message)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <Label htmlFor="institution">Institution</Label>
-        <Input id="institution" name="institution" value={formData.institution} onChange={handleChange} required={initialData == undefined} />
+        <Input
+          id="institution"
+          name="institution"
+          value={formData.institution}
+          onChange={handleChange}
+          required
+        />
       </div>
       <div>
         <Label htmlFor="degree">Degree</Label>
-        <Input id="degree" name="degree" value={formData.degree} onChange={handleChange} required={initialData == undefined} />
+        <Input id="degree" name="degree" value={formData.degree} onChange={handleChange} required />
       </div>
       <div>
         <Label htmlFor="startDate">Start Date</Label>
@@ -179,15 +214,14 @@ function EducationForm({ initialData, onSubmit }: EducationFormProps) {
           type="date"
           value={formData.startDate}
           onChange={handleChange}
-          required={initialData == undefined}
+          required
         />
       </div>
       <div>
         <Label htmlFor="endDate">End Date</Label>
-        <Input id="endDate" name="endDate" type="date" value={formData.endDate} onChange={handleChange} required={initialData == undefined} />
+        <Input id="endDate" name="endDate" type="date" value={formData.endDate} onChange={handleChange} />
       </div>
       <Button type="submit">Save</Button>
     </form>
   )
 }
-

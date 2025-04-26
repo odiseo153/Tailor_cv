@@ -6,16 +6,19 @@ import { Menu, X } from "lucide-react"
 import Link from "next/link"
 import { nameApp } from "@/app/utils/NameApp"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { useStore } from "@/app/context/AppContext"
 import { useSession, signOut } from "next-auth/react"
 import AuthForm from "../Auth/AuthComponent"
+import { ExtendedSession } from "@/app/api/auth/[...nextauth]/route"
 
 export default function Navbar() {
   const { authOpen, setAuthOpen } = useStore()
-  const { data: session } = useSession()
+  const { data: session } = useSession() as {
+    data: ExtendedSession | null;
+  };
+
   const user = session?.user
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -58,7 +61,7 @@ export default function Navbar() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition">
-                <Avatar className="w-8 h-8" />
+                <img className="w-8 h-8 rounded-full" src={user.profilePicture ?? ""} />
                 <span className="font-medium text-gray-800">{user.name}</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-48 bg-white rounded-xl shadow-lg p-1">
@@ -88,7 +91,7 @@ export default function Navbar() {
               <Button onClick={() => setAuthOpen(true)} className="bg-blue-600 hover:bg-blue-700 rounded-lg">
                 Iniciar Sesión
               </Button>
-              */}
+                */}
             </>
           )}
         </nav>

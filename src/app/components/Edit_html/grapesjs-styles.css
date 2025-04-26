@@ -1,0 +1,262 @@
+/* Estilos para GrapesJS */
+
+/* Editor principal */
+.gjs-editor-cont {
+  width: 100%;
+  height: 100%;
+}
+
+/* Paneles */
+.gjs-pn-panel {
+  border-radius: 5px;
+  padding: 5px;
+  margin: 2px;
+}
+
+.gjs-pn-buttons {
+  display: flex;
+  align-items: center;
+}
+
+/* Botones en paneles */
+.gjs-pn-btn {
+  border-radius: 3px;
+  margin: 0 3px;
+  padding: 5px 10px;
+  transition: all 0.2s ease;
+  font-size: 12px;
+  background-color: #4e5a6a;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.gjs-pn-btn:hover {
+  background-color: #343c4a;
+}
+
+.gjs-pn-btn.gjs-pn-active {
+  background-color: #2c3e50;
+}
+
+/* Bloques */
+.gjs-block {
+  border-radius: 6px;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  border: 1px solid #e3e3e3;
+  cursor: pointer;
+}
+
+.gjs-block:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.gjs-block-label {
+  font-size: 12px;
+  font-weight: 500;
+  padding-top: 5px;
+  display: block;
+  text-align: center;
+}
+
+/* Categoría de bloques */
+.gjs-block-category {
+  margin-bottom: 15px;
+}
+
+.gjs-block-category .gjs-title {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Estilos del canvas */
+.gjs-cv-canvas {
+  background-color: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Contenedor del editor */
+.gjs-editor {
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+
+/* Estilos para los contenedores de bloques, capas y estilos */
+.blocks__container,
+.styles__container,
+.layers__container {
+  padding: 10px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* Estilos para los tooltips */
+.gjs-tooltip {
+  background-color: #2c3e50;
+  color: white;
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-size: 12px;
+}
+
+/* Estilos para los componentes en el editor */
+.gjs-comp-selected {
+  outline: 2px solid #3498db !important;
+}
+
+.gjs-badge {
+  background-color: #3498db;
+  color: white;
+  border-radius: 3px;
+}
+
+/* Estilos para el gestor de capas */
+.gjs-layer {
+  padding: 5px;
+  background-color: #f8f9fa;
+  border-radius: 3px;
+  margin-bottom: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.gjs-layer:hover {
+  background-color: #e9ecef;
+}
+
+.gjs-layer.gjs-selected {
+  background-color: #e0f7fa;
+  border-left: 3px solid #3498db;
+}
+
+/* Botones de acciones */
+.gjs-btn-prim {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.gjs-btn-prim:hover {
+  background-color: #217dbb;
+}
+
+/* Campo de búsqueda de bloques */
+.gjs-search {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 10px;
+}
+
+/* Panel de propiedades */
+.gjs-sm-sector {
+  margin-bottom: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.gjs-sm-title {
+  padding: 10px;
+  font-weight: 600;
+  background-color: #e9ecef;
+  cursor: pointer;
+}
+
+.gjs-sm-properties {
+  padding: 10px;
+}
+
+.gjs-sm-property {
+  margin-bottom: 8px;
+}
+
+.gjs-sm-label {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.gjs-field {
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  width: 100%;
+  padding: 5px;
+}
+
+/* Dropdown de opciones */
+.gjs-clm-tags {
+  border-radius: 3px;
+  background-color: #f8f9fa;
+  padding: 5px;
+}
+
+.gjs-clm-tag {
+  border-radius: 3px;
+  background-color: #e9ecef;
+  margin: 2px;
+  padding: 3px 6px;
+  display: inline-block;
+}
+
+/* Personalización de iconos */
+.fa {
+  font-size: 1em;
+}
+
+/* Botones de guardar y visibilidad específicos */
+.btn-save {
+  background-color: #28a745;
+}
+
+.btn-save:hover {
+  background-color: #218838;
+}
+
+.btn-toggle-borders {
+  background-color: #6c757d;
+}
+
+.btn-toggle-borders:hover {
+  background-color: #5a6268;
+}
+
+/* Notificaciones y mensajes */
+.gjs-am-preview-cont {
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* Contenedor de bloques CV */
+.gjs-blocks-cs {
+  padding: 5px !important;
+}
+
+.gjs-blocks-c {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+/* Estilos específicos para las categorías de CV */
+.gjs-block-category-CV {
+  background-color: #f0f7ff;
+}
+
+.gjs-block-category-CV .gjs-title {
+  background-color: #d0e6ff;
+  color: #0066cc;
+} 

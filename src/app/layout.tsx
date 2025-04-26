@@ -15,7 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionProvider>
           <AppContextProvider>
             <Header />
-            <main className="flex-grow container mx-auto px-4 py-7">
+            <main className="flex-grow container mx-auto -top-px px-4 py-14">
               {children}
             </main>
             <Footer />

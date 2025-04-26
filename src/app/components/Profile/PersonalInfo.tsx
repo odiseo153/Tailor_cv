@@ -15,6 +15,7 @@ import { useStore } from "@/app/context/AppContext"
 import { User } from "@prisma/client"
 import { useSession } from "next-auth/react"
 import { Message } from "@/app/utils/Message"
+import { ExtendedSession } from "@/app/api/auth/[...nextauth]/route"
 
 interface PersonalInfo {
   name: string
@@ -24,24 +25,18 @@ interface PersonalInfo {
   profilePicture: string
 }
 
-const defaultUser: User = {
-  id:"a6464649-56c1-4a39-960f-4246c85fb79d",
-  name: "John Doe",
-  email: "john.doe@example.com",
-  phone: "+1234567890",
-  password: "1234567890",
-  location: "New York, USA",
-  profilePicture: "https://w0.peakpx.com/wallpaper/608/902/HD-wallpaper-businessman-business-man.jpg",
-  createdAt: new Date(""),
-  updatedAt: new Date(""),
-}
+
 
 export default function PersonalInfo() {
-  const { data: session } = useSession();
+  const { data: session,  update } = useSession() as {
+    data: ExtendedSession | null;
+    update: (data: Partial<ExtendedSession["user"]>) => Promise<ExtendedSession | null>;
+  };
+  
   const user = session?.user;
  
-  const [editedUser, setEditedUser] = useState<User>(defaultUser);
-  
+  const [editedUser, setEditedUser] = useState<ExtendedSession["user"]>(user);
+   
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,10 +70,19 @@ export default function PersonalInfo() {
         body:JSON.stringify(editedUser)
       });
 
-      const response = await request.json();
+      const {resultado} = await request.json();
+      const newData = await resultado.data;
+      console.log(resultado)
+     
+      await update({
+        name:newData.name,
+        email:newData.email,
+        phone:newData.phone,
+        location:newData.location,
+        profilePicture:newData.profilePicture
+      });
 
-      console.log(response)
-      
+      setEditedUser(newData);
       setIsEditing(false)
       setErrors({})
       Message.successMessage("Datos actualizados");
@@ -106,7 +110,7 @@ export default function PersonalInfo() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" value={editedUser.name} onChange={handleInputChange} required />
+                <Input id="name" name="name" value={editedUser?.name} onChange={handleInputChange} required />
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>
@@ -122,7 +126,7 @@ export default function PersonalInfo() {
               </div>
               <div>
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" name="phone" value={editedUser.phone ?? ""} onChange={handleInputChange} required />
+                <Input id="phone" name="phone" type="number" value={editedUser.phone ?? ""} onChange={handleInputChange} required />
                 {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
               <div>

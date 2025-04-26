@@ -78,7 +78,7 @@ export default function WorkExperienceInfo() {
       }
 
       // Actualizar la sesión con las experiencias modificadas
-   //   await update({ workExperience: updatedExperiences });
+      await update({ workExperience: updatedExperiences });
 
       Message.successMessage(method === "POST" ? "Experiencia agregada" : "Experiencia actualizada")
     } catch (error: any) {
@@ -103,7 +103,7 @@ export default function WorkExperienceInfo() {
       setExperiences(updatedExperiences)
 
       // Actualizar la sesión con las experiencias restantes
-      //await update({ workExperience: updatedExperiences })
+      await update({ workExperience: updatedExperiences })
 
       Message.successMessage("Experiencia eliminada")
     } catch (error) {

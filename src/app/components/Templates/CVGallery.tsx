@@ -2,19 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ChevronDown, ChevronUp, Plus } from "lucide-react"
+import { ChevronDown, ChevronUp, Plus, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import CVModal from "./CVModal"
 import CVPreview from "./CVPreview"
 import { Message } from "@/app/utils/Message"
-import { useAppContext } from "@/app/context/AppContext"
+import { useStore } from "@/app/context/AppContext"
 
 interface CVTemplate {
-  id: number
+  id: number | string
   name: string
-  html: string
-  image: string
+  pdfUrl: string
+  pngUrl?: string
   author: string
 }
 
@@ -24,24 +24,45 @@ export default function CVGallery() {
   const [newTemplate, setNewTemplate] = useState<File | null>(null)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const [templates, setTemplates] = useState<CVTemplate[]>([])
-  const { setTemplate } = useAppContext()
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { templateId, setTemplateId } = useStore()
 
-  // Cargar templates desde la API
-  useEffect(() => {
+  const fetchTemplates = () => {
+    setIsLoading(true)
+    setError(null)
     fetch("/api/templates")
-      .then((res) => res.json())
-      .then((data) =>
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`)
+        }
+        return res.json()
+      })
+      .then((data) => {
+        if (!data || !Array.isArray(data.pdfFiles)) {
+          throw new Error("Invalid API response structure")
+        }
         setTemplates(
           data.pdfFiles.map((file: any, index: number) => ({
-            id: index,
-            name: file.name,
-            html: "", // Si tienes HTML asociado, agrégalo aquí
-            image: file.pngUrl || file.pdfUrl, // Prioriza PNG, fallback a PDF
-            author: "Odiseo", // Ajusta según tus datos
+            id: file.id ?? index,
+            name: file.name || `Template ${index + 1}`,
+            pdfUrl: file.pdfUrl,
+            pngUrl: file.pngUrl,
+            author: file.author || "Odiseo",
           }))
         )
-      )
-      .catch((e) => console.error("Error fetching templates:", e))
+      })
+      .catch((e) => {
+        console.error("Error fetching templates:", e)
+        setError(`Failed to load templates: ${e.message}`)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }
+
+  useEffect(() => {
+    fetchTemplates()
   }, [])
 
   const toggleExpand = () => setIsExpanded(!isExpanded)
@@ -64,21 +85,65 @@ export default function CVGallery() {
 
     try {
       const response = await fetch("/api/templates", { method: "POST", body: formData })
-      const { pngUrl, pdfUrl } = await response.json()
-      Message.successMessage("Template subido y convertido a PNG con éxito")
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || `Failed to upload: ${response.statusText}`)
+      }
+      const newTemplateData = await response.json()
+      Message.successMessage("Template subido con éxito")
       setTemplates((prev) => [
         ...prev,
-        { id: prev.length, name: newTemplate.name, html: "", image: pngUrl || pdfUrl, author: "Odiseo" },
+        {
+          id: newTemplateData.id,
+          name: newTemplateData.name || newTemplate.name,
+          pdfUrl: newTemplateData.pdfUrl,
+          pngUrl: newTemplateData.pngUrl,
+          author: newTemplateData.author || "Odiseo",
+        }
       ])
       setNewTemplate(null)
       setPdfPreviewUrl(null)
-    } catch (e) {
-      Message.errorMessage("Error al subir el template.")
+    } catch (e: any) {
+      console.error("Error uploading template:", e)
+      Message.errorMessage(`Error al subir el template: ${e.message}`)
     }
   }
 
-  const changeTemplate = (template: CVTemplate) => {
-    setTemplate(template.html)
+  const handleDeleteTemplate = async (templateToDelete: CVTemplate) => {
+    if (!confirm(`¿Estás seguro de eliminar la plantilla "${templateToDelete.name}"?`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch(`/api/templates?filename=${templateToDelete.name}`, { 
+        method: "DELETE" 
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error al eliminar: ${response.statusText}`);
+      }
+      
+      // Si es el template seleccionado, borrarlo del almacenamiento
+      if (templateToDelete.id.toString() === templateId) {
+        setTemplateId('');
+      }
+      
+      // Si estaba seleccionado en el modal, cerrar el modal
+      if (selectedCV?.id === templateToDelete.id) {
+        setSelectedCV(null);
+      }
+      
+      // Eliminar de la lista local
+      setTemplates(templates.filter(t => t.id !== templateToDelete.id));
+      
+      Message.successMessage(`Plantilla "${templateToDelete.name}" eliminada`);
+    } catch (error: any) {
+      console.error("Error eliminando template:", error);
+      Message.errorMessage(`Error al eliminar: ${error.message}`);
+    }
+  }
+
+  const handleSelectTemplate = (template: CVTemplate) => {
     setSelectedCV(template)
   }
 
@@ -97,48 +162,52 @@ export default function CVGallery() {
 
       {isExpanded && (
         <>
-          <p className="text-sm text-gray-600 mb-4">Hecho por Odiseo</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <Card className="flex flex-col items-center justify-center p-4 h-[280px] bg-white rounded-lg hover:shadow-xl transition-shadow">
-              <label htmlFor="upload-template" className="cursor-pointer">
-                <input
-                placeholder="."
-                  id="upload-template"
-                  type="file"
-                  accept=".pdf"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Plus className="w-6 h-6 text-blue-600" />
-                </div>
-              </label>
-              <p className="mt-2 text-sm text-gray-700">{newTemplate?.name || "Subir PDF"}</p>
-              {pdfPreviewUrl && (
-                <img src={pdfPreviewUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded" />
-              )}
-              <Button
-                onClick={submitTemplate}
-                className="mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg"
-              >
-                Subir
-              </Button>
-            </Card>
+          {isLoading && <p className="text-center text-gray-500 py-4">Cargando plantillas...</p>}
+          {error && <p className="text-center text-red-500 py-4">{error}</p>}
 
-            {templates.map((template) => (
-              <motion.div key={template.id} whileHover={{ scale: 1.05 }} className="relative group">
-                <input
-                placeholder="."
-                  type="radio"
-                  name="selected-template"
-                  checked={selectedCV?.id === template.id}
-                  onChange={() => changeTemplate(template)}
-                  className="absolute top-2 left-2 z-10"
+          {!isLoading && !error && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              <Card className="flex flex-col items-center justify-between p-4 h-[280px] bg-white rounded-lg border border-dashed border-gray-300 hover:border-blue-500 transition-colors group">
+                <label htmlFor="upload-template" className="flex flex-col items-center justify-center text-center cursor-pointer flex-grow">
+                  <input
+                    id="upload-template"
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={handleFileChange}
+                  />
+                  {pdfPreviewUrl ? (
+                    <img src={pdfPreviewUrl} alt="Preview Upload" className="mb-2 w-full h-32 object-contain rounded" />
+                  ) : (
+                    <div className="w-16 h-16 bg-gray-100 group-hover:bg-blue-100 rounded-full flex items-center justify-center mb-2 transition-colors">
+                      <Plus className="w-8 h-8 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                    </div>
+                  )}
+                  <p className="mt-1 text-sm text-gray-600 group-hover:text-blue-700 transition-colors break-words w-full px-2">
+                    {newTemplate?.name || "Subir PDF"}
+                  </p>
+                </label>
+                <Button
+                  onClick={submitTemplate}
+                  disabled={!newTemplate}
+                  size="sm"
+                  className="mt-2 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg disabled:opacity-50"
+                >
+                  Subir
+                </Button>
+              </Card>
+
+              {templates.map((template) => (
+                <CVPreview
+                  key={template.id}
+                  template={template}
+                  onClick={() => handleSelectTemplate(template)}
+                  isSelected={selectedCV?.id === template.id}
+                  onDelete={() => handleDeleteTemplate(template)}
                 />
-                <CVPreview template={template} onClick={() => setSelectedCV(template)} />
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </>
       )}
 
