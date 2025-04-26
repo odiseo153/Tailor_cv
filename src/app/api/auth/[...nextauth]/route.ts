@@ -7,7 +7,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import AuthHandler from "@/app/Handler/AuthHandler";
 import { PrismaClient, User, WorkExperience, Skill, Education, SocialLink, CvPreferences } from "@prisma/client";
 
-const prisma = new PrismaClient();
+//const prisma = new PrismaClient();
 
 // Extender la interfaz de sesión para incluir el usuario completo de Prisma
 interface ExtendedSession extends DefaultSession {
