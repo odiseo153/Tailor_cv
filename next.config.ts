@@ -1,12 +1,18 @@
 import type { NextConfig } from "next";
 
-const nextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true, // If you're using strict mode
   images: {
     unoptimized: true, // or remove the images block entirely to allow all domains by default
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   experimental: {
-    // appDir flag removed as it's no longer needed in Next.js 15+
+    // No experimental flags needed currently
   },
   webpack: (config: { resolve: { fallback: any; }; }) => {
     // Handle canvas dependency issue by providing empty module
@@ -15,6 +21,29 @@ const nextConfig = {
       canvas: false, // Provides an empty module for the canvas dependency
     };
     return config;
+  },
+  // Add a custom header for security
+  headers: async () => {
+    return [
+      {
+        // Apply these headers to all routes
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+        ],
+      },
+    ];
   },
 };
 
