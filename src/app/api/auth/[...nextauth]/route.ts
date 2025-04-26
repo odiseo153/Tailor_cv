@@ -101,7 +101,7 @@ const authOptions: NextAuthOptions = {
     async jwt({ token, user, trigger, session }) {
       // Persistir datos del usuario en el token al iniciar sesión
       if (user) {
-        token.user = {
+        token.user = { 
           id: user.id,
           name: user.name || "Usuario",
           email: user.email,
@@ -150,7 +150,7 @@ const authOptions: NextAuthOptions = {
         };
       }
 
-      return token as ExtendedJWT;
+      return token ;
     },
     async session({ session, token }) {
       // Incluir todos los datos del usuario en la sesión del cliente
