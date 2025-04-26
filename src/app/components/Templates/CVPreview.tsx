@@ -7,6 +7,13 @@ import { Button } from "@/components/ui/button"
 import { useStore } from "@/app/context/AppContext"
 import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import dynamic from "next/dynamic"
+
+// Dynamic import to avoid SSR issues with pdfjs
+const PdfPreviewGenerator = dynamic(
+  () => import('./PdfPreviewGenerator'),
+  { ssr: false }
+);
 
 interface CVTemplate {
   id: number | string
@@ -39,56 +46,9 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
   useEffect(() => {
     // Si no tenemos una imagen de preview y tenemos una URL de PDF, generamos la preview
     if (!template.pngUrl && template.pdfUrl) {
-      generatePdfPreview();
+      setIsGeneratingPreview(true);
     }
   }, [template.pdfUrl, template.pngUrl]);
-
-  const generatePdfPreview = async () => {
-    setIsGeneratingPreview(true);
-    setPreviewError(false);
-    
-    try {
-      // Primero intentamos usar pdfjsLib para generar la vista previa de la primera página
-      const pdfjs = await import('pdfjs-dist');
-      const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry'); 
-       
-      pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-      
-      const loadingTask = pdfjs.getDocument(template.pdfUrl);
-      const pdf = await loadingTask.promise; 
-      
-      // Obtener la primera página
-      const page = await pdf.getPage(1);
-      
-      // Configurar canvas para renderizar 
-      const canvas = document.createElement('canvas');
-      const viewport = page.getViewport({ scale: 1.5 });
-      const context = canvas.getContext('2d');
-      
-      if (!context) {
-        throw new Error('No se pudo obtener el contexto del canvas');
-      }
-      
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-      
-      // Renderizar PDF en el canvas
-      await page.render({
-        canvasContext: context,
-        viewport: viewport
-      }).promise;
-      
-      // Convertir canvas a imagen
-      const dataUrl = canvas.toDataURL('image/png');
-      setPreviewImage(dataUrl);
-      
-    } catch (error) {
-      console.error('Error generando vista previa del PDF:', error);
-      setPreviewError(true);
-    } finally {
-      setIsGeneratingPreview(false);
-    }
-  };
 
   const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation(); // Evitar que se active onClick del contenedor
@@ -100,6 +60,12 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
     setShowPdfPreview(true);
   };
 
+  const handlePreviewGenerated = (dataUrl: string | null, error: boolean = false) => {
+    setIsGeneratingPreview(false);
+    setPreviewImage(dataUrl);
+    setPreviewError(error);
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
@@ -109,6 +75,14 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
         isSelectedTemplate ? "ring-2 ring-green-500 ring-offset-2" : "shadow-md hover:shadow-lg"
       } transition-all duration-200`}
     >
+      {/* Hidden component for PDF processing (browser-only) */}
+      {isGeneratingPreview && !previewImage && (
+        <PdfPreviewGenerator 
+          pdfUrl={template.pdfUrl} 
+          onComplete={handlePreviewGenerated} 
+        />
+      )}
+
       {isSelectedTemplate && (
         <div className="absolute top-2 right-2 z-10 bg-green-500 text-white rounded-full p-1">
           <Check className="h-4 w-4" />
@@ -151,7 +125,7 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
                 className="mt-2 text-amber-600 hover:text-amber-800"
                 onClick={(e) => {
                   e.stopPropagation();
-                  generatePdfPreview();
+                  setIsGeneratingPreview(true);
                 }}
               >
                 Reintentar

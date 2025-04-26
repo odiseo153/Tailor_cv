@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ChevronDown, ChevronUp, Plus, ImageOff } from "lucide-react"
+import { ChevronDown, ChevronUp, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import CVModal from "./CVModal"

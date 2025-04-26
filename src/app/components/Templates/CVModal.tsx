@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { X, Check, FileText, Download } from "lucide-react"
+import { X, Check,  Download } from "lucide-react"
 import { useStore } from "@/app/context/AppContext"
 import { Message } from "@/app/utils/Message"
 
