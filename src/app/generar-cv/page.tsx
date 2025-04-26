@@ -38,9 +38,10 @@ export default function GenerarCV() {
   const cvHandler = new CVHandler()
 
   // Cargar la plantilla seleccionada cuando se carga la página
-  useEffect(() => {
-    const fetchSelectedTemplate = async () => {
-      if (templateId) {
+ /*
+ useEffect(() => {
+  const fetchSelectedTemplate = async () => {
+    if (templateId) {
         try {
           const response = await fetch("/api/templates");
           if (response.ok) {
@@ -62,6 +63,7 @@ export default function GenerarCV() {
 
     fetchSelectedTemplate();
   }, [templateId]);
+  */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -228,6 +230,7 @@ export default function GenerarCV() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-700">2. Plantilla (Opcional)</h2>
 
+{/*
             {templateId && (
               <div className="flex items-center p-2 bg-green-50 rounded-lg border border-green-200 mb-2">
                 <Check className="text-green-500 mr-2 h-5 w-5" />
@@ -240,12 +243,16 @@ export default function GenerarCV() {
               </div>
             )}
 
+*/}
+
             <Input
               type="file"
               accept=".pdf"
               onChange={(e) => handleFileChange(e, setPlantillaCV, setPreviewTemplate)}
               className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
+
+
             {previewTemplate && (
               <Dialog>
                 <DialogTrigger asChild>

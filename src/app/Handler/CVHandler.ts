@@ -333,9 +333,11 @@ async generarCVAdaptado(
         plantillaHTML = await this.getPlantillaFromPdf(plantilla, progressCallback);
       } 
       // Prioridad 2: Plantilla por ID
+      /*
       else if (templateId) {
         plantillaHTML = await this.getPlantillaById(templateId, progressCallback);
       }
+      */
       // Prioridad 3: Plantilla como string (legado)
       else if (plantilla && typeof plantilla === 'string') {
         plantillaHTML = plantilla;

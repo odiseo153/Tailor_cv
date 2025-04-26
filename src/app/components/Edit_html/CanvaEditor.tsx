@@ -51,7 +51,7 @@ export default function CanvaEditor({ html, onSave }: CanvaEditorProps) {
 
         // Cargar bloques básicos
         const basicBlocks = await import('grapesjs-blocks-basic')
-        gEditor.Plugins.add(basicBlocks.default)
+      //  gEditor.Plugins.add(basicBlocks.default)
         setLoadingProgress(80)
         
         if (!mounted) return

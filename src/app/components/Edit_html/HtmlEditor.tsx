@@ -124,8 +124,10 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
                 className="w-full px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               >
                 <option value="preview">Preview</option>
-                <option value="canva">Editor Canva</option>
+             {/*
                 <option value="editor">Editor Básico</option>
+                 <option value="canva">Editor Canva</option>
+              */}
                 <option value="code">Code Editor</option>
               </select>
             </div>
