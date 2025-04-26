@@ -5,7 +5,7 @@ import GoogleProvider from "next-auth/providers/google";
 import LinkedInProvider from "next-auth/providers/linkedin";
 import CredentialsProvider from "next-auth/providers/credentials";
 import AuthHandler from "@/app/Handler/AuthHandler";
-import { PrismaClient, User, WorkExperience, Skill, Education, SocialLink, CvPreferences } from "@prisma/client";
+import { User, WorkExperience, Skill, Education, SocialLink, CvPreferences } from "@prisma/client";
 
 //const prisma = new PrismaClient();
 
@@ -100,47 +100,52 @@ const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, trigger, session }) {
       // Persistir datos del usuario en el token al iniciar sesión
+      const userData = user as ExtendedJWT;
       if (user) {
+        //userData.user
+
         token.user = { 
-          id: user.id,
-          name: user.name || "Usuario",
-          email: user.email,
-          password: user.password || "",
-          phone: user.phone,
-          location: user.location,
-          profilePicture: user.profilePicture,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-          workExperience: user.workExperience || [],
-          skills: user.skills || [],
-          education: user.education || [],
-          socialLinks: user.socialLinks || [],
-          cvPreferences: user.cvPreferences || null,
+          id: userData.user?.id,
+          name: userData.user?.name || "Usuario",
+          email: userData.user?.email,
+          password: userData.user?.password || "",
+          phone: userData.user?.phone,
+          location: userData.user?.location,
+          profilePicture: userData.user?.profilePicture,
+          createdAt: userData.user?.createdAt,
+          updatedAt: userData.user?.updatedAt,
+          workExperience: userData.user?.workExperience || [],
+          skills: userData.user?.skills || [],
+          education: userData.user?.education || [],
+          socialLinks: userData.user?.socialLinks || [],
+          cvPreferences: userData.user?.cvPreferences || null,
         };
+
       }
 
       // Manejar actualizaciones de la sesión
       if (trigger === "update" && session) {
         // Combinar las propiedades actualizadas de session con token.user
+        const tokenData = token as ExtendedJWT;
         token.user = {
-          ...token.user,
+          ...tokenData.user,
           // Actualizar solo las propiedades proporcionadas en session
-          name: session.name || token.user?.name,
-          email: session.email || token.user?.email,
-          password: session.password || token.user?.password,
-          phone: session.phone !== undefined ? session.phone : token.user?.phone,
-          location: session.location !== undefined ? session.location : token.user?.location,
+          name: session.name || tokenData.user?.name,
+          email: session.email || tokenData.user?.email,
+          password: session.password || tokenData.user?.password,
+          phone: session.phone !== undefined ? session.phone : tokenData.user?.phone,
+          location: session.location !== undefined ? session.location : tokenData.user?.location,
           profilePicture:
             session.profilePicture !== undefined
               ? session.profilePicture
-              : token.user?.profilePicture,
-          createdAt: session.createdAt || token.user?.createdAt,
-          updatedAt: session.updatedAt || token.user?.updatedAt,
-          workExperience: session.workExperience || token.user?.workExperience || [],
-          skills: session.skills || token.user?.skills || [],
-          education: session.education || token.user?.education || [],
-          socialLinks: session.socialLinks || token.user?.socialLinks || [],
-          cvPreferences: session.cvPreferences || token.user?.cvPreferences || null,
+              : tokenData.user?.profilePicture,
+          createdAt: session.createdAt || tokenData.user?.createdAt,
+          updatedAt: session.updatedAt || tokenData.user?.updatedAt,
+          workExperience: session.workExperience || tokenData.user?.workExperience || [],
+          skills: session.skills || tokenData.user?.skills || [],
+          education: session.education || tokenData.user?.education || [],
+          socialLinks: session.socialLinks || tokenData.user?.socialLinks || [],
+          cvPreferences: session.cvPreferences || tokenData.user?.cvPreferences || null,
         } as User & {
           workExperience: WorkExperience[];
           skills: Skill[];
@@ -184,9 +189,12 @@ const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
 };
 
-// Exportar el handler para GET y POST
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+export async function GET(request: Request) {
+  return await NextAuth(authOptions)(request);
+}
 
-// Exportar tipos para usar en el frontend
+export async function POST(request: Request) {
+  return await NextAuth(authOptions)(request);
+}
+
 export type { ExtendedSession, User, WorkExperience, Skill, Education, SocialLink, CvPreferences };
