@@ -35,20 +35,27 @@ export default function WorkExperienceInfo() {
 
   // Inicializar experiencias desde la sesión cuando esté disponible
   useEffect(() => {
-    if (status === "authenticated" && session?.user?.workExperience) {
-      setExperiences(session.user.workExperience)
-      setLoading(false)
+    if (status === "authenticated" && session?.user) {
+      const user = session.user as { workExperience?: WorkExperience[] };
+      if (user.workExperience) {
+        setExperiences(user.workExperience);
+        setLoading(false);
+      }
     }
   }, [status, session])
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value })
 
   const submitExperience = async (method: "POST" | "PUT", url: string) => {
     setRefreshing(true);
-
     try {
-      const formDataWithUserId = { ...formData, userId: session?.user?.id };
+      if (!session?.user) {
+        throw new Error("User is not authenticated");
+      }
+      const user = session.user as { id: string };
+      const formDataWithUserId = { ...formData, userId: user.id };
 
       const res = await fetch(url, {
         method,
