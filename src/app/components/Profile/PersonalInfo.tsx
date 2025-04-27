@@ -34,11 +34,11 @@ export default function PersonalInfo() {
   };
   
   const user = session?.user;
- 
-  const [editedUser, setEditedUser] = useState<ExtendedSession["user"]>(user);
-   
-  const [errors, setErrors] = useState<Record<string, string>>({})
-
+  
+  const [editedUser, setEditedUser] = useState<ExtendedSession["user"]>(user!);
+  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEditedUser({ ...editedUser, [e.target.name]: e.target.value })
   }
