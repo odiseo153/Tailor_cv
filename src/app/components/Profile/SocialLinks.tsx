@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import {  ExtendedSession, SocialLink } from "@/app/api/auth/[...nextauth]/route";
+import { Session } from "@/app/api/auth/[...nextauth]/route";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,271 +16,627 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { 
+  Plus, 
+  Pencil, 
+  Trash2, 
+  X, 
+  CheckIcon, 
+  Loader2, 
+  Link as LinkIcon,
+  ExternalLink,
+  Github,
+  Linkedin,
+  Twitter,
+  Instagram,
+  Facebook,
+  Youtube,
+  Globe
+} from "lucide-react";
 import { Message } from "@/app/utils/Message";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface SocialLinkFormProps {
-  initialData?: SocialLink;
-  onSubmit: (link: Omit<SocialLink, "id" | "createdAt" | "updatedAt">, id?: string) => void;
+// Interfaz para enlaces sociales
+interface SocialLink {
+  id: string;
+  platform: string;
+  url: string;
+  userId: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-function SocialLinkForm({ initialData, onSubmit }: SocialLinkFormProps) {
-  const { data: session } = useSession() as { data: ExtendedSession | null };
-  const [formData, setFormData] = useState<Omit<SocialLink, "id" | "createdAt" | "updatedAt">>(
-    initialData
-      ? {
-          platform: initialData.platform,
-          url: initialData.url,
-          userId: initialData.userId,
-        }
-      : {
-          platform: "",
-          url: "",
-          userId: session?.user?.id || "",
-        }
+// Configuración de plataformas sociales
+const socialPlatforms = [
+  { value: "linkedin", label: "LinkedIn", icon: <Linkedin className="h-4 w-4 mr-2" />, color: "#0A66C2", urlPattern: "linkedin.com" },
+  { value: "github", label: "GitHub", icon: <Github className="h-4 w-4 mr-2" />, color: "#181717", urlPattern: "github.com" },
+  { value: "twitter", label: "Twitter", icon: <Twitter className="h-4 w-4 mr-2" />, color: "#1DA1F2", urlPattern: "twitter.com" },
+  { value: "instagram", label: "Instagram", icon: <Instagram className="h-4 w-4 mr-2" />, color: "#E4405F", urlPattern: "instagram.com" },
+  { value: "facebook", label: "Facebook", icon: <Facebook className="h-4 w-4 mr-2" />, color: "#1877F2", urlPattern: "facebook.com" },
+  { value: "youtube", label: "YouTube", icon: <Youtube className="h-4 w-4 mr-2" />, color: "#FF0000", urlPattern: "youtube.com" },
+  { value: "other", label: "Otro", icon: <Globe className="h-4 w-4 mr-2" />, color: "#718096", urlPattern: "" }
+];
+
+// Función para obtener el icono de una plataforma
+const getPlatformIcon = (platform: string) => {
+  const platformInfo = socialPlatforms.find(p => 
+    p.value.toLowerCase() === platform.toLowerCase() || 
+    p.label.toLowerCase() === platform.toLowerCase()
   );
-  const [submitting, setSubmitting] = useState(false);
+  
+  return platformInfo?.icon || <Globe className="h-4 w-4 mr-2" />;
+};
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    try {
-      if (!formData.platform.trim()) {
-        throw new Error("La plataforma es requerida");
-      }
-      if (!formData.url.trim() || !/^https?:\/\//.test(formData.url)) {
-        throw new Error("Por favor, ingrese una URL válida");
-      }
-
-      onSubmit(formData, initialData?.id);
-    } catch (err: any) {
-      console.error(err.message);
-      Message.errorMessage(err.message || "Error al procesar el enlace social");
-    } finally {
-      setSubmitting(false);
+// Función para determinar la plataforma basada en URL
+const detectPlatformFromUrl = (url: string): string => {
+  const lowerUrl = url.toLowerCase();
+  
+  for (const platform of socialPlatforms) {
+    if (platform.urlPattern && lowerUrl.includes(platform.urlPattern)) {
+      return platform.value;
     }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="platform">Platform</Label>
-        <Input
-          id="platform"
-          name="platform"
-          value={formData.platform}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="url">URL</Label>
-        <Input
-          id="url"
-          name="url"
-          type="url"
-          value={formData.url}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <Button type="submit" disabled={submitting}>
-        {submitting ? (
-          <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2" />
-        ) : (
-          "Save"
-        )}
-      </Button>
-    </form>
-  );
-}
+  }
+  
+  return "other";
+};
 
 export default function SocialLinks() {
   const { data: session, status, update } = useSession() as {
-    data: ExtendedSession | null;
+    data: Session | null;
     status: string;
-    update: (data: Partial<ExtendedSession["user"]>) => Promise<ExtendedSession | null>;
+    update: (data: Partial<Session["user"]>) => Promise<Session | null>;
   };
+  
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-  const [editingLink, setEditingLink] = useState<SocialLink | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Partial<SocialLink>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
-  // Inicializar enlaces sociales desde la sesión
-  useEffect(() => {
-    if (status === "authenticated" && session?.user?.socialLinks) {
-      console.log(session.user)
-      setSocialLinks(session.user.socialLinks ?? []);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Obtener enlaces sociales desde la API
+  const getSocialLinksData = useCallback(async () => {
+    if (!session?.user?.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/apiHandler/social/user/${session.user.id}`);
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener enlaces sociales');
+      }
+      
+      const data = await response.json();
+      setSocialLinks(data.socialLinks || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
       setLoading(false);
     }
-  }, [status, session]);
+  }, [session?.user?.id]);
 
-  const handleSubmitLink = async (
-    linkData: Omit<SocialLink,  "createdAt" | "id" | "updatedAt">,
-    linkId?: string
-  ) => {
+  // Cargar datos cuando cambia la sesión
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      getSocialLinksData();
+    }
+  }, [status, session, getSocialLinksData]);
+  
+  // Resetear el estado de guardado exitoso
+  useEffect(() => {
+    if (saveSuccess) {
+      const timer = setTimeout(() => setSaveSuccess(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveSuccess]);
+
+  // Manejar cambios en los inputs del formulario
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Si se cambió la URL, intentar detectar la plataforma
+    if (name === "url" && !formData.platform) {
+      const detectedPlatform = detectPlatformFromUrl(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        platform: detectedPlatform
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+    
+    // Limpiar error específico al editar el campo
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+  
+  // Manejar cambios en el selector de plataforma
+  const handlePlatformChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      platform: value
+    }));
+    
+    // Limpiar error de plataforma
+    if (errors.platform) {
+      setErrors(prev => {
+        const newErrors = {...prev};
+        delete newErrors.platform;
+        return newErrors;
+      });
+    }
+  };
+
+  // Validar el formulario
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.platform) {
+      newErrors.platform = "La plataforma es requerida";
+    }
+    
+    if (!formData.url) {
+      newErrors.url = "La URL es requerida";
+    } else {
+      try {
+        // Intentar crear una URL para validar
+        new URL(formData.url);
+        
+        // Verificar que comienza con http o https
+        if (!formData.url.startsWith('http://') && !formData.url.startsWith('https://')) {
+          newErrors.url = "La URL debe comenzar con http:// o https://";
+        }
+      } catch (e) {
+        newErrors.url = "Por favor, introduce una URL válida";
+      }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  // Iniciar edición de un enlace social
+  const startEditing = (link: SocialLink) => {
+    setEditingId(link.id);
+    setFormData({
+      id: link.id,
+      platform: link.platform,
+      url: link.url,
+      userId: link.userId
+    });
+  };
+  
+  // Cancelar edición
+  const cancelEditing = () => {
+    setEditingId(null);
+    setFormData({});
+    setErrors({});
+  };
+  
+  // Añadir nuevo enlace social
+  const addSocialLink = async () => {
+    if (!validateForm() || !session?.user?.id) {
+      return;
+    }
+    
     setRefreshing(true);
+    setSaveSuccess(false);
+    
     try {
-      console.log(linkId);
-      const isEditing = !!linkId;
-      const url = isEditing
-        ? `/api/apiHandler/social/${linkId}`
-        : "/api/apiHandler/social";
-      const method = isEditing ? "PUT" : "POST";
-      const successMessage = isEditing ? "Social Link updated" : "Social Link added";
-
-      const response = await fetch(url, {
-        method,
+      const linkData = {
+        platform: formData.platform!,
+        url: formData.url!,
+        userId: session.user.id
+      };
+      
+      const response = await fetch("/api/apiHandler/social", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(linkData),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.data || `Failed to ${isEditing ? "update" : "add"} social link`);
-      }
-
-      const {resultado} = await response.json();
-      const result = resultado.data;
-
-      let updatedLinks: SocialLink[];
-
-      if (isEditing) {
-        const updatedLink: SocialLink = result;
-
-        updatedLinks = socialLinks.map((link) =>
-          link.id === linkId ? updatedLink : link
-        );
-      } else {
       
-        updatedLinks = [...socialLinks, result];
+      if (!response.ok) {
+        throw new Error("Error al crear enlace social");
       }
-
+      
+      const data = await response.json();
+      
+      // Actualizar estado local
+      const newLink = data.resultado.data;
+      const updatedLinks = [...socialLinks, newLink];
       setSocialLinks(updatedLinks);
-      await update({ socialLinks: updatedLinks });
-
-      Message.successMessage(successMessage);
-    } catch (err: any) {
-      console.error(err.message);
-      Message.errorMessage(`Error al ${linkId ? "actualizar" : "agregar"} el enlace social`);
+      
+      setSaveSuccess(true);
+      Message.successMessage("Enlace social añadido correctamente");
+      
+      // Limpiar formulario y cerrar diálogo
+      setFormData({});
+      setIsAddDialogOpen(false);
+      
+      
+    } catch (error) {
+      console.error(error);
+      Message.errorMessage("Error al añadir enlace social");
     } finally {
-      setEditingLink(null);
       setRefreshing(false);
     }
   };
-
-  const handleDeleteLink = async (id: string) => {
+  
+  // Actualizar enlace social existente
+  const updateSocialLink = async (id: string) => {
+    if (!validateForm()) {
+      return;
+    }
+    
     setRefreshing(true);
+    setSaveSuccess(false);
+    
+    try {
+      const linkData = {
+        platform: formData.platform!,
+        url: formData.url!,
+        userId: formData.userId!
+      };
+      
+      const response = await fetch(`/api/apiHandler/social/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(linkData),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Error al actualizar enlace social");
+      }
+      
+      const data = await response.json();
+      
+      // Actualizar estado local
+      const updatedLink = data.resultado.data;
+      const updatedLinks = socialLinks.map(link => 
+        link.id === id ? updatedLink : link
+      );
+      setSocialLinks(updatedLinks);
+      
+      setSaveSuccess(true);
+      Message.successMessage("Enlace social actualizado correctamente");
+      
+      
+    } catch (error) {
+      console.error(error);
+      Message.errorMessage("Error al actualizar enlace social");
+    } finally {
+      setRefreshing(false);
+      setEditingId(null);
+    }
+  };
+  
+  // Eliminar enlace social
+  const deleteSocialLink = async (id: string) => {
+    if (!confirm("¿Estás seguro de eliminar este enlace social?")) {
+      return;
+    }
+    
+    setRefreshing(true);
+    
     try {
       const response = await fetch(`/api/apiHandler/social/${id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        method: "DELETE"
       });
-
-      if (!response.ok){
-      Message.errorMessage("Fallo al realizar la peticion");
-       return 
-      };
-
-      const updatedLinks = socialLinks.filter((link) => link.id !== id);
+      
+      if (!response.ok) {
+        throw new Error("Error al eliminar enlace social");
+      }
+      
+      // Actualizar estado local
+      const updatedLinks = socialLinks.filter(link => link.id !== id);
       setSocialLinks(updatedLinks);
-      await update({ socialLinks: updatedLinks });
-
-      Message.successMessage("Social Link removed");
-    } catch (err: any) {
-      console.error(err.message);
-      Message.errorMessage("Error al eliminar el enlace social");
+      
+      
+      Message.successMessage("Enlace social eliminado correctamente");
+      
+      // Recargar datos
+      setTimeout(() => {
+        getSocialLinksData();
+      }, 300);
+      
+    } catch (error) {
+      console.error(error);
+      Message.errorMessage("Error al eliminar enlace social");
     } finally {
       setRefreshing(false);
     }
   };
-
+  
+  // Renderizar el formulario
+  const SocialLinkForm = () => (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="platform">Plataforma</Label>
+        <Select 
+          onValueChange={handlePlatformChange} 
+          value={formData.platform || ""}
+        >
+          <SelectTrigger className={errors.platform ? "border-destructive" : ""}>
+            <SelectValue placeholder="Selecciona una plataforma" />
+          </SelectTrigger>
+          <SelectContent>
+            {socialPlatforms.map(platform => (
+              <SelectItem key={platform.value} value={platform.value}>
+                <div className="flex items-center">
+                  {platform.icon}
+                  {platform.label}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.platform && <p className="text-destructive text-sm">{errors.platform}</p>}
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="url">URL</Label>
+        <div className="flex items-center relative">
+          <LinkIcon className="absolute left-3 h-4 w-4 text-muted-foreground" />
+          <Input 
+            id="url" 
+            name="url" 
+           // value={formData.url || ""} 
+            defaultValue={formData.url || ""}
+            onChange={handleInputChange}
+            placeholder="https://ejemplo.com/mi-perfil"
+            className={cn(
+              "pl-9",
+              errors.url ? "border-destructive" : ""
+            )}
+          />
+        </div>
+        {errors.url && <p className="text-destructive text-sm">{errors.url}</p>}
+      </div>
+    </div>
+  );
+  
+  // Estado de carga
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600" />
-      </div>
+      <Card className="bg-card border transition-all duration-300 hover:shadow-md">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-xl">Enlaces Sociales</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
+  
+  // Ordenar enlaces sociales alfabéticamente por plataforma
+  const sortedLinks = [...socialLinks].sort((a, b) => 
+    a.platform.localeCompare(b.platform)
+  );
 
   return (
-    <Card>
+    <Card className="bg-card border transition-all duration-300 hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Social Links</CardTitle>
-        <Dialog>
+        <CardTitle className="text-xl">Enlaces Sociales</CardTitle>
+        
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="icon" disabled={refreshing}>
-              <PlusIcon className="h-4 w-4" />
+            <Button 
+              size="sm" 
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => {
+                setFormData({});
+                setErrors({});
+              }}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Añadir
             </Button>
           </DialogTrigger>
-          <DialogContent>
-              <DialogTitle>Add Social Link</DialogTitle>
-            <SocialLinkForm onSubmit={handleSubmitLink} />
+          
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Añadir Enlace Social</DialogTitle>
+            </DialogHeader>
+            <SocialLinkForm />
+            <DialogFooter className="mt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setIsAddDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={addSocialLink} 
+                disabled={refreshing}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {refreshing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>Guardar</>
+                )}
+              </Button>
+            </DialogFooter>
           </DialogContent>
-        </Dialog> 
+        </Dialog>
       </CardHeader>
+      
       <CardContent>
         {socialLinks.length === 0 ? (
-          <p className="text-center text-gray-500 py-4">No social links found.</p>
-        ) : (
-          socialLinks.map((link) => (
-            <div
-              key={link.id}
-              className="flex justify-between items-center mb-2 p-2 border rounded"
+          <div className="text-center py-8 bg-muted/30 rounded-lg">
+            <LinkIcon className="h-12 w-12 mx-auto text-muted-foreground/60 mb-3" />
+            <p className="text-muted-foreground">No has agregado enlaces sociales todavía.</p>
+            <Button 
+              onClick={() => setIsAddDialogOpen(true)} 
+              variant="outline" 
+              className="mt-4"
             >
-              <div>
-                <span className="font-semibold">{link.platform }</span>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-2 text-sm text-blue-500 hover:underline"
-                >
-                  {link.url}
-                </a>
-              </div>
-              <div className="flex gap-2">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="mr-2"
-                      onClick={() => setEditingLink(link)}
-                      disabled={refreshing}
-                    >
-                      <PencilIcon className="h-4 w-4" />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Edit Social Link</DialogTitle>
-                    </DialogHeader>
-                    <SocialLinkForm
-                      initialData={link}
-                      onSubmit={handleSubmitLink}
-                    />
-                  </DialogContent>
-                </Dialog>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteLink(link.id)}
-                  disabled={refreshing}
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))
+              <Plus className="h-4 w-4 mr-2" />
+              Añadir primer enlace social
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <AnimatePresence>
+              {sortedLinks.map((link) => {
+                const isEditing = editingId === link.id;
+                
+                return (
+                  <motion.div
+                    key={link.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={cn(
+                      "flex justify-between items-center p-3 rounded-lg border",
+                      isEditing 
+                        ? "bg-muted/50 border-primary/20" 
+                        : "bg-card hover:bg-muted/30"
+                    )}
+                  >
+                    {isEditing ? (
+                      <div className="flex-1">
+                        <SocialLinkForm />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          {getPlatformIcon(link.platform)}
+                          <span className="font-medium">{link.platform}</span>
+                        </div>
+                        
+                        <div className="flex items-center">
+                          <a 
+                            href={link.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline flex items-center gap-1"
+                          >
+                            <span className="max-w-[180px] sm:max-w-[250px] truncate">
+                              {link.url}
+                            </span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-1 ml-4">
+                      {isEditing ? (
+                        <div className="flex gap-1">
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="icon" 
+                                  onClick={cancelEditing}
+                                  className="h-8 w-8"
+                                >
+                                  <X className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Cancelar</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="icon" 
+                                  onClick={() => updateSocialLink(link.id)}
+                                  disabled={refreshing}
+                                  className={`h-8 w-8 ${saveSuccess ? 'bg-green-100' : ''}`}
+                                >
+                                  {refreshing ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <CheckIcon className="h-4 w-4 text-green-500" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Guardar</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                      ) : (
+                        <>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => startEditing(link)}
+                                  className="h-8 w-8"
+                                >
+                                  <Pencil className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Editar</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                          
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  onClick={() => deleteSocialLink(link.id)} 
+                                  disabled={refreshing}
+                                  className="h-8 w-8"
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Eliminar</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
         )}
       </CardContent>
     </Card>

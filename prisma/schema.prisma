@@ -10,7 +10,7 @@ generator client {
 
 datasource db { 
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL_NEON")
 }
 
 
@@ -25,12 +25,15 @@ model User {
   profilePicture String?
   createdAt      DateTime?     @default(now())
   updatedAt      DateTime?     @updatedAt
-
+  stripeCustomerId String?    @unique
+  
   workExperience WorkExperience[]
   skills         Skill[]
   education      Education[]
   socialLinks    SocialLink[]
   cvPreferences  CvPreferences?
+  subscription   Subscription?
+  paymentMethods PaymentMethod[]
 }
 
 model WorkExperience {
@@ -76,11 +79,64 @@ model SocialLink {
 }
 
 model CvPreferences {
-  id         String  @id @default(uuid())
-  userId     String  @unique
-  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template   String?  // Nombre de la plantilla preferida
-  font       String?  // Fuente del CV
-  color      String?  // Color principal del CV
-  createdAt  DateTime? @default(now())
+  id             String  @id @default(uuid())
+  userId         String  @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template       String  @default("modern")
+  primaryColor   String  @default("#2563eb")
+  secondaryColor String  @default("#3b82f6")
+  fontFamily     String  @default("Inter")
+  fontSize       String  @default("medium")
+  spacing        Float   @default(1)
+  showPhoto      Boolean @default(true)
+  showContact    Boolean @default(true)
+  showSocial     Boolean @default(true)
+  pageSize       String  @default("a4")
+  createdAt      DateTime? @default(now())
+  updatedAt      DateTime? @updatedAt
+}
+
+model Subscription {
+  id                 String   @id @default(uuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripeSubscriptionId String  @unique
+  status             String   // 'active', 'canceled', 'past_due', etc.
+  planId             String
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model PaymentMethod {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripePaymentMethodId String
+  type              String   // 'card', etc.
+  last4             String?  // últimos 4 dígitos de la tarjeta
+  expMonth          Int?     // mes de expiración
+  expYear           Int?     // año de expiración
+  brand             String?  // visa, mastercard, etc.
+  isDefault         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([userId, stripePaymentMethodId])
+}
+
+model SubscriptionPlan {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  currency    String   @default("USD")
+  interval    String   // 'month', 'year'
+  stripePriceId String  @unique
+  features    String[]
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

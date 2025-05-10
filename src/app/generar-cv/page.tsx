@@ -14,6 +14,8 @@ import { Message } from "../utils/Message"
 import { useAppContext, useStore } from "../context/AppContext"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { Session } from "../api/auth/[...nextauth]/route"
 
 
 export default function GenerarCV() {
@@ -32,7 +34,9 @@ export default function GenerarCV() {
   const [templateApiDone, setTemplateApiDone] = useState(false)
   const [apiProgress, setApiProgress] = useState(0)
   const startTimeRef = useRef<number | null>(null)
-
+  const { data: session } = useSession() as {
+    data: Session | null;
+  };
   const { template } = useAppContext()
   const { templateId } = useStore()
   const cvHandler = new CVHandler()
@@ -99,12 +103,34 @@ export default function GenerarCV() {
       // Pasar el templateId solo si no hay un plantillaCV cargado
       const templateIdToUse = !plantillaCV && templateId ? templateId : undefined;
 
-      // Create the CV with progress tracking
+      // Preparar toda la información del usuario antes de generar el CV
+      let userInfoString = informacion;
+      
+      if(session) {
+        try {
+          const user = session.user;
+          const response = await fetch(`/api/apiHandler/user/${user.id}`);
+          
+          if(response.ok) {
+            const {data} = await response.json();
+            console.log("Datos del usuario cargados:", data);
+            
+            // Crear un nuevo string con los datos del usuario en lugar de modificar el estado
+            userInfoString = informacion ? `${informacion}\n${JSON.stringify(data)}` : JSON.stringify(data);
+          } else {
+            console.error("Error al obtener los datos del usuario:", response.statusText);
+          }
+        } catch(error) {
+          console.error("Error al cargar datos del usuario:", error);
+        }
+      }
+     
+      // Create the CV with progress tracking using userInfoString que ya contiene los datos del usuario
       const responseHtml = await cvHandler.crearCV(
         ofertaLaboral,
         ofertaType,
         plantillaCV ?? template,
-        informacion,
+        userInfoString, // Usamos la variable local que ya tiene los datos del usuario
         carrera,
         undefined, // foto
         templateIdToUse,

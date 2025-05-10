@@ -2,7 +2,6 @@ import { OpenAI } from "openai";
 import { jsonrepair } from "jsonrepair";
 import { validation_prompt } from "../utils/cv_validations";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { useAppContext } from "../context/AppContext";
 
 // Add interface for progress tracking
 export interface ProgressCallback {
@@ -213,10 +212,9 @@ async generarCVAdaptado(
 ): Promise<string> {
   try {
     const estilos = "Tailwind CSS"; // Default style framework
-    
-    // Notify progress - start generating adaptado
+   
     progressCallback?.onProgress?.(75); // 75% when starting final CV generation
-    
+ 
     const systemPrompt = `
     Eres un asistente especializado en la creación de CVs profesionales en HTML con ${estilos}.  
     Tu objetivo es generar un CV de una sola página, optimizado para la oferta de trabajo proporcionada, utilizando la información del CV del usuario y adaptándola al contexto laboral.
@@ -243,7 +241,16 @@ async generarCVAdaptado(
   **${ofertaTexto}**
 
   Utiliza la siguiente información del CV del usuario:  
-  ${JSON.stringify(infoCV, null, 2)}
+  ${infoAdiccional ? 
+  `Quiero que generes un currículum profesional para el usuario actualmente en sesión utilizando la siguiente estructura de datos JSON. 
+  Toma en cuenta la información personal, experiencia laboral, habilidades, educación, enlaces sociales y preferencias del CV.
+   El resultado debe ser un documento bien organizado, visualmente atractivo, 
+   utilizando el estilo definido por el usuario en cvPreferences (colores, fuente, tamaño de página, etc.). 
+   Asegúrate de que la redacción sea profesional, concisa y adecuada para aplicar a puestos en desarrollo de software.
+    No omitas detalles importantes de la experiencia laboral,
+     y mantén los textos claros y bien estructurados para destacar el perfil del usuario. esta es la info: \n ${infoAdiccional}`
+  : "No se proporcionó información adicional del usuario."}
+
 
   ### Instrucciones:
   - Genera un HTML válido, semántico y optimizado para exportación a PDF o Word, asegurando que el diseño sea consistente en diferentes dispositivos y plataformas.
@@ -350,8 +357,12 @@ async generarCVAdaptado(
         progressCallback?.onProgress?.(75);
       }
       
+      // Para ofertas de tipo texto, usamos 'data' como el texto de la oferta
+      // Para ofertas de tipo archivo, usamos 'infoCV' que contiene la información extraída del archivo
+      const ofertaTexto = type === 'text' ? data : JSON.stringify(infoCV);
+      
       const cvAdaptadoHTML = await this.generarCVAdaptado(
-        data, 
+        ofertaTexto, 
         infoCV, 
         plantillaHTML as string, 
         infoAdicional, 

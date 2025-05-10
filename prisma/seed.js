@@ -53,8 +53,15 @@ async function main() {
       cvPreferences: {
         create: {
           template: 'modern',
-          font: 'Arial',
-          color: '#0000FF',
+          primaryColor: '#2563eb',
+          secondaryColor: '#3b82f6',
+          fontFamily: 'Arial',
+          fontSize: 'medium',
+          spacing: 1,
+          showPhoto: true,
+          showContact: true,
+          showSocial: true,
+          pageSize: 'a4',
         },
       },
     },

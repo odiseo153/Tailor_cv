@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from "react"; // Importar useEffect
-import CVPreferences from "./CVPreferences"
+import CVPreference from "./CVPreference"
 import EducationInfo from "./EducationInfo"
 import PersonalInfo from "./PersonalInfo"
 import Skills from "./Skills"
@@ -20,7 +20,7 @@ export default function ProfessionalProfile() {
         <Skills />
         <SocialLinks />
         <EducationInfo />  
-        <CVPreferences />
+        <CVPreference />
       </div>
     </div>
   )

@@ -56,7 +56,6 @@ export const AppContextProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   useEffect(() => {
     if (status === 'authenticated') {
       setUser(session?.user as User);
-      console.log(session?.user);
     } else {
       setUser(null);
     }
