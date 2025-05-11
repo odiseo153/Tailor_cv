@@ -1,6 +1,6 @@
 "use client"
 
-import CVPreference from "./Preference";
+//import CVPreference from "./Preference";
 import EducationInfo from "./EducationInfo";
 import PersonalInfo from "./PersonalInfo";
 import Skills from "./Skills";
@@ -19,7 +19,6 @@ export default function ProfessionalProfile() {
         <Skills />
         <SocialLinks />
         <EducationInfo />  
-        <CVPreference />
       </div>
     </div>
   )
