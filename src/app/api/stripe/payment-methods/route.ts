@@ -8,13 +8,14 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 const prisma = new PrismaClient();
 
 // Obtener los métodos de pago del usuario
-export async function GET(req: NextRequest,res: NextResponse) {
+export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
    
     console.log("Datos del session: ",session);
     
     if (!session?.user?.email) {
+      
       return NextResponse.json(
         { error: 'No autorizado' },
         { status: 401 }
