@@ -1,6 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Linkedin, Globe, Calendar, MapPin } from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { Session } from '@/app/api/auth/[...nextauth]/route';
+import Image from 'next/image';
 
 interface CVPreviewProps {
   name?: string;
@@ -17,6 +20,11 @@ const CVPreview: React.FC<CVPreviewProps> = ({
   phone = "+123 456 7890",
   summary = "Diseñador gráfico con más de 5 años de experiencia, especializado en creación de branding, ilustración digital y diseño de campañas publicitarias. Dominio avanzado de Adobe Illustrator y Photoshop, con un portafolio que demuestra creatividad y atención al detalle."
 }) => {
+  const { data: session, status } = useSession() as {
+    data: Session | null;
+    status: string;
+  };
+  
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { 
@@ -38,6 +46,16 @@ const CVPreview: React.FC<CVPreviewProps> = ({
     }
   };
 
+  let userImage = null;
+  
+  if(status === "authenticated" && session?.user){
+    const user = session.user;
+    name = user.name as string;
+    email = user.email as string;
+    phone = user.phone as string;
+    userImage = user.image;
+  }
+
   return (
     <motion.div
       variants={containerVariants}
@@ -47,9 +65,22 @@ const CVPreview: React.FC<CVPreviewProps> = ({
     >
       {/* Header con color de fondo */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-6 text-white relative">
-        <motion.div variants={itemVariants} className="relative z-10">
-          <h2 className="text-2xl font-bold mb-1">{name}</h2>
-          <p className="text-blue-100 text-lg">{title}</p>
+        <motion.div variants={itemVariants} className="relative z-10 flex items-center">
+          {userImage && (
+            <div className="mr-4 rounded-full overflow-hidden border-2 border-white h-16 w-16 flex-shrink-0">
+              <Image 
+                src={userImage} 
+                alt={name || "Usuario"} 
+                width={64} 
+                height={64}
+                className="object-cover w-full h-full"
+              />
+            </div>
+          )}
+          <div>
+            <h2 className="text-2xl font-bold mb-1">{name}</h2>
+            <p className="text-blue-100 text-lg">{title}</p>
+          </div>
         </motion.div>
         
         {/* Formas decorativas */}
