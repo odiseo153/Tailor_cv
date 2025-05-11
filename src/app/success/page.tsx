@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import axios from 'axios';
@@ -10,8 +10,7 @@ import { CheckCircle2 } from 'lucide-react';
 
 export default function SuccessPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState<any>(null);
 
@@ -24,14 +23,6 @@ export default function SuccessPage() {
 
     // Esperar a que se cargue la sesión
     if (status === 'loading') {
-      return;
-    }
-
-    const checkoutSessionId = searchParams.get('session_id');
-    
-    // Si no hay ID de sesión, redirigir a la página principal
-    if (!checkoutSessionId) {
-      router.push('/');
       return;
     }
 
@@ -48,7 +39,7 @@ export default function SuccessPage() {
     };
 
     fetchSubscription();
-  }, [router, searchParams, status]);
+  }, [router, status]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Verificando suscripción...</div>;
