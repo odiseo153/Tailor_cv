@@ -1,6 +1,6 @@
 "use client"
 
-import CVPreference from "./CVPreference"
+import CVPreference from "@/app/components/Profile/CVPreference"
 import EducationInfo from "./EducationInfo"
 import PersonalInfo from "./PersonalInfo"
 import Skills from "./Skills"
