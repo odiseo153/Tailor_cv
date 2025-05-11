@@ -1,6 +1,6 @@
 "use client"
 
-import CVPreference from "@/app/components/Profile/CVPreference"
+import CVPreference from "./CVPreference"
 import EducationInfo from "./EducationInfo"
 import PersonalInfo from "./PersonalInfo"
 import Skills from "./Skills"
@@ -9,7 +9,7 @@ import WorkExperienceInfo from "./WorkExperience"
 
 
 export default function ProfessionalProfile() {
-  
+
 
   return (
     <div className="container mx-auto px-4 py-8">
