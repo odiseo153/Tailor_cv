@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"; // Importar useEffect
 import CVPreference from "./CVPreference"
 import EducationInfo from "./EducationInfo"
 import PersonalInfo from "./PersonalInfo"
