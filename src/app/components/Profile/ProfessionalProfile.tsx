@@ -1,11 +1,11 @@
 "use client"
 
-import CVPreference from "./Preference
-import EducationInfo from "./EducationInfo"
-import PersonalInfo from "./PersonalInfo"
-import Skills from "./Skills"
-import SocialLinks from "./SocialLinks"
-import WorkExperienceInfo from "./WorkExperience"
+import CVPreference from "./Preference";
+import EducationInfo from "./EducationInfo";
+import PersonalInfo from "./PersonalInfo";
+import Skills from "./Skills";
+import SocialLinks from "./SocialLinks";
+import WorkExperienceInfo from "./WorkExperience";
 
 
 export default function ProfessionalProfile() {
