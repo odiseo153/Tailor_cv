@@ -132,7 +132,6 @@ export const authOptions: NextAuthOptions = {
 
           // Si no existe, creamos un nuevo usuario
           if (!dbUser && user.email) {
-            console.log(`Creando nuevo usuario para: ${user.email}`);
             dbUser = await prisma.user.create({
               data: {
                 id: user.id,
@@ -157,7 +156,6 @@ export const authOptions: NextAuthOptions = {
                 }
               }
             });
-            console.log(`Usuario creado con ID: ${dbUser.id}`);
           }
           
           return !!dbUser;

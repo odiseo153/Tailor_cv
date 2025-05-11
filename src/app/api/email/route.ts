@@ -1,6 +1,4 @@
 import { NextResponse, NextRequest } from 'next/server';
-import pdf from 'html-pdf';
-import { jsPDF } from 'jspdf';
 import { Resend } from 'resend';
 import { EmailTemplate } from '@/app/components/Templates/EmailTemplate';
 

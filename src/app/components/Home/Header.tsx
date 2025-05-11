@@ -209,7 +209,7 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            !isAuthPage && (
+            isAuthPage && (
               <Button onClick={() => setAuthOpen(true)} className="bg-primary hover:bg-primary/90">
                 Iniciar Sesión
               </Button>
@@ -305,7 +305,7 @@ export default function Header() {
                   </div>
                 </div>
               ) : (
-                !isAuthPage && (
+                isAuthPage && (
                   <Button onClick={() => {
                     setAuthOpen(true);
                     setIsOpen(false);

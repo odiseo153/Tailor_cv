@@ -21,7 +21,6 @@ export async function POST(req: NextRequest) {
     
     // Validar los datos con Zod
     const result = registerSchema.safeParse(body);
-    console.log(result)
     if (!result.success) {
       const errorMessage = result.error.errors.map(error => error.message).join(', ');
       return NextResponse.json(
