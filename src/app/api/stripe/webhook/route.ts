@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 // en la configuración de Next.js
 export async function POST(req: NextRequest) {
   const body = await req.text();
-  const signature = headers().get('stripe-signature') as string;
+  const signature = (await headers()).get('stripe-signature') as string;
 
   let event;
 
@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
         const checkoutSession = event.data.object;
         // Verificar que sea de tipo suscripción
         if (checkoutSession.mode === 'subscription') {
-          const userId = checkoutSession.metadata.userId;
-          const planId = checkoutSession.metadata.planId;
+          const userId = checkoutSession.metadata?.userId;
+          const planId = checkoutSession.metadata?.planId;
           const subscriptionId = checkoutSession.subscription;
 
           // Obtener los detalles de la suscripción
@@ -51,17 +51,17 @@ export async function POST(req: NextRequest) {
             },
             update: {
               status: subscription.status,
-              currentPeriodStart: new Date(subscription.current_period_start * 1000),
-              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              currentPeriodStart: new Date(subscription.start_date * 1000),
+              currentPeriodEnd: new Date((subscription.ended_at ?? 0) * 1000),
               cancelAtPeriodEnd: subscription.cancel_at_period_end,
             },
             create: {
-              userId: userId,
+              userId: userId as string,
               stripeSubscriptionId: subscription.id,
               status: subscription.status,
-              planId: planId,
-              currentPeriodStart: new Date(subscription.current_period_start * 1000),
-              currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+              planId: planId as string,
+              currentPeriodStart: new Date(subscription.start_date * 1000),
+              currentPeriodEnd: new Date((subscription.ended_at ?? 0) * 1000),
               cancelAtPeriodEnd: subscription.cancel_at_period_end,
             },
           });
@@ -77,8 +77,8 @@ export async function POST(req: NextRequest) {
           },
           data: {
             status: updatedSubscription.status,
-            currentPeriodStart: new Date(updatedSubscription.current_period_start * 1000),
-            currentPeriodEnd: new Date(updatedSubscription.current_period_end * 1000),
+            currentPeriodStart: new Date(updatedSubscription.start_date * 1000),
+            currentPeriodEnd: new Date((updatedSubscription.ended_at ?? 0) * 1000),
             cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end,
           },
         });
@@ -98,9 +98,11 @@ export async function POST(req: NextRequest) {
         break;
 
       // Cuando falla un pago
+      /*
       case 'invoice.payment_failed':
-        const failedInvoice = event.data.object;
-        const failedSubscription = await stripe.subscriptions.retrieve(
+        
+      const failedInvoice = event.data.object;
+      const failedSubscription = await stripe.subscriptions.retrieve(
           failedInvoice.subscription as string
         );
         await prisma.subscription.update({
@@ -112,6 +114,7 @@ export async function POST(req: NextRequest) {
           },
         });
         break;
+        */
 
       default:
         console.log(`Evento no manejado: ${event.type}`);
