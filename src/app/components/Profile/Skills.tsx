@@ -42,8 +42,10 @@ import {
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { useI18n } from "@/app/context/I18nContext";
 
 export default function Skills() {
+  const { t } = useI18n();
   const { data: session, status, update } = useSession() as {
     data: Session | null;
     status: string;
@@ -133,13 +135,13 @@ export default function Skills() {
     const newErrors: Record<string, string> = {};
     
     if (!formData.name || formData.name.trim() === '') {
-      newErrors.name = "El nombre de la habilidad es requerido";
+      newErrors.name = t('profile.skills.name_required');
     }
     
     if (!formData.level) {
-      newErrors.level = "El nivel es requerido";
+      newErrors.level = t('profile.skills.level_required');
     } else if (formData.level < 1 || formData.level > 5) {
-      newErrors.level = "El nivel debe estar entre 1 y 5";
+      newErrors.level = t('profile.skills.level_range');
     }
     
     setErrors(newErrors);
@@ -187,7 +189,7 @@ export default function Skills() {
       });
       
       if (!response.ok) {
-        throw new Error("Error al crear habilidad");
+        throw new Error(t('profile.skills.error_creating'));
       }
       
       const data = await response.json();
@@ -198,7 +200,7 @@ export default function Skills() {
       setSkills(updatedSkills);
       
       setSaveSuccess(true);
-      Message.successMessage("Habilidad añadida correctamente");
+      Message.successMessage(t('profile.skills.added_success'));
       
       // Limpiar formulario y cerrar diálogo
       setFormData({});
@@ -207,7 +209,7 @@ export default function Skills() {
       
     } catch (error) {
       console.error(error);
-      Message.errorMessage("Error al añadir habilidad");
+      Message.errorMessage(t('profile.skills.add_error'));
     } finally {
       setRefreshing(false);
     }
@@ -236,7 +238,7 @@ export default function Skills() {
       });
       
       if (!response.ok) {
-        throw new Error("Error al actualizar habilidad");
+        throw new Error(t('profile.skills.error_updating'));
       }
       
       const data = await response.json();
@@ -250,12 +252,12 @@ export default function Skills() {
       
       
       setSaveSuccess(true);
-      Message.successMessage("Habilidad actualizada correctamente");
+      Message.successMessage(t('profile.skills.updated_success'));
       
       
     } catch (error) {
       console.error(error);
-      Message.errorMessage("Error al actualizar habilidad");
+      Message.errorMessage(t('profile.skills.update_error'));
     } finally {
       setRefreshing(false);
       setEditingId(null);
@@ -264,7 +266,7 @@ export default function Skills() {
   
   // Eliminar habilidad
   const deleteSkill = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar esta habilidad?")) {
+    if (!confirm(t('profile.skills.confirm_delete'))) {
       return;
     }
     
@@ -276,7 +278,7 @@ export default function Skills() {
       });
       
       if (!response.ok) {
-        throw new Error("Error al eliminar habilidad");
+        throw new Error(t('profile.skills.error_deleting'));
       }
       
       // Actualizar estado local
@@ -284,7 +286,7 @@ export default function Skills() {
       setSkills(updatedSkills);
       
       
-      Message.successMessage("Habilidad eliminada correctamente");
+      Message.successMessage(t('profile.skills.deleted_success'));
       
       // Recargar datos
       setTimeout(() => {
@@ -293,7 +295,7 @@ export default function Skills() {
       
     } catch (error) {
       console.error(error);
-      Message.errorMessage("Error al eliminar habilidad");
+      Message.errorMessage(t('profile.skills.delete_error'));
     } finally {
       setRefreshing(false);
     }
@@ -319,13 +321,13 @@ export default function Skills() {
   const SkillForm = () => (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="name">Nombre de la habilidad</Label>
+        <Label htmlFor="name">{t('profile.skills.skill_name')}</Label>
         <Input 
           id="name" 
           name="name" 
           defaultValue={formData.name} 
           onChange={handleInputChange}
-          placeholder="Ej: JavaScript, Liderazgo, Photoshop..."
+          placeholder={t('profile.skills.skill_placeholder')}
           className={errors.name ? "border-destructive" : ""}
         />
         {errors.name && <p className="text-destructive text-sm">{errors.name}</p>}
@@ -333,7 +335,7 @@ export default function Skills() {
       
       <div className="space-y-2">
         <div className="flex justify-between">
-          <Label htmlFor="level">Nivel ({formData.level || 1}/5)</Label>
+          <Label htmlFor="level">{t('profile.skills.level')} ({formData.level || 1}/5)</Label>
           <div className="flex items-center">
             {renderStars(formData.level || 1)}
           </div>
@@ -357,7 +359,7 @@ export default function Skills() {
     return (
       <Card className="bg-card border transition-all duration-300 hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-xl">Habilidades y Competencias</CardTitle>
+          <CardTitle className="text-xl">{t('profile.skills.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-center py-8">
@@ -386,12 +388,12 @@ export default function Skills() {
   return (
     <Card className="bg-card border transition-all duration-300 hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl">Habilidades y Competencias</CardTitle>
+        <CardTitle className="text-xl">{t('profile.skills.title')}</CardTitle>
         
         <div className="flex gap-2">
           <div className="relative">
             <Input
-              placeholder="Buscar habilidad..."
+              placeholder={t('profile.skills.search_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-[140px] sm:w-[200px] h-9 pl-8"
@@ -422,13 +424,13 @@ export default function Skills() {
                 }}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Añadir
+                {t('profile.skills.add')}
               </Button>
             </DialogTrigger>
             
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-xl">Añadir Habilidad</DialogTitle>
+                <DialogTitle className="text-xl">{t('profile.skills.add_skill')}</DialogTitle>
               </DialogHeader>
               <SkillForm />
               <DialogFooter className="mt-4">
@@ -436,7 +438,7 @@ export default function Skills() {
                   variant="outline" 
                   onClick={() => setIsAddDialogOpen(false)}
                 >
-                  Cancelar
+                  {t('profile.personal_info.cancel')}
                 </Button>
                 <Button 
                   onClick={addSkill} 
@@ -446,10 +448,10 @@ export default function Skills() {
                   {refreshing ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Guardando...
+                      {t('profile.personal_info.saving')}
                     </>
                   ) : (
-                    <>Guardar</>
+                    <>{t('profile.personal_info.save')}</>
                   )}
                 </Button>
               </DialogFooter>
@@ -462,14 +464,14 @@ export default function Skills() {
         {skills.length === 0 ? (
           <div className="text-center py-8 bg-muted/30 rounded-lg">
             <LightbulbIcon className="h-12 w-12 mx-auto text-muted-foreground/60 mb-3" />
-            <p className="text-muted-foreground">No has agregado habilidades todavía.</p>
+            <p className="text-muted-foreground">{t('profile.skills.no_skills')}</p>
             <Button 
               onClick={() => setIsAddDialogOpen(true)} 
               variant="outline" 
               className="mt-4"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Añadir primera habilidad
+              {t('profile.skills.add_first')}
             </Button>
           </div>
         ) : (
@@ -502,7 +504,7 @@ export default function Skills() {
                         <div className="flex items-center gap-2">
                           {skill.level >= 4 && (
                             <Badge className="bg-primary/10 text-primary text-xs">
-                              Destacado
+                              {t('profile.skills.featured')}
                             </Badge>
                           )}
                           <span className="font-medium">{skill.name}</span>
@@ -532,7 +534,7 @@ export default function Skills() {
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Cancelar</p>
+                                <p>{t('profile.personal_info.cancel')}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -555,7 +557,7 @@ export default function Skills() {
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Guardar</p>
+                                <p>{t('profile.personal_info.save')}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -575,7 +577,7 @@ export default function Skills() {
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Editar</p>
+                                <p>{t('profile.skills.edit')}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -594,7 +596,7 @@ export default function Skills() {
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Eliminar</p>
+                                <p>{t('profile.skills.delete')}</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
@@ -608,7 +610,7 @@ export default function Skills() {
             
             {searchQuery && filteredSkills.length === 0 && (
               <p className="text-center py-6 text-muted-foreground">
-                No se encontraron habilidades que coincidan con "{searchQuery}"
+                {t('profile.skills.no_results').replace('{query}', searchQuery)}
               </p>
             )}
           </div>

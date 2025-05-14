@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Message } from "@/app/utils/Message";
+import { useI18n } from "@/app/context/I18nContext";
 
 interface LoginComponentProps {
   isModal?: boolean;
@@ -23,6 +24,7 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/profile";
   const error = searchParams.get("error");
+  const { t } = useI18n();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,28 +33,28 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Traducir errores de NextAuth
+  // Translate NextAuth errors
   const getErrorMessage = (error: string) => {
     switch (error) {
       case "CredentialsSignin":
-        return "Credenciales inválidas. Por favor, verifica tu email y contraseña.";
+        return t("auth.errors.credentials");
       case "AccessDenied":
-        return "No tienes permiso para acceder a esta página.";
+        return t("auth.errors.access_denied");
       case "EmailSignin":
-        return "Error al enviar el correo electrónico de verificación.";
+        return t("auth.errors.email_signin");
       case "OAuthSignin":
       case "OAuthCallback":
       case "OAuthCreateAccount":
       case "EmailCreateAccount":
-        return "Error al iniciar sesión con proveedor social. Intenta de nuevo.";
+        return t("auth.errors.oauth_error");
       case "SessionRequired":
-        return "Por favor, inicia sesión para acceder a esta página.";
+        return t("auth.errors.session_required");
       default:
-        return "Ocurrió un error al iniciar sesión. Intenta de nuevo.";
+        return t("auth.errors.default");
     }
   };
 
-  // Actualizar el mensaje de error si hay un error en la URL
+  // Update error message if there's an error in the URL
   useEffect(() => {
     if (error) {
       setErrorMessage(getErrorMessage(error));
@@ -62,9 +64,9 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validación básica
+    // Basic validation
     if (!email.trim() || !password) {
-      setErrorMessage("Por favor, completa todos los campos.");
+      setErrorMessage(t("auth.errors.required_fields"));
       return;
     }
 
@@ -84,7 +86,7 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
       }
 
       if (result?.ok) {
-        Message.successMessage("Inicio de sesión exitoso");
+        Message.successMessage(t("auth.login.successful_login"));
         
         if (onSuccess) {
           onSuccess();
@@ -97,7 +99,7 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
       }
     } catch (error) {
       console.error("Error en inicio de sesión:", error);
-      setErrorMessage("Ocurrió un error inesperado. Intenta de nuevo.");
+      setErrorMessage(t("auth.errors.unexpected_error"));
     } finally {
       setIsLoading(false);
     }
@@ -129,11 +131,11 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
         )}
         
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.login.email")}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="correo@ejemplo.com"
+            placeholder={t("auth.login.email_placeholder")}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -145,13 +147,13 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
         
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">{t("auth.login.password")}</Label>
             {!isModal && (
               <Link
                 href="/auth/forgot-password"
                 className="text-sm text-blue-600 hover:text-blue-500"
               >
-                ¿Olvidaste tu contraseña?
+                {t("auth.login.forgot_password")}
               </Link>
             )}
           </div>
@@ -187,7 +189,7 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
             onCheckedChange={(checked) => setRememberMe(checked as boolean)}
           />
           <Label htmlFor="remember" className="text-sm cursor-pointer">
-            Recordar mi sesión
+            {t("auth.login.remember_me")}
           </Label>
         </div>
         
@@ -196,7 +198,7 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
           className="w-full"
           disabled={isLoading}
         >
-          {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
+          {isLoading ? t("auth.login.logging_in") : t("auth.login.login_button")}
         </Button>
       </form>
       
@@ -205,7 +207,7 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
           <Separator className="w-full" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">O continúa con</span>
+          <span className="bg-background px-2 text-muted-foreground">{t("auth.login.or_continue_with")}</span>
         </div>
       </div>
       
@@ -231,9 +233,9 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
       {!isModal && (
         <div className="mt-6 text-center">
           <span className="text-sm text-muted-foreground">
-            ¿No tienes una cuenta?{" "}
+            {t("auth.login.no_account")}{" "}
             <Link href="/auth/register" className="text-blue-600 hover:underline">
-              Regístrate
+              {t("auth.login.register_link")}
             </Link>
           </span>
         </div>

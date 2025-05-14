@@ -1,28 +1,36 @@
-'use client'
+"use client"
 
-import { useState } from 'react';
-import { Search, Wand2, Check, FileSpreadsheet, Cpu, BarChart } from 'lucide-react';
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { Upload, Wand2, Download, Check } from "lucide-react"
+import { useI18n } from "@/app/context/I18nContext"
 
 export default function HowItWorks(){
   const [activeTab, setActiveTab] = useState(0);
+  const { t } = useI18n();
   
   const steps = [
     {
-      title: "Análisis Inteligente",
-      icon: <Search className="feature-icon" />,
-      description: "Nuestro AI analiza ofertas laborales y identifica:",
+      title: t("home.howItWorks.step1"),
+      icon: <Upload className="h-6 w-6 mr-3 text-blue-600" />,
+      description: t("home.howItWorks.step1Description"),
       features: [
-        "Palabras clave técnicas (por ejemplo, Python, Scrum)",
-        "Habilidades blandas requeridas (por ejemplo, liderazgo)",
-        "Jerarquía de requisitos (priorizando lo esencial)"
+        t("home.howItWorks.step1Feature1"),
+        t("home.howItWorks.step1Feature2"),
+        t("home.howItWorks.step1Feature3"),
       ],
       visual: (
-        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-          <div className="space-y-3">
-            <div className="h-10 bg-white rounded-md border border-gray-200 flex items-center px-4">
-              <div className="h-4 w-20 bg-primary/10 rounded"></div>
-              <div className="h-4 w-4 bg-primary/20 rounded ml-2 animate-pulse"></div>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+            <div className="h-5 w-40 bg-gray-200 rounded"></div>
+            <div className="h-8 w-24 bg-blue-600 rounded text-white flex items-center justify-center text-xs">
+              <Upload className="h-3 w-3 mr-1" /> Upload
             </div>
+          </div>
+
+          <div className="p-4 space-y-4">
+            <div className="h-4 w-full bg-gray-100 rounded"></div>
+            <div className="h-4 w-3/4 bg-gray-100 rounded"></div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white p-3 rounded-md border border-gray-200">
                 <div className="flex items-center justify-between mb-2">
@@ -50,13 +58,13 @@ export default function HowItWorks(){
       )
     },
     {
-      title: "Personalización Automática",
-      icon: <Wand2 className="feature-icon" />,
-      description: "Nuestro AI personaliza tu CV para que se adapte a los requisitos del trabajo:",
+      title: t("home.howItWorks.step2"),
+      icon: <Wand2 className="h-6 w-6 mr-3 text-indigo-600" />,
+      description: t("home.howItWorks.step2Description"),
       features: [
-        "Reorganiza habilidades según la importancia del trabajo",
-        "Destaca experiencias más valiosas",
-        "Ajusta el lenguaje para que se adapte a la cultura de la empresa"
+        t("home.howItWorks.step2Feature1"),
+        t("home.howItWorks.step2Feature2"),
+        t("home.howItWorks.step2Feature3")
       ],
       visual: (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -70,59 +78,66 @@ export default function HowItWorks(){
               <div className="h-2 w-12 bg-success rounded-full"></div>
             </div>
           </div>
-          <div className="grid grid-cols-2 divide-x divide-gray-200">
-            <div className="p-4 space-y-3">
-              <div className="h-5 w-24 bg-gray-200 rounded mb-4"></div>
-              <div className="h-3 w-full bg-gray-100 rounded"></div>
-              <div className="h-3 w-full bg-gray-100 rounded"></div>
-              <div className="h-3 w-2/3 bg-gray-100 rounded"></div>
-              <div className="h-5 w-24 bg-gray-200 rounded my-4"></div>
-              <div className="h-3 w-full bg-gray-100 rounded"></div>
-              <div className="h-3 w-full bg-red-50 rounded"></div>
-              <div className="h-3 w-2/3 bg-gray-100 rounded"></div>
+          
+          <div className="p-4 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-1">
+                <div className="space-y-2">
+                  <div className="h-4 w-full bg-muted rounded"></div>
+                  <div className="h-4 w-3/4 bg-muted rounded"></div>
+                  <div className="h-4 w-5/6 bg-muted rounded"></div>
+                </div>
+              </div>
+              <div className="col-span-1">
+                <div className="h-full bg-primary/5 rounded border border-primary/20 p-2">
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-full bg-primary/20 rounded"></div>
+                    <div className="h-3 w-3/4 bg-primary/20 rounded"></div>
+                    <div className="h-3 w-5/6 bg-primary/20 rounded"></div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="p-4 space-y-3">
-              <div className="h-5 w-24 bg-gray-200 rounded mb-4"></div>
-              <div className="h-3 w-full bg-gray-100 rounded"></div>
-              <div className="h-3 w-full bg-green-50 rounded"></div>
-              <div className="h-3 w-2/3 bg-gray-100 rounded"></div>
-              <div className="h-5 w-24 bg-gray-200 rounded my-4"></div>
-              <div className="h-3 w-full bg-green-50 rounded"></div>
-              <div className="h-3 w-full bg-gray-100 rounded"></div>
-              <div className="h-3 w-2/3 bg-gray-100 rounded"></div>
+            
+            <div className="h-px w-full bg-muted"></div>
+            
+            <div className="flex justify-between items-center">
+              <div className="h-8 w-24 bg-primary rounded text-white flex items-center justify-center text-xs">
+                <Wand2 className="h-3 w-3 mr-1" /> Optimize
+              </div>
+              <div className="h-8 w-8 bg-muted rounded flex items-center justify-center">
+                <div className="h-4 w-4 rounded-full border-2 border-muted-foreground border-t-transparent animate-spin"></div>
+              </div>
             </div>
           </div>
         </div>
       )
     },
     {
-      title: "Optimización Final",
-      icon: <FileSpreadsheet className="feature-icon" />,
-      description: "Nuestro AI asegura que tu CV pase todas las pruebas:",
+      title: t("home.howItWorks.step3"),
+      icon: <Download className="h-6 w-6 mr-3 text-green-600" />,
+      description: t("home.howItWorks.step3Description"),
       features: [
-        "Ajuste de densidad de palabras clave (12-15%)",
-        "Compatibilidad con ATS (sistemas de seguimiento de candidatos)",
-        "Sugerencias de verbos de acción para cada industria"
+        t("home.howItWorks.step3Feature1"),
+        t("home.howItWorks.step3Feature2"),
+        t("home.howItWorks.step3Feature3")
       ],
       visual: (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+            <div className="h-5 w-32 bg-gray-200 rounded"></div>
+            <div className="flex space-x-1">
+              <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center">
+                <Download className="h-3 w-3 text-gray-500" />
+              </div>
+              <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center">
+                <div className="h-3 w-3 text-gray-500 rounded-sm"></div>
+              </div>
+            </div>
+          </div>
+          
           <div className="p-4 space-y-4">
-            <div className="flex items-center space-x-2">
-              <Check size={18} className="text-green-500" />
-              <div className="h-5 w-48 bg-gray-100 rounded"></div>
-              <div className="h-5 w-12 bg-green-50 rounded text-xs flex items-center justify-center text-green-700">87%</div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Check size={18} className="text-green-500" />
-              <div className="h-5 w-56 bg-gray-100 rounded"></div>
-              <div className="h-5 w-12 bg-green-50 rounded text-xs flex items-center justify-center text-green-700">100%</div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Check size={18} className="text-green-500" />
-              <div className="h-5 w-40 bg-gray-100 rounded"></div>
-              <div className="h-5 w-12 bg-green-50 rounded text-xs flex items-center justify-center text-green-700">95%</div>
-            </div>
-            <div className="h-px w-full bg-gray-200 my-2"></div>
+            <div className="h-28 bg-gradient-to-r from-gray-50 to-white rounded border border-gray-100"></div>
             <div className="grid grid-cols-3 gap-3">
               <div className="h-8 bg-gray-50 rounded border border-gray-200 flex items-center justify-center">
                 <div className="h-3 w-16 bg-gray-200 rounded"></div>
@@ -142,42 +157,45 @@ export default function HowItWorks(){
 
   return (
     <section id="how-it-works" className="section bg-white">
-      <div className="container-custom">
-        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-dark">Tecnología que Trabaja para tu Éxito</h2>
-          <p className="text-gray-600 text-lg">Nuestro sistema inteligente analiza los requisitos del trabajo y optimiza tu CV en tiempo real, aumentando tus posibilidades de obtener entrevistas.</p>
+      <div className="container mx-auto px-6 py-24">
+        {/* Section header */}
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="inline-block mb-3 px-4 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
+              {t("home.howItWorks.tagline")}
+            </div>
+            <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+              {t("home.howItWorks.title")}
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              {t("home.howItWorks.description")}
+            </p>
+          </motion.div>
         </div>
 
-        <div className="flex flex-wrap md:flex-nowrap gap-8">
-          {/* Steps Navigation */}
-          <div className="w-full md:w-1/2">
-            <div className="sticky top-24 space-y-4">
-              {steps.map((step, index) => (
-                <button
-                  key={index}
-                  className={`w-full text-left p-4 rounded-lg transition-all duration-300 ${
-                    activeTab === index
-                      ? 'bg-white shadow-lg border border-gray-100'
-                      : 'bg-gray-50 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setActiveTab(index)}
-                  >
-                  <div className="flex items-start">
-                    <div className={`p-2 rounded-full mr-3 ${
-                      activeTab === index ? 'bg-primary/10 text-primary' : 'bg-gray-200 text-gray-500'
-                    }`}>
-                      {index === 0 ? <Cpu size={20} /> : index === 1 ? <Wand2 size={20} /> : <BarChart size={20} />}
-                    </div>
-                    <div>
-                      <h3 className={`font-semibold ${
-                        activeTab === index ? 'text-primary' : 'text-gray-700'
-                      }`}>
-                        {step.title}
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{step.description}</p>
-                    </div>
+        {/* Main content */}
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Tabs Navigation */}
+          <div className="w-full md:w-1/3">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              {steps.map((step, idx) => (
+                <div 
+                  key={idx}
+                  className={`flex items-center p-4 cursor-pointer transition-all ${activeTab === idx ? 'bg-blue-50 border-l-4 border-blue-600' : 'hover:bg-gray-50 border-l-4 border-transparent'} ${idx !== steps.length - 1 ? 'border-b border-gray-200' : ''}`}
+                  onClick={() => setActiveTab(idx)}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${activeTab === idx ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                    {idx + 1}
                   </div>
-                </button>
+                  <div>
+                    <h3 className={`font-medium ${activeTab === idx ? 'text-blue-800' : 'text-gray-800'}`}>{step.title}</h3>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -212,4 +230,4 @@ export default function HowItWorks(){
       </div>
     </section>
   );
-};
+}

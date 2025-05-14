@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { Message } from "@/app/utils/Message";
 import { isStrongPassword } from "@/lib/utils";
+import { useI18n } from "@/app/context/I18nContext";
 
 interface RegisterComponentProps {
   isModal?: boolean;
@@ -20,6 +21,7 @@ interface RegisterComponentProps {
 
 export default function RegisterComponent({ isModal = false, onSuccess }: RegisterComponentProps) {
   const router = useRouter();
+  const { t } = useI18n();
   
   const [formData, setFormData] = useState({
     name: "",
@@ -41,7 +43,7 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Validar contraseña mientras se escribe
+    // Validate password as typing
     if (name === "password") {
       setPasswordValidation(isStrongPassword(value));
     }
@@ -50,23 +52,23 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Reiniciar mensajes
+    // Reset messages
     setErrorMessage("");
     setSuccessMessage("");
     
-    // Validación básica
+    // Basic validation
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setErrorMessage("Por favor, completa todos los campos.");
+      setErrorMessage(t("auth.errors.required_fields"));
       return;
     }
     
-    // Validar contraseñas
+    // Validate passwords
     if (formData.password !== formData.confirmPassword) {
-      setErrorMessage("Las contraseñas no coinciden.");
+      setErrorMessage(t("auth.errors.passwords_not_match"));
       return;
     }
     
-    // Validar fortaleza de contraseña
+    // Validate password strength
     const passwordCheck = isStrongPassword(formData.password);
     if (!passwordCheck.isValid) {
       setErrorMessage(passwordCheck.errors.join(" "));
@@ -76,7 +78,7 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
     try {
       setIsLoading(true);
       
-      // Registrar el usuario mediante nuestra API
+      // Register user through our API
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -89,12 +91,12 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
       
       const data = await response.json();
       
-      // Si el registro fue exitoso
+      // If registration was successful
       if (response.ok && data.success) {
-        setSuccessMessage("¡Registro exitoso! Iniciando sesión...");
-        Message.successMessage("Registro exitoso");
+        setSuccessMessage(t("auth.register.successful_register"));
+        Message.successMessage(t("auth.register.successful_register"));
         
-        // Iniciar sesión automáticamente
+        // Log in automatically
         setTimeout(async () => {
           const result = await signIn("credentials", {
             redirect: !isModal,
@@ -115,13 +117,13 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
           }
         }, 1000);
       } else {
-        setErrorMessage(data.error || "Error al registrar usuario");
+        setErrorMessage(data.error || t("auth.errors.registration_error"));
       }
     } catch (error: any) {
       console.error("Error en registro:", error);
       setErrorMessage(
         error.response?.data?.error || 
-        "Ha ocurrido un error al registrar tu cuenta. Por favor, intenta de nuevo."
+        t("auth.errors.unexpected_error")
       );
     } finally {
       setIsLoading(false);
@@ -161,12 +163,12 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
         )}
         
         <div className="space-y-2">
-          <Label htmlFor="name">Nombre completo</Label>
+          <Label htmlFor="name">{t("auth.register.name")}</Label>
           <Input
             id="name"
             name="name"
             type="text"
-            placeholder="Tu nombre completo"
+            placeholder={t("auth.register.name_placeholder")}
             value={formData.name}
             onChange={handleChange}
             required
@@ -178,12 +180,12 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.register.email")}</Label>
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="correo@ejemplo.com"
+            placeholder={t("auth.register.email_placeholder")}
             value={formData.email}
             onChange={handleChange}
             required
@@ -194,7 +196,7 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password">{t("auth.register.password")}</Label>
           <div className="relative">
             <Input
               id="password"
@@ -220,7 +222,7 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
             </button>
           </div>
           
-          {/* Indicadores de fortaleza de contraseña */}
+          {/* Password strength indicators */}
           {formData.password && (
             <div className="text-xs space-y-1 mt-1">
               <div className="flex gap-1">
@@ -241,25 +243,25 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
                   formData.password.length >= 8 ? "text-green-600" : ""
                 }`}>
                   <span className="w-3 h-3">{formData.password.length >= 8 ? "✓" : "·"}</span>
-                  <span>Mínimo 8 caracteres</span>
+                  <span>{t("auth.register.password_strength.min_length")}</span>
                 </li>
                 <li className={`flex items-center gap-1 ${
                   /[A-Z]/.test(formData.password) ? "text-green-600" : ""
                 }`}>
                   <span className="w-3 h-3">{/[A-Z]/.test(formData.password) ? "✓" : "·"}</span>
-                  <span>Una letra mayúscula</span>
+                  <span>{t("auth.register.password_strength.uppercase")}</span>
                 </li>
                 <li className={`flex items-center gap-1 ${
                   /[0-9]/.test(formData.password) ? "text-green-600" : ""
                 }`}>
                   <span className="w-3 h-3">{/[0-9]/.test(formData.password) ? "✓" : "·"}</span>
-                  <span>Un número</span>
+                  <span>{t("auth.register.password_strength.number")}</span>
                 </li>
                 <li className={`flex items-center gap-1 ${
                   /[^A-Za-z0-9]/.test(formData.password) ? "text-green-600" : ""
                 }`}>
                   <span className="w-3 h-3">{/[^A-Za-z0-9]/.test(formData.password) ? "✓" : "·"}</span>
-                  <span>Un carácter especial</span>
+                  <span>{t("auth.register.password_strength.special")}</span>
                 </li>
               </ul>
             </div>
@@ -267,7 +269,7 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+          <Label htmlFor="confirmPassword">{t("auth.register.confirm_password")}</Label>
           <div className="relative">
             <Input
               id="confirmPassword"
@@ -303,12 +305,12 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
                 {formData.password === formData.confirmPassword ? (
                   <>
                     <CheckCircle className="h-3 w-3" />
-                    <span>Las contraseñas coinciden</span>
+                    <span>{t("auth.register.password_strength.passwords_match")}</span>
                   </>
                 ) : (
                   <>
                     <AlertCircle className="h-3 w-3" />
-                    <span>Las contraseñas no coinciden</span>
+                    <span>{t("auth.register.password_strength.passwords_not_match")}</span>
                   </>
                 )}
               </span>
@@ -321,7 +323,7 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
           className="w-full"
           disabled={isLoading}
         >
-          {isLoading ? "Registrando..." : "Crear Cuenta"}
+          {isLoading ? t("auth.register.registering") : t("auth.register.create_button")}
         </Button>
       </form>
       
@@ -330,7 +332,7 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
           <Separator className="w-full" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">O regístrate con</span>
+          <span className="bg-background px-2 text-muted-foreground">{t("auth.register.or_register_with")}</span>
         </div>
       </div>
       
@@ -358,9 +360,9 @@ export default function RegisterComponent({ isModal = false, onSuccess }: Regist
       {!isModal && (
         <div className="mt-6 text-center">
           <span className="text-sm text-muted-foreground">
-            ¿Ya tienes una cuenta?{" "}
+            {t("auth.register.have_account")}{" "}
             <Link href="/auth/login" className="text-blue-600 hover:underline">
-              Iniciar sesión
+              {t("auth.register.login_link")}
             </Link>
           </span>
         </div>

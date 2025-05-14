@@ -3,6 +3,7 @@
 import { Analytics } from "@vercel/analytics/react"
 import { SessionProvider } from "next-auth/react"
 import { AppContextProvider } from "./context/AppContext"
+import { I18nProvider } from "./context/I18nContext"
 import Header from "./components/Home/Header"
 import Footer from "./components/Home/Footer"
 import "./globals.css"
@@ -31,21 +32,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased min-h-screen flex flex-col">
         <title>TailorCV</title>
         <SessionProvider>
-          <AppContextProvider>
-            {/* Condicionar la renderización del Header basado en si estamos listos y en ruta de auth */}
-            {(!isAuthRoute || isReady) && <Header />}
-            
-            <main className="flex-grow container mx-auto -top-px px-4 py-14">
-              {/* En rutas de auth, esperar a que el componente esté listo */}
-              {(isReady || !isAuthRoute) ? children : (
-                <div className="flex justify-center items-center h-[70vh]">
-                  <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
-                </div>
-              )}
-            </main>
-            
-            {(!isAuthRoute || isReady) && <Footer />}
-          </AppContextProvider>
+          <I18nProvider>
+            <AppContextProvider>
+              {/* Condicionar la renderización del Header basado en si estamos listos y en ruta de auth */}
+              {(!isAuthRoute || isReady) && <Header />}
+              
+              <main className="flex-grow container mx-auto -top-px px-4 py-14">
+                {/* En rutas de auth, esperar a que el componente esté listo */}
+                {(isReady || !isAuthRoute) ? children : (
+                  <div className="flex justify-center items-center h-[70vh]">
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+                  </div>
+                )}
+              </main>
+              
+              {(!isAuthRoute || isReady) && <Footer />}
+            </AppContextProvider>
+          </I18nProvider>
         </SessionProvider>
         <Analytics />
       </body>

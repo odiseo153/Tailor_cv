@@ -6,10 +6,12 @@ import { useStore } from "@/app/context/AppContext";
 import { TabsContent, Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LoginComponent from "./LoginComponent";
 import RegisterComponent from "./RegisterComponent";
+import { useI18n } from "@/app/context/I18nContext";
 
 export default function AuthForm() {
   const [activeTab, setActiveTab] = useState<string>("login");
   const { authOpen, setAuthOpen } = useStore();
+  const { t } = useI18n();
 
   // Reset tab to login when modal is closed and reopened
   useEffect(() => {
@@ -27,8 +29,8 @@ export default function AuthForm() {
     <div className="w-full mx-auto">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-          <TabsTrigger value="register">Registrarse</TabsTrigger>
+          <TabsTrigger value="login">{t("header.login")}</TabsTrigger>
+          <TabsTrigger value="register">{t("header.register")}</TabsTrigger>
         </TabsList>
         
         <AnimatePresence mode="wait">

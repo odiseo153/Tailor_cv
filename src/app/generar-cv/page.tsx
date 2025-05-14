@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { Session } from "../api/auth/[...nextauth]/route"
+import { useI18n } from "../context/I18nContext"
 
 
 export default function GenerarCV() {
@@ -40,6 +41,9 @@ export default function GenerarCV() {
   const { template } = useAppContext()
   const { templateId } = useStore()
   const cvHandler = new CVHandler()
+  
+  // Add i18n context
+  const { t } = useI18n();
 
   // Cargar la plantilla seleccionada cuando se carga la página
  /*
@@ -83,12 +87,12 @@ export default function GenerarCV() {
     try {
       // Basic validation
       if (ofertaType === 'text' && typeof ofertaLaboral !== 'string' || (typeof ofertaLaboral === 'string' && !ofertaLaboral.trim())) {
-        Message.errorMessage("Por favor, ingresa la oferta laboral en texto.");
+        Message.errorMessage(t('cv_generator.job_offer.validation_error.text_empty'));
         setIsLoading(false);
         return;
       }
       if (ofertaType !== 'text' && typeof ofertaLaboral === 'string') { // ofertaLaboral should be a File object if not text
-        Message.errorMessage("Por favor, selecciona un archivo para la oferta laboral.");
+        Message.errorMessage(t('cv_generator.job_offer.validation_error.file_missing'));
         setIsLoading(false);
         return;
       }
@@ -138,10 +142,10 @@ export default function GenerarCV() {
       );
 
       setData(responseHtml)
-      Message.successMessage("CV Generado Exitosamente")
+      Message.successMessage(t('cv_generator.messages.success'))
     } catch (error: any) {
       console.error("Error generating CV:", error);
-      Message.errorMessage("Error al generar CV: " + (error.message || "Error desconocido"));
+      Message.errorMessage(t('cv_generator.messages.error') + (error.message || "Error desconocido"));
     } finally {
       setIsLoading(false)
       // Optionally clear inputs after success, but maybe keep them for regeneration?
@@ -184,8 +188,8 @@ export default function GenerarCV() {
           variants={fadeIn}
           className="lg:col-span-2 p-6 sm:p-8 bg-white border-2 rounded-2xl shadow-xl space-y-6 h-fit" // h-fit to prevent stretching
         >
-          <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6">
-            Crea tu <span className="text-blue-600">CV Personalizado</span>
+          <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6" 
+              dangerouslySetInnerHTML={{ __html: t('cv_generator.title') }}>
           </h1>
 
           {/* Oferta Laboral */}
@@ -195,7 +199,7 @@ export default function GenerarCV() {
           {/* Plantilla */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-gray-700">Carrera a la que perteneces</h2>
+              <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.career.label')}</h2>
               {/* You can choose a different icon if Briefcase is not suitable */}
               <BriefcaseIcon className="w-5 h-5 text-gray-500" />
             </div>
@@ -203,19 +207,19 @@ export default function GenerarCV() {
               type="text"
               value={carrera}
               onChange={(e) => setCarrera(e.target.value)}
-              placeholder="Ej. Ingeniería de Software, Marketing Digital, etc."
+              placeholder={t('cv_generator.career.placeholder')}
               className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
             />
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-700">1. Oferta Laboral</h2>
+            <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.job_offer.label')}</h2>
 
             <div className="flex gap-2">
               {[
-                { type: "pdf", icon: UploadIcon, label: "PDF" },
-                { type: "image", icon: ImageIcon, label: "Imagen" },
-                { type: "text", icon: TextIcon, label: "Texto" },
+                { type: "pdf", icon: UploadIcon, label: t('cv_generator.job_offer.types.pdf') },
+                { type: "image", icon: ImageIcon, label: t('cv_generator.job_offer.types.image') },
+                { type: "text", icon: TextIcon, label: t('cv_generator.job_offer.types.text') },
               ].map(({ type, icon: Icon, label }) => (
                 <Button
                   key={type}
@@ -235,7 +239,7 @@ export default function GenerarCV() {
               <Textarea
                 value={ofertaLaboral as string} // Cast to string for Textarea
                 onChange={(e) => setOfertaLaboral(e.target.value)}
-                placeholder="Pega la oferta laboral aquí (texto)..."
+                placeholder={t('cv_generator.job_offer.text_placeholder')}
                 className="h-32 bg-gray-50 rounded-xl border-gray-200 focus:ring-blue-500"
                 required
               />
@@ -254,17 +258,17 @@ export default function GenerarCV() {
 
           {/* Plantilla */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-700">2. Plantilla (Opcional)</h2>
+            <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.template.label')}</h2>
 
 {/*
             {templateId && (
               <div className="flex items-center p-2 bg-green-50 rounded-lg border border-green-200 mb-2">
                 <Check className="text-green-500 mr-2 h-5 w-5" />
                 <span className="text-sm text-green-700 font-medium">
-                  Usando plantilla: <span className="font-bold">{selectedTemplateName}</span>
+                  {t('cv_generator.template.using_template')} <span className="font-bold">{selectedTemplateName}</span>
                 </span>
                 <Link href="/templates" className="ml-auto text-blue-600 text-sm hover:underline">
-                  Cambiar
+                  {t('cv_generator.template.change')}
                 </Link>
               </div>
             )}
@@ -283,22 +287,22 @@ export default function GenerarCV() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="ghost" className="mt-2 text-blue-600 hover:text-blue-800 flex items-center gap-2">
-                    <Eye size={20} /> Vista Previa de Plantilla
+                    <Eye size={20} /> {t('cv_generator.template.preview')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl">
                   <DialogHeader>
-                    <DialogTitle>Vista Previa de la Plantilla</DialogTitle>
+                    <DialogTitle>{t('cv_generator.template.preview')}</DialogTitle>
                   </DialogHeader>
                   <iframe src={previewTemplate} className="w-full h-96 rounded-lg border" />
                 </DialogContent>
               </Dialog>
             )}
             {!plantillaCV && !templateId && template && ( // Indicate which template is being used if none is uploaded
-              <p className="text-sm text-gray-500 mt-2">Usando plantilla por defecto.</p>
+              <p className="text-sm text-gray-500 mt-2">{t('cv_generator.template.using_default')}</p>
             )}
             {plantillaCV && templateId && (
-              <p className="text-sm text-amber-500 mt-2">La plantilla cargada manualmente sobrescribirá la plantilla seleccionada.</p>
+              <p className="text-sm text-amber-500 mt-2">{t('cv_generator.template.template_override')}</p>
             )}
           </div>
 
@@ -306,11 +310,11 @@ export default function GenerarCV() {
 
           {/* Información Adicional */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-700">3. Información Adicional (Opcional)</h2>
+            <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.additional_info.label')}</h2>
             <Textarea
               value={informacion}
               onChange={(e) => setInformacion(e.target.value)}
-              placeholder="Habilidades clave, logros específicos, experiencia relevante no cubierta en la oferta, etc."
+              placeholder={t('cv_generator.additional_info.placeholder')}
               className="h-24 bg-gray-50 rounded-xl border-gray-200 focus:ring-blue-500"
             />
           </div>
@@ -324,10 +328,10 @@ export default function GenerarCV() {
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-                Generando...
+                {t('cv_generator.buttons.generating')}
               </span>
             ) : (
-              "Generar CV"
+              t('cv_generator.buttons.generate')
             )}
           </Button>
         </motion.form>
@@ -338,7 +342,7 @@ export default function GenerarCV() {
           transition={{ delay: 0.2 }}
           className="lg:col-span-3 p-3 border-2 bg-white rounded-2xl shadow-xl flex flex-col" // Use flex-col for content alignment
         >
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Vista Previa del CV</h2>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('cv_generator.preview.title')}</h2>
           <div className="flex-grow rounded-lg overflow-hidden  bg-gray-50"> {/* Added bg-gray-50 */}
             {isLoading ? (
               <CVSkeleton
@@ -351,8 +355,8 @@ export default function GenerarCV() {
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 p-4">
                 <ImageIcon size={48} className="mb-4 text-gray-400" />
-                <p className="text-lg font-medium mb-2">Tu CV aparecerá aquí</p>
-                <p className="text-sm">Completa el formulario de la izquierda y haz clic en "Generar CV" para ver la vista previa.</p>
+                <p className="text-lg font-medium mb-2">{t('cv_generator.preview.placeholder.title')}</p>
+                <p className="text-sm">{t('cv_generator.preview.placeholder.description')}</p>
               </div>
             )}
           </div>

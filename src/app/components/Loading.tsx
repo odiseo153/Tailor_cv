@@ -1,4 +1,8 @@
+import { useI18n } from "@/app/context/I18nContext";
+
 export const Loading = () => {
+  const { t } = useI18n();
+
   return (
     <div className="flex-col gap-4 w-full flex items-center justify-center">
       <div

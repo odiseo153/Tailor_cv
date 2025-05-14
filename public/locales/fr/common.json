@@ -1,0 +1,375 @@
+{
+  "language": "Français",
+  "header": {
+    "home": "Accueil",
+    "pricing": "Tarifs",
+    "profile": "Profil",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "settings": "Paramètres",
+    "how_it_works": "Comment ça marche",
+    "why_tailorcv": "Pourquoi TailorCV ?",
+    "generate_cv": "Générer un CV",
+    "contact": "Contactez-nous",
+    "close_menu": "Fermer le menu",
+    "open_menu": "Ouvrir le menu",
+    "account_access": "Accès à votre compte"
+  },
+  "footer": {
+    "about": "À propos",
+    "contact": "Contact",
+    "privacy": "Politique de Confidentialité",
+    "terms": "Conditions d'Utilisation"
+  },
+  "languageSelector": {
+    "label": "Langue",
+    "en": "Anglais",
+    "es": "Espagnol",
+    "fr": "Français",
+    "zh": "Chinois"
+  },
+  "home": {
+    "hero": {
+      "tagline": "Boostez votre recherche d'emploi",
+      "title": "Votre CV Parfait en Minutes",
+      "description": "Créez des CV personnalisés et optimisés pour chaque offre d'emploi avec l'aide de l'intelligence artificielle.",
+      "createButton": "🚀 Créer mon CV",
+      "howItWorksButton": "Voir comment ça marche",
+      "satisfiedUsers": "Plus de 5 000 utilisateurs satisfaits"
+    },
+    "about": {
+      "tagline": "Découvrez TailorCV",
+      "title": "Qu'est-ce que TailorCV?",
+      "description": "La plateforme intelligente qui vous aide à créer des CV personnalisés pour chaque candidature.",
+      "missionTagline": "Notre raison d'être",
+      "missionTitle": "Notre Mission",
+      "missionDescription": "TailorCV a été créé avec un objectif simple : optimiser le processus de candidature et augmenter significativement vos chances d'obtenir des entretiens.",
+      "mission1": "Simplifier la création de CV personnalisés",
+      "mission2": "Maximiser vos opportunités d'emploi",
+      "mission3": "Gagner un temps précieux dans votre recherche",
+      "featuresTagline": "Fonctionnalités principales",
+      "featuresTitle": "Pourquoi choisir TailorCV",
+      "featuresDescription": "Nos fonctionnalités sont conçues pour optimiser votre recherche d'emploi",
+      "features": {
+        "customResumes": "CV Personnalisés",
+        "customResumesDesc": "Générez des CV sur mesure qui correspondent aux exigences spécifiques du poste, augmentant ainsi vos chances d'être remarqué.",
+        "aiAnalysis": "Analyse par IA",
+        "aiAnalysisDesc": "Notre IA avancée analyse les descriptions de poste pour identifier les compétences clés et les qualifications recherchées par les employeurs.",
+        "optimizedProcess": "Processus Optimisé",
+        "optimizedProcessDesc": "Économisez du temps et des efforts en automatisant le processus de personnalisation du CV pour chaque candidature.",
+        "successRate": "Taux de Réussite Plus Élevé",
+        "successRateDesc": "Démarquez-vous des autres candidats avec un CV qui s'aligne parfaitement avec ce que recherchent les recruteurs."
+      },
+      "statsTagline": "Résultats prouvés",
+      "statsTitle": "TailorCV en Chiffres",
+      "statsDescription": "Statistiques qui démontrent notre impact",
+      "stats": {
+        "users": "Utilisateurs Actifs",
+        "rate": "Taux d'Entretiens",
+        "timeSaving": "Gain de Temps",
+        "support": "Support Disponible"
+      },
+      "ctaTitle": "Prêt à booster votre carrière?",
+      "ctaDescription": "Commencez à créer des CV optimisés et augmentez vos chances d'obtenir des entretiens.",
+      "ctaButton": "Créer mon CV maintenant"
+    },
+    "howItWorks": {
+      "tagline": "Processus fluide",
+      "title": "Comment fonctionne TailorCV",
+      "description": "Un processus simple et efficace pour vous aider à décrocher plus d'entretiens",
+      "step1": "Téléchargez votre offre d'emploi",
+      "step1Description": "Notre IA analyse les offres d'emploi et identifie :",
+      "step1Feature1": "Mots-clés techniques (ex. Python, Scrum)",
+      "step1Feature2": "Compétences relationnelles requises (ex. leadership)",
+      "step1Feature3": "Hiérarchie des exigences (priorisant l'essentiel)",
+      "step2": "Personnalisation par IA",
+      "step2Description": "Notre IA personnalise votre CV pour l'adapter aux exigences du poste :",
+      "step2Feature1": "Réorganise les compétences selon l'importance pour le poste",
+      "step2Feature2": "Met en avant les expériences les plus valorisées",
+      "step2Feature3": "Ajuste le langage pour s'adapter à la culture de l'entreprise",
+      "step3": "Exportez et Postulez",
+      "step3Description": "Notre IA garantit que votre CV passe tous les tests :",
+      "step3Feature1": "Ajustement de la densité des mots-clés (12-15%)",
+      "step3Feature2": "Compatibilité ATS (systèmes de suivi des candidats)",
+      "step3Feature3": "Suggestions de verbes d'action pour chaque secteur"
+    },
+    "benefits": {
+      "title": "Pourquoi choisir TailorCV?",
+      "description": "Notre plateforme vous donne l'avantage concurrentiel sur le marché du travail actuel.",
+      "benefit1": {
+        "title": "Obtenez 4x plus d'entretiens",
+        "description": "Nos CV optimisés ont prouvé qu'ils augmentent les rappels d'entretien de 400%.",
+        "standard": "Standard",
+        "tailorCV": "TailorCV"
+      },
+      "benefit2": {
+        "title": "Économisez 10 heures/semaine",
+        "description": "Arrêtez de modifier manuellement votre CV pour chaque candidature. Notre IA le fait en quelques minutes.",
+        "timeSaved": "Temps économisé",
+        "day": "Jour"
+      },
+      "benefit3": {
+        "title": "Profils adaptables",
+        "description": "Personnalisez votre CV pour différentes industries et régions en un seul clic."
+      },
+      "benefit4": {
+        "title": "Mises à jour en un clic",
+        "description": "Gardez votre CV à jour avec une synchronisation instantanée sur toutes les versions."
+      }
+    },
+    "contact": {
+      "tagline": "Nous sommes là pour vous",
+      "title": "Contactez-nous",
+      "description": "Vous avez des questions? Nous sommes là pour vous aider à obtenir l'emploi que vous méritez.",
+      "namePlaceholder": "Votre nom",
+      "emailPlaceholder": "Votre email",
+      "messagePlaceholder": "Comment pouvons-nous vous aider?",
+      "sendButton": "Envoyer le Message",
+      "sending": "Envoi en cours...",
+      "success": "Message envoyé avec succès!",
+      "error": "Une erreur s'est produite. Veuillez réessayer."
+    }
+  },
+  "cv_generator": {
+    "title": "Créez votre <span>CV Personnalisé</span>",
+    "career": {
+      "label": "Carrière à laquelle vous appartenez",
+      "placeholder": "Ex. Ingénierie Logicielle, Marketing Digital, etc."
+    },
+    "job_offer": {
+      "label": "1. Offre d'Emploi",
+      "types": {
+        "pdf": "PDF",
+        "image": "Image",
+        "text": "Texte"
+      },
+      "text_placeholder": "Collez l'offre d'emploi ici (texte)...",
+      "validation_error": {
+        "text_empty": "Veuillez saisir le texte de l'offre d'emploi.",
+        "file_missing": "Veuillez sélectionner un fichier pour l'offre d'emploi."
+      }
+    },
+    "template": {
+      "label": "2. Modèle (Optionnel)",
+      "using_template": "Utilisation du modèle :",
+      "change": "Changer",
+      "preview": "Aperçu du Modèle",
+      "using_default": "Utilisation du modèle par défaut.",
+      "template_override": "Le modèle téléchargé manuellement remplacera le modèle sélectionné."
+    },
+    "additional_info": {
+      "label": "3. Informations Supplémentaires (Optionnel)",
+      "placeholder": "Compétences clés, réalisations spécifiques, expérience pertinente non couverte dans l'offre, etc."
+    },
+    "buttons": {
+      "generate": "Générer le CV",
+      "generating": "Génération en cours..."
+    },
+    "preview": {
+      "title": "Aperçu du CV",
+      "placeholder": {
+        "title": "Votre CV apparaîtra ici",
+        "description": "Complétez le formulaire à gauche et cliquez sur \"Générer le CV\" pour voir l'aperçu."
+      }
+    },
+    "messages": {
+      "success": "CV Généré avec Succès",
+      "error": "Erreur lors de la génération du CV : "
+    }
+  },
+  "profile": {
+    "quick_actions": {
+      "title": "Actions Rapides",
+      "generate_cv": "Générer un CV",
+      "billing": "Facturation et Abonnement"
+    },
+    "personal_info": {
+      "title": "Informations Personnelles",
+      "edit": "Modifier les informations",
+      "cancel": "Annuler",
+      "save": "Enregistrer les modifications",
+      "saving": "Enregistrement...",
+      "fields": {
+        "name": {
+          "label": "Nom",
+          "placeholder": "Votre nom complet",
+          "error": "Le nom est requis"
+        },
+        "email": {
+          "label": "Email",
+          "placeholder": "votre@email.com",
+          "error": "L'email est requis",
+          "invalid": "Format d'email invalide"
+        },
+        "phone": {
+          "label": "Téléphone",
+          "placeholder": "+33 1 23 45 67 89",
+          "error": "Format de téléphone invalide",
+          "not_specified": "Non spécifié"
+        },
+        "location": {
+          "label": "Localisation",
+          "placeholder": "Ville, Pays",
+          "not_specified": "Non spécifiée"
+        }
+      },
+      "success": "Données mises à jour avec succès",
+      "error": "Erreur lors de la mise à jour des données"
+    },
+    "work_experience": {
+      "title": "Expérience Professionnelle",
+      "add": "Ajouter une expérience",
+      "edit": "Modifier l'expérience",
+      "delete": "Supprimer l'expérience",
+      "fields": {
+        "company": {
+          "label": "Entreprise",
+          "placeholder": "Nom de l'entreprise"
+        },
+        "position": {
+          "label": "Poste",
+          "placeholder": "Votre poste"
+        },
+        "start_date": {
+          "label": "Date de Début"
+        },
+        "end_date": {
+          "label": "Date de Fin"
+        },
+        "current_job": {
+          "label": "Emploi Actuel"
+        },
+        "description": {
+          "label": "Description",
+          "placeholder": "Décrivez vos responsabilités et réalisations"
+        }
+      }
+    },
+    "education": {
+      "title": "Formation",
+      "add": "Ajouter une formation",
+      "edit": "Modifier la formation",
+      "delete": "Supprimer la formation",
+      "fields": {
+        "institution": {
+          "label": "Établissement",
+          "placeholder": "Nom de l'établissement"
+        },
+        "degree": {
+          "label": "Diplôme",
+          "placeholder": "Votre diplôme"
+        },
+        "field": {
+          "label": "Domaine d'Étude",
+          "placeholder": "Votre domaine d'étude"
+        },
+        "start_date": {
+          "label": "Date de Début"
+        },
+        "end_date": {
+          "label": "Date de Fin"
+        },
+        "current": {
+          "label": "Actuellement en Formation"
+        }
+      }
+    },
+    "skills": {
+      "title": "Compétences et Aptitudes",
+      "add": "Ajouter",
+      "add_skill": "Ajouter une Compétence",
+      "add_first": "Ajouter la première compétence",
+      "skill_name": "Nom de la compétence",
+      "skill_placeholder": "Ex : JavaScript, Leadership, Photoshop...",
+      "level": "Niveau",
+      "level_required": "Le niveau est requis",
+      "level_range": "Le niveau doit être compris entre 1 et 5",
+      "name_required": "Le nom de la compétence est requis",
+      "search_placeholder": "Rechercher une compétence...",
+      "no_skills": "Vous n'avez pas encore ajouté de compétences.",
+      "no_results": "Aucune compétence correspondant à \"{query}\"",
+      "featured": "Mise en avant",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette compétence ?",
+      "error_creating": "Erreur lors de la création de la compétence",
+      "error_updating": "Erreur lors de la mise à jour de la compétence",
+      "error_deleting": "Erreur lors de la suppression de la compétence",
+      "added_success": "Compétence ajoutée avec succès",
+      "updated_success": "Compétence mise à jour avec succès",
+      "deleted_success": "Compétence supprimée avec succès",
+      "add_error": "Erreur lors de l'ajout de la compétence",
+      "update_error": "Erreur lors de la mise à jour de la compétence",
+      "delete_error": "Erreur lors de la suppression de la compétence"
+    },
+    "social_links": {
+      "title": "Liens Sociaux",
+      "fields": {
+        "linkedin": {
+          "label": "LinkedIn",
+          "placeholder": "URL LinkedIn"
+        },
+        "github": {
+          "label": "GitHub",
+          "placeholder": "URL GitHub"
+        },
+        "portfolio": {
+          "label": "Portfolio",
+          "placeholder": "URL du Portfolio"
+        }
+      }
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Connectez-vous à votre compte",
+      "email": "Email",
+      "email_placeholder": "votre@email.com",
+      "password": "Mot de passe",
+      "forgot_password": "Mot de passe oublié ?",
+      "remember_me": "Se souvenir de moi",
+      "login_button": "Se connecter",
+      "logging_in": "Connexion en cours...",
+      "or_continue_with": "Ou continuez avec",
+      "no_account": "Vous n'avez pas de compte ?",
+      "register_link": "S'inscrire",
+      "successful_login": "Connexion réussie"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "name": "Nom complet",
+      "name_placeholder": "Votre nom complet",
+      "email": "Email",
+      "email_placeholder": "votre@email.com",
+      "password": "Mot de passe",
+      "confirm_password": "Confirmer le mot de passe",
+      "create_button": "Créer un compte",
+      "registering": "Inscription en cours...",
+      "or_register_with": "Ou inscrivez-vous avec",
+      "have_account": "Vous avez déjà un compte ?",
+      "login_link": "Se connecter",
+      "successful_register": "Inscription réussie",
+      "password_strength": {
+        "min_length": "Minimum 8 caractères",
+        "uppercase": "Une lettre majuscule",
+        "number": "Un chiffre",
+        "special": "Un caractère spécial",
+        "passwords_match": "Les mots de passe correspondent",
+        "passwords_not_match": "Les mots de passe ne correspondent pas"
+      }
+    },
+    "errors": {
+      "credentials": "Identifiants invalides. Veuillez vérifier votre email et mot de passe.",
+      "access_denied": "Vous n'avez pas la permission d'accéder à cette page.",
+      "email_signin": "Erreur lors de l'envoi de l'email de vérification.",
+      "oauth_error": "Erreur lors de la connexion avec le fournisseur social. Veuillez réessayer.",
+      "session_required": "Veuillez vous connecter pour accéder à cette page.",
+      "default": "Une erreur s'est produite lors de la connexion. Veuillez réessayer.",
+      "required_fields": "Veuillez remplir tous les champs.",
+      "passwords_not_match": "Les mots de passe ne correspondent pas.",
+      "registration_error": "Erreur lors de l'inscription de l'utilisateur",
+      "unexpected_error": "Une erreur inattendue s'est produite. Veuillez réessayer."
+    }
+  }
+} 

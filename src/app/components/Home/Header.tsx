@@ -20,6 +20,8 @@ import AuthForm from "../Auth/AuthComponent"
 import { Session } from "@/app/api/auth/[...nextauth]/route"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
+import LanguageSelector from "../LanguageSelector"
+import { useI18n } from "@/app/context/I18nContext"
 
 export default function Header() {
   const { authOpen, setAuthOpen } = useStore()
@@ -27,6 +29,7 @@ export default function Header() {
     data: Session | null;
     status: string;
   };
+  const { t } = useI18n();
   const pathname = usePathname()
 
   const user = session?.user
@@ -52,31 +55,31 @@ export default function Header() {
   // Definir ítems del menú según el estado de autenticación
   const navigationItems = [
     { 
-      label: "Inicio", 
+      label: t("header.home"), 
       href: "/", 
       icon: <Home className="h-4 w-4 mr-2" />,
       showWhen: "always" 
     },
     { 
-      label: "Cómo Funciona", 
+      label: t("header.how_it_works"), 
       href: "/#how-it-works", 
       icon: <Info className="h-4 w-4 mr-2" />,
       showWhen: "guest" 
     },
     { 
-      label: "¿Por qué TailorCV?", 
+      label: t("header.why_tailorcv"), 
       href: "/#benefits", 
       icon: <FileText className="h-4 w-4 mr-2" />,
       showWhen: "guest" 
     },
     { 
-      label: "Generar CV", 
+      label: t("header.generate_cv"), 
       href: "/generar-cv", 
       icon: <FileText className="h-4 w-4 mr-2" />,
       showWhen: "authenticated" 
     },
     { 
-      label: "Contáctanos", 
+      label: t("header.contact"), 
       href: "/#contact", 
       icon: <Mail className="h-4 w-4 mr-2" />,
       showWhen: "always" 
@@ -85,17 +88,17 @@ export default function Header() {
   
   const userMenuItems = [
     { 
-      label: "Perfil", 
+      label: t("header.profile"), 
       href: "/profile", 
       icon: <User className="h-4 w-4 mr-2" /> 
     },
     { 
-      label: "Configuración", 
+      label: t("header.settings"), 
       href: "/profile/billing", 
       icon: <Settings className="h-4 w-4 mr-2" /> 
     },
     { 
-      label: "Cerrar Sesión", 
+      label: t("header.logout"), 
       onClick: () => signOut(), 
       icon: <LogOut className="h-4 w-4 mr-2" />
     }
@@ -156,6 +159,9 @@ export default function Header() {
 
         {/* User actions - Desktop */}
         <div className="hidden md:flex items-center gap-3">
+          {/* Language Selector */}
+          <LanguageSelector />
+          
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -211,7 +217,7 @@ export default function Header() {
           ) : (
             !isAuthPage && (
               <Button onClick={() => setAuthOpen(true)} className="bg-primary hover:bg-primary/90">
-                Iniciar Sesión
+                {t("header.login")}
               </Button>
             )
           )}
@@ -222,7 +228,7 @@ export default function Header() {
           variant="ghost" 
           onClick={() => setIsOpen(!isOpen)} 
           className="md:hidden p-1 h-auto"
-          aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-label={isOpen ? t("header.close_menu") : t("header.open_menu")}
           aria-expanded={isOpen}
         >
           <AnimatePresence mode="wait" initial={false}>
@@ -262,6 +268,11 @@ export default function Header() {
                     <span>{item.label}</span>
                   </Link>
                 ))}
+              </div>
+              
+              {/* Language Selector Mobile */}
+              <div className="mb-4 pb-3 border-b border-border">
+                <LanguageSelector className="w-full justify-between" />
               </div>
               
               {user ? (
@@ -305,12 +316,12 @@ export default function Header() {
                   </div>
                 </div>
               ) : (
-                isAuthPage && (
+                !isAuthPage && (
                   <Button onClick={() => {
                     setAuthOpen(true);
                     setIsOpen(false);
                   }} className="w-full bg-primary hover:bg-primary/90">
-                    Iniciar Sesión
+                    {t("header.login")}
                   </Button>
                 )
               )}
@@ -322,7 +333,7 @@ export default function Header() {
       {/* Auth Dialog */}
       <Dialog open={authOpen} onOpenChange={setAuthOpen}>
         <DialogContent className="sm:max-w-md">
-          <DialogTitle className="text-xl font-semibold text-center">Acceso a tu cuenta</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-center">{t("header.account_access")}</DialogTitle>
           <AuthForm />
         </DialogContent>
       </Dialog>

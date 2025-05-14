@@ -12,8 +12,10 @@ import { useSession } from "next-auth/react"
 import { Message } from "@/app/utils/Message"
 import { Session } from "@/app/api/auth/[...nextauth]/route"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useI18n } from "@/app/context/I18nContext"
 
 export default function PersonalInfo() {
+  const { t } = useI18n();
   const { data: session, update, status } = useSession() as {
     data: Session | null;
     update: (data: Partial<Session["user"]>) => Promise<Session | null>;
@@ -66,17 +68,17 @@ export default function PersonalInfo() {
     const newErrors: Record<string, string> = {};
 
     if (!editedUser.name) {
-      newErrors.name = "El nombre es requerido";
+      newErrors.name = t('profile.personal_info.fields.name.error');
     }
 
     if (!editedUser.email) {
-      newErrors.email = "El email es requerido";
+      newErrors.email = t('profile.personal_info.fields.email.error');
     } else if (!validateEmail(editedUser.email as string)) {
-      newErrors.email = "Formato de email inválido";
+      newErrors.email = t('profile.personal_info.fields.email.invalid');
     }
 
     if (editedUser.phone && !validatePhone(editedUser.phone)) {
-      newErrors.phone = "Formato de teléfono inválido";
+      newErrors.phone = t('profile.personal_info.fields.phone.error');
     }
 
     setErrors(newErrors);
@@ -112,7 +114,7 @@ export default function PersonalInfo() {
       const response = await request.json();
       
       if (!response.success && !response.resultado) {
-        throw new Error(response.message || "Error al actualizar datos");
+        throw new Error(response.message || t('profile.personal_info.error'));
       }
       
       const newData = response.resultado?.data || response.data;
@@ -130,12 +132,12 @@ export default function PersonalInfo() {
       setIsEditing(false);
       setErrors({});
       setSaveSuccess(true);
-      Message.successMessage("Datos actualizados correctamente");
+      Message.successMessage(t('profile.personal_info.success'));
       
       
     } catch (error) {
       console.error(error);
-      Message.errorMessage("Error al actualizar datos");
+      Message.errorMessage(t('profile.personal_info.error'));
     } finally {
       setIsLoading(false);
     }
@@ -153,7 +155,7 @@ export default function PersonalInfo() {
     return (
       <Card className="transition-all duration-300 bg-card border hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
-          <CardTitle className="text-xl">Información Personal</CardTitle>
+          <CardTitle className="text-xl">{t('profile.personal_info.title')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex justify-center py-8">
@@ -167,7 +169,7 @@ export default function PersonalInfo() {
   return (
     <Card className="transition-all duration-300 bg-card border hover:shadow-md">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl">Información Personal</CardTitle>
+        <CardTitle className="text-xl">{t('profile.personal_info.title')}</CardTitle>
         <TooltipProvider>
           {!isEditing ? (
             <Tooltip>
@@ -176,14 +178,14 @@ export default function PersonalInfo() {
                   onClick={() => setIsEditing(true)} 
                   variant="ghost" 
                   size="icon"
-                  aria-label="Editar información personal"
+                  aria-label={t('profile.personal_info.edit')}
                   className="hover:bg-primary/10"
                 >
                   <PencilIcon className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Editar información</p>
+                <p>{t('profile.personal_info.edit')}</p>
               </TooltipContent>
             </Tooltip>
           ) : (
@@ -194,14 +196,14 @@ export default function PersonalInfo() {
                     onClick={cancelEdit} 
                     variant="outline" 
                     size="icon"
-                    aria-label="Cancelar edición"
+                    aria-label={t('profile.personal_info.cancel')}
                     className="hover:bg-destructive/10"
                   >
                     <X className="h-4 w-4 text-destructive" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Cancelar</p>
+                  <p>{t('profile.personal_info.cancel')}</p>
                 </TooltipContent>
               </Tooltip>
               
@@ -212,7 +214,7 @@ export default function PersonalInfo() {
                     variant="outline" 
                     size="icon"
                     disabled={isLoading}
-                    aria-label="Guardar cambios"
+                    aria-label={t('profile.personal_info.save')}
                     className={`hover:bg-green-100 ${saveSuccess ? 'bg-green-100' : ''}`}
                   >
                     {isLoading ? (
@@ -225,7 +227,7 @@ export default function PersonalInfo() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Guardar cambios</p>
+                  <p>{t('profile.personal_info.save')}</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -253,7 +255,7 @@ export default function PersonalInfo() {
                   htmlFor="name" 
                   className={`text-sm font-medium transition-opacity duration-300 ${isEditing ? 'opacity-100 text-primary' : 'opacity-70'}`}
                 >
-                  Nombre
+                  {t('profile.personal_info.fields.name.label')}
                 </Label>
                 {isEditing ? (
                   <div>
@@ -263,7 +265,7 @@ export default function PersonalInfo() {
                       value={editedUser?.name as string || ""} 
                       onChange={handleInputChange} 
                       className={`transition-all duration-200 ${errors.name ? "border-destructive ring-destructive" : ""}`}
-                      placeholder="Tu nombre completo"
+                      placeholder={t('profile.personal_info.fields.name.placeholder')}
                       autoFocus
                     />
                     {errors.name && <p className="text-destructive text-sm mt-1">{errors.name}</p>}
@@ -278,7 +280,7 @@ export default function PersonalInfo() {
                   htmlFor="email" 
                   className={`text-sm font-medium transition-opacity duration-300 ${isEditing ? 'opacity-100 text-primary' : 'opacity-70'}`}
                 >
-                  Email
+                  {t('profile.personal_info.fields.email.label')}
                 </Label>
                 {isEditing ? (
                   <div>
@@ -289,7 +291,7 @@ export default function PersonalInfo() {
                       value={editedUser?.email as string || ""} 
                       onChange={handleInputChange} 
                       className={`transition-all duration-200 ${errors.email ? "border-destructive ring-destructive" : ""}`}
-                      placeholder="tu@email.com"
+                      placeholder={t('profile.personal_info.fields.email.placeholder')}
                     />
                     {errors.email && <p className="text-destructive text-sm mt-1">{errors.email}</p>}
                   </div>
@@ -303,7 +305,7 @@ export default function PersonalInfo() {
                   htmlFor="phone" 
                   className={`text-sm font-medium transition-opacity duration-300 ${isEditing ? 'opacity-100 text-primary' : 'opacity-70'}`}
                 >
-                  Teléfono
+                  {t('profile.personal_info.fields.phone.label')}
                 </Label>
                 {isEditing ? (
                   <div>
@@ -314,12 +316,12 @@ export default function PersonalInfo() {
                       value={editedUser?.phone as string || ""} 
                       onChange={handleInputChange} 
                       className={`transition-all duration-200 ${errors.phone ? "border-destructive ring-destructive" : ""}`}
-                      placeholder="+52 123 456 7890"
+                      placeholder={t('profile.personal_info.fields.phone.placeholder')}
                     />
                     {errors.phone && <p className="text-destructive text-sm mt-1">{errors.phone}</p>}
                   </div>
                 ) : (
-                  <p className="text-gray-600">{editedUser?.phone || "No especificado"}</p>
+                  <p className="text-gray-600">{editedUser?.phone || t('profile.personal_info.fields.phone.not_specified')}</p>
                 )}
               </div>
               
@@ -328,7 +330,7 @@ export default function PersonalInfo() {
                   htmlFor="location" 
                   className={`text-sm font-medium transition-opacity duration-300 ${isEditing ? 'opacity-100 text-primary' : 'opacity-70'}`}
                 >
-                  Ubicación
+                  {t('profile.personal_info.fields.location.label')}
                 </Label>
                 {isEditing ? (
                   <div>
@@ -337,11 +339,11 @@ export default function PersonalInfo() {
                       name="location" 
                       value={editedUser?.location as string || ""} 
                       onChange={handleInputChange}
-                      placeholder="Ciudad, País"
+                      placeholder={t('profile.personal_info.fields.location.placeholder')}
                     />
                   </div>
                 ) : (
-                  <p className="text-gray-600">{editedUser?.location || "No especificada"}</p>
+                  <p className="text-gray-600">{editedUser?.location || t('profile.personal_info.fields.location.not_specified')}</p>
                 )}
               </div>
             </div>
@@ -356,7 +358,7 @@ export default function PersonalInfo() {
                 size="sm"
                 className="w-full md:w-auto"
               >
-                Cancelar
+                {t('profile.personal_info.cancel')}
               </Button>
               <Button 
                 type="submit" 
@@ -366,10 +368,10 @@ export default function PersonalInfo() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
+                    {t('profile.personal_info.saving')}
                   </>
                 ) : (
-                  <>Guardar cambios</>
+                  <>{t('profile.personal_info.save')}</>
                 )}
               </Button>
             </div>

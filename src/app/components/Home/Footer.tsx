@@ -3,8 +3,11 @@
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { nameApp } from "@/app/utils/NameApp";
+import { useI18n } from "@/app/context/I18nContext";
 
 export default function Footer() {
+  const { t } = useI18n();
+  
   return (
     <footer className="bg-gradient-to-r bg-gray-800 text-gray-100 py-16 mt-auto">
       <div className="container mx-auto px-6 md:px-12 lg:px-20">
@@ -21,7 +24,7 @@ export default function Footer() {
 
           {/* Contacto */}
           <div className="text-center md:text-right space-y-3">
-            <h3 className="text-xl font-semibold text-white">Contáctanos</h3>
+            <h3 className="text-xl font-semibold text-white">{t("footer.contact")}</h3>
             <p className="text-gray-400 hover:text-gray-200 transition">
               <a href="mailto:odiseorincon@gmail.com" className="hover:underline">odiseorincon@gmail.com</a>
             </p>

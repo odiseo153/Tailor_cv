@@ -8,9 +8,12 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Message } from "@/app/utils/Message"
 import { motion } from "framer-motion"
+import { useI18n } from "@/app/context/I18nContext"
 
 export default function ContactSection() {
   const router = useRouter();
+  const { t } = useI18n();
+  
   const industries = [
     "Tecnología",
     "Finanzas",
@@ -35,6 +38,8 @@ export default function ContactSection() {
     industry: '',
     message: '',
   });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e: { target: { name: any; value: any } }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -48,6 +53,8 @@ export default function ContactSection() {
       Message.errorMessage('Por favor, completa todos los campos.');
       return;
     }
+    
+    setIsSubmitting(true);
 
     try {
       const response = await fetch('/api/email', {
@@ -66,11 +73,13 @@ export default function ContactSection() {
 
       console.log(data);
 
-      Message.successMessage('Mensaje enviado correctamente!');
+      Message.successMessage(t("home.contact.success"));
       setFormData({ name: '', email: '', industry: '', message: '' });
     } catch (error) {
       console.error(error);
-      Message.errorMessage('Error al enviar el mensaje. Por favor, inténtalo de nuevo más tarde.');
+      Message.errorMessage(t("home.contact.error"));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -102,13 +111,13 @@ export default function ContactSection() {
           className="text-center mb-16"
         >
           <div className="inline-block mb-3 px-4 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-            Estamos aquí para ti
+            {t("home.contact.tagline")}
           </div>
           <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Contáctanos
+            {t("home.contact.title")}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            ¿Tienes preguntas? Estamos aquí para ayudarte a conseguir el trabajo que mereces.
+            {t("home.contact.description")}
           </p>
         </motion.div>
 
@@ -192,7 +201,7 @@ export default function ContactSection() {
                     <Input 
                       id="name" 
                       name="name" 
-                      placeholder="Juan Pérez" 
+                      placeholder={t("home.contact.namePlaceholder")}
                       onChange={handleChange} 
                       value={formData.name} 
                       className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
@@ -206,7 +215,7 @@ export default function ContactSection() {
                       id="email" 
                       name="email" 
                       type="email" 
-                      placeholder="juan@example.com" 
+                      placeholder={t("home.contact.emailPlaceholder")}
                       onChange={handleChange} 
                       value={formData.email} 
                       className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
@@ -236,7 +245,7 @@ export default function ContactSection() {
                   <Textarea 
                     id="message" 
                     name="message" 
-                    placeholder="¿Cómo podemos ayudarte?" 
+                    placeholder={t("home.contact.messagePlaceholder")}
                     rows={4} 
                     onChange={handleChange} 
                     value={formData.message} 
@@ -246,10 +255,11 @@ export default function ContactSection() {
 
                 <Button 
                   type="submit" 
+                  disabled={isSubmitting}
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg flex items-center justify-center gap-2"
                 >
                   <Send className="h-4 w-4" />
-                  <span>Enviar Mensaje</span>
+                  <span>{isSubmitting ? t("home.contact.sending") : t("home.contact.sendButton")}</span>
                 </Button>
               </form>
 
