@@ -156,7 +156,13 @@
       "change": "更改",
       "preview": "模板预览",
       "using_default": "使用默认模板。",
-      "template_override": "手动上传的模板将覆盖已选择的模板。"
+      "template_override": "手动上传的模板将覆盖已选择的模板。",
+      "generating_preview": "正在生成预览...",
+      "error_loading": "加载预览时出错",
+      "retry": "重试",
+      "no_preview": "无预览",
+      "by": "作者",
+      "delete": "删除"
     },
     "additional_info": {
       "label": "3. 附加信息（可选）",
@@ -319,7 +325,8 @@
           "placeholder": "作品集链接"
         }
       }
-    }
+    },
+    "professional_profile": "专业概述"
   },
   "auth": {
     "login": {
@@ -370,6 +377,37 @@
       "passwords_not_match": "密码不匹配。",
       "registration_error": "注册用户时出错",
       "unexpected_error": "发生意外错误。请重试。"
+    }
+  },
+  "cv_preview": {
+    "default": {
+      "name": "张明",
+      "title": "高级平面设计师",
+      "email": "zhang.ming@example.com",
+      "phone": "+86 138 1234 5678",
+      "summary": "拥有5年以上经验的平面设计师，专注于品牌创建、数字插图和广告活动设计。精通Adobe Illustrator和Photoshop，作品集展示了创造力和对细节的关注。",
+      "location": "北京，中国",
+      "linkedin": "linkedin.com/in/zhangming"
+    },
+    "experience": {
+      "senior": {
+        "title": "高级平面设计师",
+        "company": "XYZ创意代理公司",
+        "responsibility1": "为10多个客户重新设计品牌，提高品牌识别度30%",
+        "responsibility2": "为全球品牌开发设计风格指南和设计系统"
+      },
+      "junior": {
+        "title": "初级平面设计师",
+        "company": "ABC创意工作室",
+        "responsibility1": "为社交媒体和印刷媒体设计宣传材料"
+      }
+    },
+    "skills": {
+      "illustrator": "Adobe Illustrator",
+      "photoshop": "Photoshop",
+      "uiux": "UI/UX",
+      "webdesign": "网页设计",
+      "branding": "品牌设计"
     }
   }
 } 

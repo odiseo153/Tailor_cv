@@ -156,7 +156,13 @@
       "change": "Change",
       "preview": "Template Preview",
       "using_default": "Using default template.",
-      "template_override": "Manually uploaded template will override the selected template."
+      "template_override": "Manually uploaded template will override the selected template.",
+      "generating_preview": "Generating preview...",
+      "error_loading": "Error loading preview",
+      "retry": "Retry",
+      "no_preview": "No preview",
+      "by": "By",
+      "delete": "Delete"
     },
     "additional_info": {
       "label": "3. Additional Information (Optional)",
@@ -319,7 +325,8 @@
           "placeholder": "Portfolio URL"
         }
       }
-    }
+    },
+    "professional_profile": "Professional Summary"
   },
   "auth": {
     "login": {
@@ -370,6 +377,37 @@
       "passwords_not_match": "Passwords don't match.",
       "registration_error": "Error registering user",
       "unexpected_error": "An unexpected error occurred. Please try again."
+    }
+  },
+  "cv_preview": {
+    "default": {
+      "name": "John Smith",
+      "title": "Senior Graphic Designer",
+      "email": "john.smith@example.com",
+      "phone": "+1 234 567 8900",
+      "summary": "Graphic designer with over 5 years of experience, specializing in branding creation, digital illustration, and design of advertising campaigns. Advanced knowledge of Adobe Illustrator and Photoshop, with a portfolio that demonstrates creativity and attention to detail.",
+      "location": "New York, USA",
+      "linkedin": "linkedin.com/in/johnsmith"
+    },
+    "experience": {
+      "senior": {
+        "title": "Senior Graphic Designer",
+        "company": "XYZ Creative Agency",
+        "responsibility1": "Redesigned branding for 10+ clients, increasing recognition by 30%",
+        "responsibility2": "Developed style guides and design systems for global brands"
+      },
+      "junior": {
+        "title": "Junior Graphic Designer",
+        "company": "ABC Creative Studio",
+        "responsibility1": "Designed promotional materials for social media and print media"
+      }
+    },
+    "skills": {
+      "illustrator": "Adobe Illustrator",
+      "photoshop": "Photoshop",
+      "uiux": "UI/UX",
+      "webdesign": "Web Design",
+      "branding": "Branding"
     }
   }
 } 

@@ -152,11 +152,17 @@
     },
     "template": {
       "label": "2. Modèle (Optionnel)",
-      "using_template": "Utilisation du modèle :",
+      "using_template": "Utilisation du modèle:",
       "change": "Changer",
-      "preview": "Aperçu du Modèle",
+      "preview": "Aperçu du modèle",
       "using_default": "Utilisation du modèle par défaut.",
-      "template_override": "Le modèle téléchargé manuellement remplacera le modèle sélectionné."
+      "template_override": "Le modèle téléchargé manuellement remplacera le modèle sélectionné.",
+      "generating_preview": "Génération de l'aperçu...",
+      "error_loading": "Erreur lors du chargement de l'aperçu",
+      "retry": "Réessayer",
+      "no_preview": "Pas d'aperçu",
+      "by": "Par",
+      "delete": "Supprimer"
     },
     "additional_info": {
       "label": "3. Informations Supplémentaires (Optionnel)",
@@ -319,7 +325,8 @@
           "placeholder": "URL du Portfolio"
         }
       }
-    }
+    },
+    "professional_profile": "Résumé Professionnel"
   },
   "auth": {
     "login": {
@@ -370,6 +377,37 @@
       "passwords_not_match": "Les mots de passe ne correspondent pas.",
       "registration_error": "Erreur lors de l'inscription de l'utilisateur",
       "unexpected_error": "Une erreur inattendue s'est produite. Veuillez réessayer."
+    }
+  },
+  "cv_preview": {
+    "default": {
+      "name": "Jean Dupont",
+      "title": "Designer Graphique Senior",
+      "email": "jean.dupont@example.com",
+      "phone": "+33 6 12 34 56 78",
+      "summary": "Designer graphique avec plus de 5 ans d'expérience, spécialisé dans la création d'identité visuelle, l'illustration numérique et la conception de campagnes publicitaires. Maîtrise avancée d'Adobe Illustrator et Photoshop, avec un portfolio démontrant créativité et souci du détail.",
+      "location": "Paris, France",
+      "linkedin": "linkedin.com/in/jeandupont"
+    },
+    "experience": {
+      "senior": {
+        "title": "Designer Graphique Senior",
+        "company": "Agence Créative XYZ",
+        "responsibility1": "Refonte de l'identité visuelle pour plus de 10 clients, augmentant la reconnaissance de 30%",
+        "responsibility2": "Développement de guides de style et systèmes de design pour des marques mondiales"
+      },
+      "junior": {
+        "title": "Designer Graphique Junior",
+        "company": "Studio Créatif ABC",
+        "responsibility1": "Conception de supports promotionnels pour réseaux sociaux et médias imprimés"
+      }
+    },
+    "skills": {
+      "illustrator": "Adobe Illustrator",
+      "photoshop": "Photoshop",
+      "uiux": "UI/UX",
+      "webdesign": "Web Design",
+      "branding": "Branding"
     }
   }
 } 

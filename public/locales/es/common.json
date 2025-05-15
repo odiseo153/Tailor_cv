@@ -156,7 +156,13 @@
       "change": "Cambiar",
       "preview": "Vista Previa de Plantilla",
       "using_default": "Usando plantilla por defecto.",
-      "template_override": "La plantilla cargada manualmente sobrescribirá la plantilla seleccionada."
+      "template_override": "La plantilla cargada manualmente sobrescribirá la plantilla seleccionada.",
+      "generating_preview": "Generando vista previa...",
+      "error_loading": "Error al cargar vista previa",
+      "retry": "Reintentar",
+      "no_preview": "Sin vista previa",
+      "by": "Por",
+      "delete": "Eliminar"
     },
     "additional_info": {
       "label": "3. Información Adicional (Opcional)",
@@ -319,7 +325,8 @@
           "placeholder": "URL de Portafolio"
         }
       }
-    }
+    },
+    "professional_profile": "Resumen Profesional"
   },
   "auth": {
     "login": {
@@ -370,6 +377,37 @@
       "passwords_not_match": "Las contraseñas no coinciden.",
       "registration_error": "Error al registrar usuario",
       "unexpected_error": "Ha ocurrido un error inesperado. Por favor, intenta de nuevo."
+    }
+  },
+  "cv_preview": {
+    "default": {
+      "name": "Juan Pérez",
+      "title": "Diseñador Gráfico Senior",
+      "email": "juan.perez@example.com",
+      "phone": "+34 612 345 678",
+      "summary": "Diseñador gráfico con más de 5 años de experiencia, especializado en creación de branding, ilustración digital y diseño de campañas publicitarias. Dominio avanzado de Adobe Illustrator y Photoshop, con un portafolio que demuestra creatividad y atención al detalle.",
+      "location": "Madrid, España",
+      "linkedin": "linkedin.com/in/juanperez"
+    },
+    "experience": {
+      "senior": {
+        "title": "Diseñador Gráfico Senior",
+        "company": "Agencia Creativa XYZ",
+        "responsibility1": "Rediseño de branding para 10+ clientes, aumentando reconocimiento en un 30%",
+        "responsibility2": "Desarrollo de guías de estilo y sistemas de diseño para marcas globales"
+      },
+      "junior": {
+        "title": "Diseñador Gráfico Junior",
+        "company": "Studio Creativo ABC",
+        "responsibility1": "Diseño de materiales promocionales para redes sociales y medios impresos"
+      }
+    },
+    "skills": {
+      "illustrator": "Adobe Illustrator",
+      "photoshop": "Photoshop",
+      "uiux": "UI/UX",
+      "webdesign": "Diseño Web",
+      "branding": "Branding"
     }
   }
 } 

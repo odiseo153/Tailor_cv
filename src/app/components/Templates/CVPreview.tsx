@@ -8,6 +8,7 @@ import { useStore } from "@/app/context/AppContext"
 import { useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import dynamic from "next/dynamic"
+import { useI18n } from "@/app/context/I18nContext"
 
 // Dynamic import to avoid SSR issues with pdfjs
 const PdfPreviewGenerator = dynamic(
@@ -37,6 +38,7 @@ interface CVPreviewProps {
  */
 export default function CVPreview({ template, onClick, isSelected, onDelete }: CVPreviewProps) {
   const { templateId } = useStore();
+  const { t } = useI18n();
   const isSelectedTemplate = templateId === template.id.toString();
   const [previewImage, setPreviewImage] = useState<string | null>(template.pngUrl || null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
@@ -44,19 +46,19 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
   const [previewError, setPreviewError] = useState(false);
   
   useEffect(() => {
-    // Si no tenemos una imagen de preview y tenemos una URL de PDF, generamos la preview
+    // If we don't have a preview image and we have a PDF URL, we generate the preview
     if (!template.pngUrl && template.pdfUrl) {
       setIsGeneratingPreview(true);
     }
   }, [template.pdfUrl, template.pngUrl]);
 
   const handleDelete = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation(); // Evitar que se active onClick del contenedor
+    e.stopPropagation(); // Prevent parent container onClick from triggering
     onDelete();
   };
   
   const handlePreviewClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation(); // Evitar que se active onClick del contenedor
+    e.stopPropagation(); // Prevent parent container onClick from triggering
     setShowPdfPreview(true);
   };
 
@@ -93,13 +95,13 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
           {isGeneratingPreview ? (
             <div className="flex flex-col items-center justify-center h-full w-full">
               <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-              <span className="mt-2 text-xs text-gray-500">Generando vista previa...</span>
+              <span className="mt-2 text-xs text-gray-500">{t("cv_generator.template.generating_preview", "Generando vista previa...")}</span>
             </div>
           ) : previewImage ? (
             <>
               <img
                 src={previewImage}
-                alt={`Vista previa de ${template.name}`}
+                alt={`${t("cv_generator.template.preview", "Vista previa de")} ${template.name}`}
                 className="w-full h-full object-contain"
                 loading="lazy"
                 onError={() => setPreviewError(true)}
@@ -118,7 +120,7 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
           ) : previewError ? (
             <div className="flex flex-col items-center justify-center text-amber-500 h-full w-full bg-amber-50">
               <AlertCircle size={48} />
-              <span className="mt-2 text-xs">Error al cargar preview</span>
+              <span className="mt-2 text-xs">{t("cv_generator.template.error_loading", "Error al cargar preview")}</span>
               <Button
                 variant="ghost"
                 size="sm"
@@ -128,13 +130,13 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
                   setIsGeneratingPreview(true);
                 }}
               >
-                Reintentar
+                {t("cv_generator.template.retry", "Reintentar")}
               </Button>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center text-gray-400 h-full w-full bg-gray-100">
               <ImageOff size={48} />
-              <span className="mt-2 text-xs">Sin vista previa</span>
+              <span className="mt-2 text-xs">{t("cv_generator.template.no_preview", "Sin vista previa")}</span>
             </div>
           )}
         </CardContent>
@@ -148,24 +150,25 @@ export default function CVPreview({ template, onClick, isSelected, onDelete }: C
               size="icon"
               className="h-8 w-8 ml-2"
               onClick={handleDelete}
+              aria-label={t("cv_generator.template.delete", "Eliminar")}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-xs text-gray-500 mt-1">Por: {template.author}</p>
+          <p className="text-xs text-gray-500 mt-1">{t("cv_generator.template.by", "Por")}: {template.author}</p>
         </div>
       </Card>
 
-      {/* Dialogo para mostrar el PDF completo */}
+      {/* Dialog to display the full PDF */}
       <Dialog open={showPdfPreview} onOpenChange={setShowPdfPreview}>
         <DialogContent className="max-w-3xl h-[90vh] flex flex-col p-0">
           <DialogHeader className="p-4 border-b">
-            <DialogTitle>Vista previa de {template.name}</DialogTitle>
+            <DialogTitle>{t("cv_generator.template.preview", "Vista previa de")} {template.name}</DialogTitle>
           </DialogHeader>
           <div className="flex-grow overflow-hidden p-1">
             <iframe
               src={template.pdfUrl}
-              title={`PDF Preview - ${template.name}`}
+              title={`PDF ${t("cv_generator.template.preview", "Vista previa de")} - ${template.name}`}
               className="w-full h-full border-0"
             />
           </div>
