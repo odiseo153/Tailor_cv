@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { Session } from "../api/auth/[...nextauth]/route"
-import { useI18n } from "../context/I18nContext"
+import { detectBrowserLanguage, useI18n } from "../context/I18nContext"
 
 
 export default function GenerarCV() {
@@ -44,6 +44,8 @@ export default function GenerarCV() {
   
   // Add i18n context
   const { t } = useI18n();
+  const detectedLenguaje = detectBrowserLanguage();
+
 
   // Cargar la plantilla seleccionada cuando se carga la página
  /*
@@ -138,7 +140,8 @@ export default function GenerarCV() {
         carrera,
         undefined, // foto
         templateIdToUse,
-        progressCallback
+        progressCallback,
+        detectedLenguaje
       );
 
       setData(responseHtml)

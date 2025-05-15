@@ -2,7 +2,6 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { i18n } from 'next-i18next';
 import Cookies from 'js-cookie';
 
 // Tipos para el contexto
@@ -27,6 +26,19 @@ const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'zh'];
 const DEFAULT_LOCALE = 'en';
 const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
 
+export const detectBrowserLanguage = (): string => {
+   if (typeof window === 'undefined') return DEFAULT_LOCALE;
+   
+   const savedLocale = Cookies.get(LOCALE_COOKIE_NAME);
+   if (savedLocale && SUPPORTED_LOCALES.includes(savedLocale)) {
+     return savedLocale;
+   }
+
+   const browserLang = window.navigator.language.split('-')[0];
+   return SUPPORTED_LOCALES.includes(browserLang) ? browserLang : DEFAULT_LOCALE;
+ };
+
+ 
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -34,17 +46,6 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   const [translations, setTranslations] = useState<Record<string, any>>({});
 
   // Función para detectar el idioma del navegador
-  const detectBrowserLanguage = (): string => {
-    if (typeof window === 'undefined') return DEFAULT_LOCALE;
-    
-    const savedLocale = Cookies.get(LOCALE_COOKIE_NAME);
-    if (savedLocale && SUPPORTED_LOCALES.includes(savedLocale)) {
-      return savedLocale;
-    }
-
-    const browserLang = window.navigator.language.split('-')[0];
-    return SUPPORTED_LOCALES.includes(browserLang) ? browserLang : DEFAULT_LOCALE;
-  };
 
   // Cargar traducciones para un locale específico
   const loadTranslations = async (localeToLoad: string) => {

@@ -27,22 +27,22 @@ export class CVHandler {
         model: "gemini-1.5-flash-latest",
     });
 
-    // Configurar el prompt
-    const analysisPrompt = `Extrae información de CV (${fileType}):\n
-        * Resumen o Perfil Profesional\n
-        * Experiencia Laboral\n
-        * Educación\n
-        * Habilidades\n
-        * Proyectos (opcional)\n
-        * Idiomas (opcional)\n\n
-        Devuelve SOLO un objeto JSON válido, sin markdown ni texto adicional.`;
+    // Configure the prompt in English
+    const analysisPrompt = `Extract information from CV (${fileType}):\n
+        * Summary or Professional Profile\n
+        * Work Experience\n
+        * Education\n
+        * Skills\n
+        * Projects (optional)\n
+        * Languages (optional)\n\n
+        Return ONLY a valid JSON object, without markdown or additional text.`;
 
     // Notify progress - start processing info
     progressCallback?.onProgress?.(10); // 10% progress when starting
 
     const fileGoodFormat = await this.fileToBase64(file);
 
-    // Convertir archivo a formato compatible
+    // Convert file to compatible format
     const filePart = {
         inlineData: {
             data: fileGoodFormat,
@@ -56,7 +56,7 @@ export class CVHandler {
         const result = await model.generateContent([analysisPrompt, filePart]);
         const response = await result.response;
         
-        // Extraer y parsear JSON
+        // Extract and parse JSON
         const responseText = response.text();
         const cleanJson = responseText.replace(/```json|```/g, '');
         
@@ -67,9 +67,9 @@ export class CVHandler {
         return JSON.parse(cleanJson);
         
     } catch (error) {
-        console.error("Error en Gemini:", error);
+        console.error("Error in Gemini:", error);
         return {
-            error: "Error procesando el archivo",
+            error: "Error processing the file",
             details: error
         };
     }
@@ -79,32 +79,32 @@ async getPlantillaFromPdf(file: File, progressCallback?: ProgressCallback): Prom
   const model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash-latest",
       generationConfig: {
-          temperature: 0.3 // Más preciso para estructura HTML
+          temperature: 0.3 // More precise for HTML structure
       }
   });
 
   progressCallback?.onProgress?.(60); // 60% when starting template processing
 
-  const prompt = `Analiza este CV y genera código HTML válido con ${estilos} que replique fielmente:
-      - Jerarquía de secciones
+  const prompt = `Analyze this CV and generate valid HTML code with ${estilos} that faithfully replicates:
+      - Section hierarchy
       - Layout (grid/flex)
-      - Tipografía y espaciado
-      - Elementos visuales clave
-      - Estilos específicos
+      - Typography and spacing
+      - Key visual elements
+      - Specific styles
       
-      Reglas:
-      * Usa clases CSS de "${estilos}" exclusivamente
-      * HTML5 semántico y válido
-      * Responsive design básico
-      * SIN comentarios ni texto adicional`;
+      Rules:
+      * Use CSS classes from "${estilos}" exclusively
+      * Semantic and valid HTML5
+      * Basic responsive design
+      * NO comments or additional text`;
 
   try {
-      // Convertir File a base64 (versión browser)
+      // Convert File to base64 (browser version)
       const base64Data = await this.fileToBase64(file);
       
       progressCallback?.onProgress?.(70); // 70% after file conversion
       
-      // Construir partes del mensaje
+      // Build message parts
       const parts = [
           { text: prompt },
           {
@@ -115,7 +115,7 @@ async getPlantillaFromPdf(file: File, progressCallback?: ProgressCallback): Prom
           }
       ];
 
-      // Generar contenido
+      // Generate content
       const { response } = await model.generateContent(parts);
       
       progressCallback?.onProgress?.(90); // 90% after getting response
@@ -123,20 +123,20 @@ async getPlantillaFromPdf(file: File, progressCallback?: ProgressCallback): Prom
       // Mark template processing as complete
       progressCallback?.onTemplateProcessed?.();
       
-      // Limpiar y validar HTML
+      // Clean and validate HTML
       return this.cleanGeneratedHtml(response.text());
       
   } catch (error) {
-      throw new Error(`Error generando plantilla: ${error}`);
+      throw new Error(`Error generating template: ${error}`);
   }
 }
 
-// Nuevo método para obtener la plantilla desde la API por ID
+// Method to get template by ID
 async getPlantillaById(templateId: string, progressCallback?: ProgressCallback): Promise<string> {
   try {
     progressCallback?.onProgress?.(60); // 60% when starting template processing
   
-    // Primero obtenemos la información sobre las plantillas
+    // First get information about templates
     const response = await fetch("/api/templates");
     if (!response.ok) {
       throw new Error(`Error fetching templates: ${response.statusText}`);
@@ -145,7 +145,7 @@ async getPlantillaById(templateId: string, progressCallback?: ProgressCallback):
     const data = await response.json();
     progressCallback?.onProgress?.(70); // 70% after getting template data
     
-    // Buscamos la plantilla por ID
+    // Find template by ID
     const selectedTemplate = data.pdfFiles.find(
       (template: any) => template.id.toString() === templateId
     );
@@ -154,7 +154,7 @@ async getPlantillaById(templateId: string, progressCallback?: ProgressCallback):
       throw new Error(`Template with ID ${templateId} not found`);
     }
     
-    // Ahora obtenemos el contenido de la plantilla desde la URL
+    // Get template content from URL
     const pdfResponse = await fetch(selectedTemplate.pdfUrl);
     if (!pdfResponse.ok) {
       throw new Error(`Error fetching PDF template: ${pdfResponse.statusText}`);
@@ -162,13 +162,13 @@ async getPlantillaById(templateId: string, progressCallback?: ProgressCallback):
     
     progressCallback?.onProgress?.(80); // 80% after fetching PDF
     
-    // Convertimos el PDF a blob
+    // Convert PDF to blob
     const pdfBlob = await pdfResponse.blob();
     
-    // Convertimos el blob a File para usar el método existente
+    // Convert blob to File to use existing method
     const pdfFile = new File([pdfBlob], selectedTemplate.name, { type: 'application/pdf' });
     
-    // Usamos el método existente para obtener la plantilla HTML, pero sin duplicar las actualizaciones de progreso
+    // Use existing method to get HTML template, without duplicating progress updates
     const result = await this.getPlantillaFromPdf(pdfFile);
     
     // Mark template processing as complete
@@ -208,7 +208,8 @@ async generarCVAdaptado(
   infoAdiccional: string = "",
   carrera: string = "",
   foto: string = "",
-  progressCallback?: ProgressCallback
+  progressCallback?: ProgressCallback,
+  language: string = "en"
 ): Promise<string> {
   try {
     const estilos = "Tailwind CSS"; // Default style framework
@@ -216,51 +217,52 @@ async generarCVAdaptado(
     progressCallback?.onProgress?.(75); // 75% when starting final CV generation
  
     const systemPrompt = `
-    Eres un asistente especializado en la creación de CVs profesionales en HTML con ${estilos}.  
-    Tu objetivo es generar un CV de una sola página, optimizado para la oferta de trabajo proporcionada, utilizando la información del CV del usuario y adaptándola al contexto laboral.
+    You are a specialized assistant in creating professional CVs in HTML with ${estilos}.  
+    Your goal is to generate a one-page CV, optimized for the provided job offer, using the user's CV information and adapting it to the job context.
   
-    ### Requisitos:
-    - **Formato**: Genera HTML semántico, válido y optimizado para exportación a PDF o Word, asegurando compatibilidad con herramientas de conversión estándar.
-    - **Diseño**: Crea un diseño responsivo, limpio y profesional utilizando ${estilos}, con un enfoque en la legibilidad y estética moderna.
-    - **Optimización**: Incluye solo información relevante para la oferta, eliminando detalles innecesarios y priorizando logros cuantificables y habilidades clave.
-    - **Estructura**: Diseña el CV para que quepa en una página A4 con márgenes estándar (10mm), utilizando una tipografía legible (e.g., Arial, Helvetica, o similar sans-serif) y un tamaño de fuente adecuado (10-12pt para texto, 14-16pt para encabezados).
-    - **Accesibilidad**: Usa etiquetas HTML semánticas (e.g., <header>, <section>, <article>) y atributos ARIA cuando sea necesario para mejorar la compatibilidad con lectores de pantalla.
+    ### Requirements:
+    - **Format**: Generate semantic, valid HTML optimized for export to PDF or Word, ensuring compatibility with standard conversion tools.
+    - **Design**: Create a responsive, clean, and professional design using ${estilos}, with a focus on readability and modern aesthetics.
+    - **Optimization**: Include only information relevant to the offer, eliminating unnecessary details and prioritizing quantifiable achievements and key skills.
+    - **Structure**: Design the CV to fit on one A4 page with standard margins (10mm), using a readable font (e.g., Arial, Helvetica, or similar sans-serif) and an appropriate font size (10-12pt for text, 14-16pt for headings).
+    - **Accessibility**: Use semantic HTML tags (e.g., <header>, <section>, <article>) and ARIA attributes when necessary to improve compatibility with screen readers.
+    - **Language**: The CV MUST be written in ${language}. Translate all content appropriately for this language while maintaining professional terminology.
   
-    ### Consideraciones:
+    ### Considerations:
     - ${validation_prompt}
-    - ${infoAdiccional ? `Incorpora la siguiente información adicional del usuario de manera relevante y estratégica para el puesto: ${infoAdiccional}.` : "No se proporcionó información adicional."}
-    - ${carrera ? `Adapta el CV a la carrera del usuario (${carrera}), siguiendo las mejores prácticas y estándares de la industria para destacar habilidades y experiencias relevantes.` : "Si no se especifica una carrera, asume un enfoque generalista basado en la oferta laboral."}
-    - ${plantilla ? `Utiliza esta plantilla HTML como base: ${plantilla}. Si la plantilla incluye una sección para imagen y no se proporciona una, omite dicha sección.` : "Si no se proporciona una plantilla, crea una estructura HTML moderna y profesional desde cero."}
-    - ${foto ? `Incluye la imagen proporcionada (${foto}) en el CV si la plantilla lo permite y es culturalmente apropiado para el contexto de la oferta.` : "Omite cualquier sección de imagen si no se proporciona una foto o si no es relevante para la oferta."}
+    - ${infoAdiccional ? `Incorporate the following additional user information in a relevant and strategic way for the position: ${infoAdiccional}.` : "No additional information provided."}
+    - ${carrera ? `Adapt the CV to the user's career (${carrera}), following best practices and industry standards to highlight relevant skills and experiences.` : "If no career is specified, assume a generalist approach based on the job offer."}
+    - ${plantilla ? `Use this HTML template as a base: ${plantilla}. If the template includes a section for an image and one is not provided, omit that section.` : "If no template is provided, create a modern and professional HTML structure from scratch."}
+    - ${foto ? `Include the provided image (${foto}) in the CV if the template allows it and it is culturally appropriate for the context of the offer.` : "Omit any image section if no photo is provided or if it is not relevant to the offer."}
   
-    📌 **IMPORTANTE:** Devuelve únicamente el código HTML limpio, sin comentarios, texto explicativo ni marcadores de lenguaje (e.g., \`\`\`html\`\`\`). Asegúrate de que el código sea funcional y esté listo para renderizarse correctamente.
+    📌 **IMPORTANT:** Return only clean HTML code, without comments, explanatory text, or language markers (e.g., \`\`\`html\`\`\`). Make sure the code is functional and ready to render correctly.
   `.trim();
 
   const userPrompt = `
-  Genera un CV profesional en HTML con ${estilos}, adaptado específicamente a la siguiente oferta laboral:  
+  Generate a professional CV in HTML with ${estilos}, specifically adapted to the following job offer:  
   **${ofertaTexto}**
 
-  Utiliza la siguiente información del CV del usuario:  
+  Use the following information from the user's CV:  
   ${infoAdiccional ? 
-  `Quiero que generes un currículum profesional para el usuario actualmente en sesión utilizando la siguiente estructura de datos JSON. 
-  Toma en cuenta la información personal, experiencia laboral, habilidades, educación, enlaces sociales y preferencias del CV.
-   El resultado debe ser un documento bien organizado, visualmente atractivo, 
-   utilizando el estilo definido por el usuario en cvPreferences (colores, fuente, tamaño de página, etc.). 
-   Asegúrate de que la redacción sea profesional, concisa y adecuada para aplicar a puestos en desarrollo de software.
-    No omitas detalles importantes de la experiencia laboral,
-     y mantén los textos claros y bien estructurados para destacar el perfil del usuario. esta es la info: \n ${infoAdiccional}`
-  : "No se proporcionó información adicional del usuario."}
+  `I want you to generate a professional CV for the currently logged-in user using the following JSON data structure. 
+  Consider the personal information, work experience, skills, education, social links, and CV preferences.
+  The result should be a well-organized, visually appealing document, 
+  using the style defined by the user in cvPreferences (colors, font, page size, etc.). 
+  Make sure the writing is professional, concise, and appropriate for applying to software development positions.
+  Don't omit important details of work experience,
+  and keep texts clear and well-structured to highlight the user's profile. Here is the info: \n ${infoAdiccional}`
+  : "No additional user information provided."}
 
 
-  ### Instrucciones:
-  - Genera un HTML válido, semántico y optimizado para exportación a PDF o Word, asegurando que el diseño sea consistente en diferentes dispositivos y plataformas.
-  - Adapta el idioma del CV al de la oferta laboral (e.g., español si la oferta está en español) y usa un tono profesional acorde con la industria.
-  - Destaca habilidades, experiencias y logros relevantes para la oferta, utilizando ${estilos} para resaltar elementos clave (e.g., negritas para palabras clave, colores sutiles para secciones).
-  - Prioriza las competencias y requisitos mencionados en la oferta (e.g., si se enfatiza 'desarrollo web', coloca esta sección al inicio o resáltala visualmente).
-  - Si la oferta especifica certificaciones, proyectos o herramientas, intégralos de manera prominente en el diseño, asegurándote de alinearlos con la información del usuario.
-  - Evita información redundante o irrelevante, manteniendo el CV conciso y enfocado en una sola página.
+  ### Instructions:
+  - Generate valid, semantic HTML optimized for export to PDF or Word, ensuring the design is consistent across different devices and platforms.
+  - The CV MUST be written in ${language}. Adapt all content to this language while maintaining professional terminology and appropriate tone.
+  - Highlight relevant skills, experiences, and achievements for the offer, using ${estilos} to highlight key elements (e.g., bold for keywords, subtle colors for sections).
+  - Prioritize competencies and requirements mentioned in the offer (e.g., if 'web development' is emphasized, place this section at the beginning or highlight it visually).
+  - If the offer specifies certifications, projects, or tools, integrate them prominently in the design, making sure to align them with the user's information.
+  - Avoid redundant or irrelevant information, keeping the CV concise and focused on a single page.
 
-  📌 **IMPORTANTE:** Devuelve únicamente el código HTML limpio, sin texto adicional, comentarios o marcadores de lenguaje (e.g., \`\`\`html\`\`\`).
+  📌 **IMPORTANT:** Return only clean HTML code, without additional text, comments, or language markers (e.g., \`\`\`html\`\`\`).
 `.trim();
 
     progressCallback?.onProgress?.(85); // 85% before making the API call
@@ -272,12 +274,12 @@ async generarCVAdaptado(
         { role: "user", content: userPrompt },
       ],
       stream: false,
-      temperature: 0.7, // Ajuste para mayor consistencia
-      max_tokens: 2000, // Límite razonable para un CV de una página
+      temperature: 0.7, // Adjustment for greater consistency
+      max_tokens: 2000, // Reasonable limit for a one-page CV
     });
 
     if (!response.choices?.[0]?.message?.content) {
-      throw new Error("El modelo devolvió una respuesta vacía o incorrecta.");
+      throw new Error("The model returned an empty or incorrect response.");
     }
 
     const htmlContent = response.choices[0].message.content.trim();
@@ -290,8 +292,8 @@ async generarCVAdaptado(
     .replace('```html','')
     .replace('```','');
   } catch (error: any) {
-    console.error(`❌ Error al generar el CV: ${error.message}`);
-    throw new Error(`Fallo en la generación del CV: ${error.message}`);
+    console.error(`❌ Error generating CV: ${error.message}`);
+    throw new Error(`CV generation failed: ${error.message}`);
   }
 }
 
@@ -301,7 +303,7 @@ async generarCVAdaptado(
       const repairedJSON: string = jsonrepair(responseText);
       return JSON.parse(repairedJSON);
     } catch (error: any) { // error: any
-      console.error("Error procesando JSON:", error);
+      console.error("Error processing JSON:", error);
       return {};
     }
   }
@@ -315,7 +317,8 @@ async generarCVAdaptado(
      carrera?: string,
      foto?:string,
      templateId?: string,
-     progressCallback?: ProgressCallback
+     progressCallback?: ProgressCallback,
+     language: string = "en"
     ): Promise<any> {
     try {
       // Initialize progress - starting the entire process
@@ -332,20 +335,20 @@ async generarCVAdaptado(
         progressCallback?.onProgress?.(50); // 50% for text-based input
       }
       
-      // Lógica para determinar qué plantilla usar
+      // Logic to determine which template to use
       let plantillaHTML: string | null = null;
       
-      // Prioridad 1: Plantilla archivo enviado manualmente
+      // Priority 1: Template file sent manually
       if (plantilla && typeof plantilla !== 'string') {
         plantillaHTML = await this.getPlantillaFromPdf(plantilla, progressCallback);
       } 
-      // Prioridad 2: Plantilla por ID
+      // Priority 2: Template by ID
       /*
       else if (templateId) {
         plantillaHTML = await this.getPlantillaById(templateId, progressCallback);
       }
       */
-      // Prioridad 3: Plantilla como string (legado)
+      // Priority 3: Template as string (legacy)
       else if (plantilla && typeof plantilla === 'string') {
         plantillaHTML = plantilla;
         // For string-based templates, mark as processed immediately
@@ -357,8 +360,8 @@ async generarCVAdaptado(
         progressCallback?.onProgress?.(75);
       }
       
-      // Para ofertas de tipo texto, usamos 'data' como el texto de la oferta
-      // Para ofertas de tipo archivo, usamos 'infoCV' que contiene la información extraída del archivo
+      // For text-type offers, we use 'data' as the offer text
+      // For file-type offers, we use 'infoCV' which contains the information extracted from the file
       const ofertaTexto = type === 'text' ? data : JSON.stringify(infoCV);
       
       const cvAdaptadoHTML = await this.generarCVAdaptado(
@@ -368,7 +371,8 @@ async generarCVAdaptado(
         infoAdicional, 
         carrera, 
         foto,
-        progressCallback
+        progressCallback,
+        language
       );
 
       // Complete the process - 100%
@@ -377,7 +381,7 @@ async generarCVAdaptado(
       return { html: cvAdaptadoHTML };
 
     } catch (error: any) {
-      console.error("Error en crearCV:", error.message);
+      console.error("Error in crearCV:", error.message);
       throw error;
     }
   }
