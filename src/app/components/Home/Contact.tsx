@@ -15,21 +15,21 @@ export default function ContactSection() {
   const { t } = useI18n();
   
   const industries = [
-    "Tecnología",
-    "Finanzas",
-    "Salud",
-    "Educación",
-    "Marketing",
-    "Manufactura",
-    "Comercio",
-    "Hospitalidad",
-    "Construcción",
-    "Legal",
-    "Medios",
-    "Sin fines de lucro",
-    "Gobierno",
-    "Transporte",
-    "Energía",
+    t("home.contact.industries.technology"),
+    t("home.contact.industries.finance"),
+    t("home.contact.industries.healthcare"),
+    t("home.contact.industries.education"),
+    t("home.contact.industries.marketing"),
+    t("home.contact.industries.manufacturing"),
+    t("home.contact.industries.retail"),
+    t("home.contact.industries.hospitality"),
+    t("home.contact.industries.construction"),
+    t("home.contact.industries.legal"),
+    t("home.contact.industries.media"),
+    t("home.contact.industries.nonprofit"),
+    t("home.contact.industries.government"),
+    t("home.contact.industries.transportation"),
+    t("home.contact.industries.energy"),
   ]
 
   const [formData, setFormData] = useState({
@@ -132,16 +132,16 @@ export default function ContactSection() {
           >
             <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-8 text-white shadow-xl h-full flex flex-col justify-between">
               <div>
-                <motion.h3 variants={itemVariants} className="text-2xl font-bold mb-6">Hablemos</motion.h3>
+                <motion.h3 variants={itemVariants} className="text-2xl font-bold mb-6">{t("home.contact.letsTalk")}</motion.h3>
                 <motion.p variants={itemVariants} className="text-blue-100 mb-10">
-                  Estamos comprometidos a ayudarte a destacar en el mercado laboral actual. Si tienes cualquier duda, sugerencia o consulta, no dudes en contactarnos.
+                  {t("home.contact.commitment")}
                 </motion.p>
 
                 <motion.div variants={itemVariants} className="space-y-6">
                   <div className="flex items-start">
                     <Mail className="w-6 h-6 text-blue-200 mt-1 mr-4" />
                     <div>
-                      <p className="font-medium">Email</p>
+                      <p className="font-medium">{t("home.contact.email")}</p>
                       <p className="text-blue-100">soporte@tailorcv.com</p>
                     </div>
                   </div>
@@ -149,7 +149,7 @@ export default function ContactSection() {
                   <div className="flex items-start">
                     <Phone className="w-6 h-6 text-blue-200 mt-1 mr-4" />
                     <div>
-                      <p className="font-medium">Teléfono</p>
+                      <p className="font-medium">{t("home.contact.phone")}</p>
                       <p className="text-blue-100">+34 91 123 4567</p>
                     </div>
                   </div>
@@ -157,8 +157,8 @@ export default function ContactSection() {
                   <div className="flex items-start">
                     <MapPin className="w-6 h-6 text-blue-200 mt-1 mr-4" />
                     <div>
-                      <p className="font-medium">Ubicación</p>
-                      <p className="text-blue-100">Madrid, España</p>
+                      <p className="font-medium">{t("home.contact.location")}</p>
+                      <p className="text-blue-100">{t("home.contact.address")}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -166,8 +166,8 @@ export default function ContactSection() {
               
               {/* Horario y redes sociales */}
               <motion.div variants={itemVariants} className="mt-12 pt-6 border-t border-blue-500/30">
-                <p className="font-medium mb-2">Horario de atención</p>
-                <p className="text-blue-100 mb-4">Lunes a Viernes: 9:00 - 18:00</p>
+                <p className="font-medium mb-2">{t("home.contact.businessHours")}</p>
+                <p className="text-blue-100 mb-4">{t("home.contact.businessHoursTime")}</p>
                 
                 <div className="flex space-x-4 mt-4">
                   {['facebook', 'twitter', 'instagram', 'linkedin'].map((social, i) => (
@@ -190,13 +190,13 @@ export default function ContactSection() {
             className="lg:col-span-3"
           >
             <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-100">
-              <h3 className="text-2xl font-bold mb-6 text-gray-900">Envíanos un mensaje</h3>
+              <h3 className="text-2xl font-bold mb-6 text-gray-900">{t("home.contact.sendMessage")}</h3>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center">
-                      Nombre Completo <span className="text-red-500 ml-1">*</span>
+                      {t("home.contact.fullName")} <span className="text-red-500 ml-1">*</span>
                     </label>
                     <Input 
                       id="name" 
@@ -225,13 +225,13 @@ export default function ContactSection() {
 
                 <div className="space-y-2">
                   <label htmlFor="industry" className="text-sm font-medium text-gray-700 flex items-center">
-                    Tu industria <span className="text-red-500 ml-1">*</span>
+                    {t("home.contact.yourIndustry")} <span className="text-red-500 ml-1">*</span>
                   </label>
                   <Input 
                     id="industry" 
                     name="industry" 
                     type="text" 
-                    placeholder="Ej. Desarrollo de software" 
+                    placeholder={t("home.contact.industryPlaceholder")}
                     onChange={handleChange} 
                     value={formData.industry} 
                     className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
@@ -240,7 +240,7 @@ export default function ContactSection() {
 
                 <div className="space-y-2">
                   <label htmlFor="message" className="text-sm font-medium text-gray-700 flex items-center">
-                    Mensaje <span className="text-red-500 ml-1">*</span>
+                    {t("home.contact.message")} <span className="text-red-500 ml-1">*</span>
                   </label>
                   <Textarea 
                     id="message" 
@@ -267,45 +267,18 @@ export default function ContactSection() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-start gap-2">
                     <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
-                    <span className="text-sm text-gray-600">Tus datos están protegidos</span>
+                    <span className="text-sm text-gray-600">{t("home.contact.dataProtected")}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                    <span className="text-sm text-gray-600">GDPR Compliant</span>
+                    <span className="text-sm text-gray-600">{t("home.contact.gdprCompliant")}</span>
                   </div>
                 </div>
               </div>
             </div>
           </motion.div>
         </div>
-        
-        {/* Testimonio destacado */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="mt-16 max-w-4xl mx-auto bg-white rounded-xl p-8 shadow-lg border border-gray-100 text-center"
-        >
-          <div className="mb-6">
-            <div className="inline-block rounded-full overflow-hidden border-4 border-white shadow-lg w-20 h-20 mb-4">
-              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Testimonio de cliente" className="w-full h-full object-cover" />
-            </div>
-            <blockquote className="text-xl text-gray-700 italic mb-4">
-              "TailorCV me ayudó a obtener entrevistas en empresas tecnológicas de primer nivel después de meses de silencio. El AI personalizó perfectamente mi perfil para cada oferta."
-            </blockquote>
-            <div className="flex flex-col items-center">
-              <p className="font-semibold text-gray-900">Markus Johnson</p>
-              <p className="text-sm text-blue-600">Desarrollador Full-stack</p>
-            </div>
-          </div>
-          
-          <div className="flex justify-center gap-1 mt-2">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <span key={star} className="text-yellow-400">★</span>
-            ))}
-          </div>
-        </motion.div>
+      
       </div>
     </section>
   )

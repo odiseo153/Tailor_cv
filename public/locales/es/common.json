@@ -17,10 +17,15 @@
     "account_access": "Acceso a tu cuenta"
   },
   "footer": {
-    "about": "Acerca de",
+    "description": "Crea tu CV perfecto en minutos. Sube tu oferta laboral, personaliza tu plantilla y destaca profesionalmente.",
+    "quickLinks": "Enlaces Rápidos",
+    "legal": "Legal",
     "contact": "Contacto",
     "privacy": "Política de Privacidad",
-    "terms": "Términos de Servicio"
+    "terms": "Términos de Servicio",
+    "cookies": "Política de Cookies",
+    "address": "Madrid, España",
+    "rights": "Todos los derechos reservados."
   },
   "languageSelector": {
     "label": "Idioma",
@@ -124,11 +129,43 @@
       "description": "¿Tienes preguntas? Estamos aquí para ayudarte a conseguir el trabajo que mereces.",
       "namePlaceholder": "Tu nombre",
       "emailPlaceholder": "Tu email",
-      "messagePlaceholder": "¿En qué podemos ayudarte?",
+      "messagePlaceholder": "¿Cómo podemos ayudarte?",
       "sendButton": "Enviar Mensaje",
       "sending": "Enviando...",
       "success": "¡Mensaje enviado con éxito!",
-      "error": "Ha ocurrido un error. Por favor, inténtalo de nuevo."
+      "error": "Ha ocurrido un error. Por favor, inténtalo de nuevo.",
+      "industries": {
+        "technology": "Tecnología",
+        "finance": "Finanzas",
+        "healthcare": "Salud",
+        "education": "Educación",
+        "marketing": "Marketing",
+        "manufacturing": "Manufactura",
+        "retail": "Comercio",
+        "hospitality": "Hospitalidad",
+        "construction": "Construcción",
+        "legal": "Legal",
+        "media": "Medios",
+        "nonprofit": "Sin fines de lucro",
+        "government": "Gobierno",
+        "transportation": "Transporte",
+        "energy": "Energía"
+      },
+      "letsTalk": "Hablemos",
+      "commitment": "Estamos comprometidos a ayudarte a destacar en el mercado laboral actual. Si tienes cualquier duda, sugerencia o consulta, no dudes en contactarnos.",
+      "email": "Email",
+      "phone": "Teléfono",
+      "location": "Ubicación",
+      "address": "Madrid, España",
+      "businessHours": "Horario de atención",
+      "businessHoursTime": "Lunes a Viernes: 9:00 - 18:00",
+      "sendMessage": "Envíanos un mensaje",
+      "fullName": "Nombre Completo",
+      "yourIndustry": "Tu industria",
+      "industryPlaceholder": "Ej. Desarrollo de software",
+      "message": "Mensaje",
+      "dataProtected": "Tus datos están protegidos",
+      "gdprCompliant": "Cumple con GDPR"
     }
   },
   "cv_generator": {

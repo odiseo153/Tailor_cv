@@ -20,7 +20,13 @@
     "about": "About",
     "contact": "Contact",
     "privacy": "Privacy Policy",
-    "terms": "Terms of Service"
+    "terms": "Terms of Service",
+    "description": "Create your perfect CV in minutes. Upload your job offer, customize your template, and stand out professionally.",
+    "quickLinks": "Quick Links",
+    "legal": "Legal",
+    "cookies": "Cookie Policy",
+    "address": "Madrid, Spain",
+    "rights": "All rights reserved."
   },
   "languageSelector": {
     "label": "Language",
@@ -128,7 +134,39 @@
       "sendButton": "Send Message",
       "sending": "Sending...",
       "success": "Message sent successfully!",
-      "error": "An error occurred. Please try again."
+      "error": "An error occurred. Please try again.",
+      "industries": {
+        "technology": "Technology",
+        "finance": "Finance",
+        "healthcare": "Healthcare",
+        "education": "Education",
+        "marketing": "Marketing",
+        "manufacturing": "Manufacturing",
+        "retail": "Retail",
+        "hospitality": "Hospitality",
+        "construction": "Construction",
+        "legal": "Legal",
+        "media": "Media",
+        "nonprofit": "Non-profit",
+        "government": "Government",
+        "transportation": "Transportation",
+        "energy": "Energy"
+      },
+      "letsTalk": "Let's Talk",
+      "commitment": "We are committed to helping you stand out in today's job market. If you have any questions, suggestions, or inquiries, please don't hesitate to contact us.",
+      "email": "Email",
+      "phone": "Phone",
+      "location": "Location",
+      "address": "Madrid, Spain",
+      "businessHours": "Business Hours",
+      "businessHoursTime": "Monday to Friday: 9:00 AM - 6:00 PM",
+      "sendMessage": "Send us a message",
+      "fullName": "Full Name",
+      "yourIndustry": "Your Industry",
+      "industryPlaceholder": "e.g. Software Development",
+      "message": "Message",
+      "dataProtected": "Your data is protected",
+      "gdprCompliant": "GDPR Compliant"
     }
   },
   "cv_generator": {

@@ -17,10 +17,15 @@
     "account_access": "Accès à votre compte"
   },
   "footer": {
-    "about": "À propos",
+    "description": "Créez votre CV parfait en quelques minutes. Téléchargez votre offre d'emploi, personnalisez votre modèle et démarquez-vous professionnellement.",
+    "quickLinks": "Liens Rapides",
+    "legal": "Mentions Légales",
     "contact": "Contact",
     "privacy": "Politique de Confidentialité",
-    "terms": "Conditions d'Utilisation"
+    "terms": "Conditions d'Utilisation",
+    "cookies": "Politique des Cookies",
+    "address": "Madrid, Espagne",
+    "rights": "Tous droits réservés."
   },
   "languageSelector": {
     "label": "Langue",
@@ -121,14 +126,46 @@
     "contact": {
       "tagline": "Nous sommes là pour vous",
       "title": "Contactez-nous",
-      "description": "Vous avez des questions? Nous sommes là pour vous aider à obtenir l'emploi que vous méritez.",
+      "description": "Vous avez des questions ? Nous sommes là pour vous aider à obtenir le poste que vous méritez.",
       "namePlaceholder": "Votre nom",
       "emailPlaceholder": "Votre email",
-      "messagePlaceholder": "Comment pouvons-nous vous aider?",
-      "sendButton": "Envoyer le Message",
+      "messagePlaceholder": "Comment pouvons-nous vous aider ?",
+      "sendButton": "Envoyer le message",
       "sending": "Envoi en cours...",
-      "success": "Message envoyé avec succès!",
-      "error": "Une erreur s'est produite. Veuillez réessayer."
+      "success": "Message envoyé avec succès !",
+      "error": "Une erreur s'est produite. Veuillez réessayer.",
+      "industries": {
+        "technology": "Technologie",
+        "finance": "Finance",
+        "healthcare": "Santé",
+        "education": "Éducation",
+        "marketing": "Marketing",
+        "manufacturing": "Manufacture",
+        "retail": "Commerce",
+        "hospitality": "Hôtellerie",
+        "construction": "Construction",
+        "legal": "Juridique",
+        "media": "Médias",
+        "nonprofit": "Sans but lucratif",
+        "government": "Gouvernement",
+        "transportation": "Transport",
+        "energy": "Énergie"
+      },
+      "letsTalk": "Parlons-en",
+      "commitment": "Nous nous engageons à vous aider à vous démarquer sur le marché du travail actuel. Si vous avez des questions, des suggestions ou des demandes, n'hésitez pas à nous contacter.",
+      "email": "Email",
+      "phone": "Téléphone",
+      "location": "Emplacement",
+      "address": "Madrid, Espagne",
+      "businessHours": "Heures d'ouverture",
+      "businessHoursTime": "Lundi à Vendredi : 9h00 - 18h00",
+      "sendMessage": "Envoyez-nous un message",
+      "fullName": "Nom complet",
+      "yourIndustry": "Votre secteur d'activité",
+      "industryPlaceholder": "Ex. Développement de logiciels",
+      "message": "Message",
+      "dataProtected": "Vos données sont protégées",
+      "gdprCompliant": "Conforme au RGPD"
     }
   },
   "cv_generator": {
