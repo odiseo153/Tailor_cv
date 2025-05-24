@@ -33,20 +33,20 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-*/
 
 
 export async function DELETE(request: NextRequest,{ params }: { params: { id: string } }) 
-  {
+{
   try {
     const {id} =  params;
-
+    
     const resultado = await education_handler.delete(id);
-
+    
     return NextResponse.json({ resultado });
-
+    
   } catch (error: any) {
     console.error("Error processing request in /api/route:", error);
     return NextResponse.json({ error: 'Error al procesar la solicitud para delete para work experience : ' + (error.message || 'Error desconocido') }, { status: 500 });
   }
 }
+*/

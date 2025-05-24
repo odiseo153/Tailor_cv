@@ -18,7 +18,7 @@ export default function ProfessionalProfile() {
         <WorkExperienceInfo />
         <Skills />
         <SocialLinks />
-        <EducationInfo />  
+       {/* <EducationInfo />   */}
       </div>
     </div>
   )
