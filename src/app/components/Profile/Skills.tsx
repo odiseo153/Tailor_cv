@@ -70,10 +70,6 @@ export default function Skills() {
       setLoading(true);
       const response = await fetch(`/api/apiHandler/skill/user/${session.user.id}`);
       
-      if (!response.ok) {
-        throw new Error('Error al obtener habilidades');
-      }
-      
       const data = await response.json();
       setSkills(data.skills || []);
     } catch (error) {

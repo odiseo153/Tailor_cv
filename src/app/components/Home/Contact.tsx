@@ -3,15 +3,13 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { FilePlus, MessageCircle, CheckCircle2, Shield, Send, Mail, Phone, MapPin } from "lucide-react"
-import { useRouter } from 'next/navigation';
+import { CheckCircle2, Shield, Send, Mail, Phone, MapPin } from "lucide-react"
 import { useState } from 'react';
 import { Message } from "@/app/utils/Message"
 import { motion } from "framer-motion"
 import { useI18n } from "@/app/context/I18nContext"
 
 export default function ContactSection() {
-  const router = useRouter();
   const { t } = useI18n();
   
   const industries = [
@@ -227,15 +225,34 @@ export default function ContactSection() {
                   <label htmlFor="industry" className="text-sm font-medium text-gray-700 flex items-center">
                     {t("home.contact.yourIndustry")} <span className="text-red-500 ml-1">*</span>
                   </label>
-                  <Input 
-                    id="industry" 
-                    name="industry" 
-                    type="text" 
-                    placeholder={t("home.contact.industryPlaceholder")}
-                    onChange={handleChange} 
-                    value={formData.industry} 
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  />
+                  <div className="space-y-2">
+                    <select 
+                      id="industry"
+                      name="industry"
+                      value={formData.industry} 
+                      onChange={handleChange}
+                      aria-label={t("home.contact.yourIndustry")}
+                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    >
+                      <option value="">{t("home.contact.industryPlaceholder")}</option>
+                      {industries.map((industry, index) => (
+                        <option key={index} value={industry}>{industry}</option>
+                      ))}
+                      <option value="other">{t("home.contact.otherIndustry")}</option>
+                    </select>
+                    
+                    {formData.industry === "other" && (
+                      <Input
+                        id="industryCustom"
+                        name="industry"
+                        type="text"
+                        placeholder={t("home.contact.specifyIndustry")}
+                        onChange={handleChange}
+                        value={formData.industry}
+                        className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

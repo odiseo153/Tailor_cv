@@ -111,10 +111,6 @@ export default function SocialLinks() {
       setLoading(true);
       const response = await fetch(`/api/apiHandler/social/user/${session.user.id}`);
       
-      if (!response.ok) {
-        throw new Error('Error al obtener enlaces sociales');
-      }
-      
       const data = await response.json();
       setSocialLinks(data.socialLinks || []);
     } catch (error) {

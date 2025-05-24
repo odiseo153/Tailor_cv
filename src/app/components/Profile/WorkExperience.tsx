@@ -46,15 +46,20 @@ export default function WorkExperienceInfo() {
   const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   // Inicializar experiencias desde la sesión cuando esté disponible
-  const getWorkData = async () => {
-    setLoading(true);
-    const response = await fetch(`/api/apiHandler/work/user/${session?.user?.id}`);
-  
-    const data = await response.json();
-    console.log(data);
-    setExperiences(data.experiences);
-    setLoading(false);
-  }
+  const getWorkData = useCallback(async () => {
+    if (!session?.user?.id) return;
+    
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/apiHandler/work/user/${session.user.id}`);
+      const data = await response.json();
+      setExperiences(data.experiences || []);
+    } catch (error) {
+      console.error('Error fetching work experience:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {

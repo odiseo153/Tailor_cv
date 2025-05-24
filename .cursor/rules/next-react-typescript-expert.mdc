@@ -1,49 +1,621 @@
 ---
 description: for react and next
 globs: 
+alwaysApply: false
 ---
+# Next.js App Router with TypeScript & Shadcn UI Guidelines
 
+You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Radix UI, and Tailwind CSS.
 
-  You are an expert in TypeScript, Node.js, Next.js App Router, React, Shadcn UI, Radix UI and Tailwind.
+## Code Style and Structure
+
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (`isLoading`, `hasError`, `canSubmit`)
+- Structure files consistently: exported component, subcomponents, helpers, static content, types
+- Follow single responsibility principle for components and utilities
+
+```typescript
+// Good file structure example
+// components/user-profile/user-profile.tsx
+
+interface UserProfileProps {
+  userId: string
+  showActions?: boolean
+}
+
+export function UserProfile({ userId, showActions = true }: UserProfileProps) {
+  return (
+    <div className="space-y-4">
+      <UserAvatar userId={userId} />
+      <UserDetails userId={userId} />
+      {showActions && <UserActions userId={userId} />}
+    </div>
+  )
+}
+
+// Subcomponents
+function UserAvatar({ userId }: { userId: string }) {
+  // Implementation
+}
+
+function UserDetails({ userId }: { userId: string }) {
+  // Implementation
+}
+
+function UserActions({ userId }: { userId: string }) {
+  // Implementation
+}
+
+// Helper functions
+function formatUserRole(role: string): string {
+  // Implementation
+}
+
+// Types
+interface User {
+  id: string
+  name: string
+  email: string
+}
+```
+
+## Naming Conventions
+
+- Use lowercase with dashes for directories (`components/auth-wizard`, `lib/api-client`)
+- Use PascalCase for components (`UserProfile`, `AuthModal`)
+- Use camelCase for functions, variables, and props (`handleSubmit`, `isLoading`)
+- Favor named exports for components to improve tree-shaking and refactoring
+
+```typescript
+// Good - named exports
+export function Button() { }
+export function Modal() { }
+
+// Avoid - default exports for components
+export default function Button() { }
+```
+
+## TypeScript Usage
+
+- Use TypeScript for all code with strict mode enabled
+- Prefer interfaces over types for object shapes
+- Avoid enums; use const objects with `as const` or union types instead
+- Use functional components with comprehensive TypeScript interfaces
+- Leverage utility types and generic constraints
+
+```typescript
+// Good - interface for object shapes
+interface UserData {
+  id: string
+  name: string
+  email: string
+}
+
+// Good - const object instead of enum
+const USER_ROLES = {
+  ADMIN: 'admin',
+  USER: 'user',
+  MODERATOR: 'moderator'
+} as const
+
+type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
+
+// Good - union types for simple enums
+type Status = 'idle' | 'loading' | 'success' | 'error'
+
+// Good - generic interface
+interface ApiResponse<T> {
+  data: T
+  message: string
+  success: boolean
+}
+```
+
+## Syntax and Formatting
+
+- Use the `function` keyword for pure functions and named declarations
+- Avoid unnecessary curly braces in conditionals; use concise syntax
+- Use declarative JSX with proper component composition
+- Implement early returns to reduce nesting
+
+```typescript
+// Good - function keyword for declarations
+function calculateTotal(items: Item[]): number {
+  return items.reduce((sum, item) => sum + item.price, 0)
+}
+
+// Good - concise conditionals
+function UserStatus({ isOnline }: { isOnline: boolean }) {
+  if (!isOnline) return <span className="text-gray-500">Offline</span>
   
-  Code Style and Structure
-  - Write concise, technical TypeScript code with accurate examples.
-  - Use functional and declarative programming patterns; avoid classes.
-  - Prefer iteration and modularization over code duplication.
-  - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
-  - Structure files: exported component, subcomponents, helpers, static content, types.
+  return <span className="text-green-500">Online</span>
+}
+
+// Good - declarative JSX
+function UserList({ users }: { users: User[] }) {
+  return (
+    <div className="space-y-2">
+      {users.map(user => (
+        <UserCard key={user.id} user={user} />
+      ))}
+    </div>
+  )
+}
+```
+
+## UI and Styling with Shadcn UI
+
+- Use Shadcn UI components as the foundation for consistent design
+- Leverage Radix UI primitives for advanced accessibility and behavior
+- Use Tailwind CSS for styling with a mobile-first approach
+- Compose Shadcn components to create complex UI patterns
+
+```typescript
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
+interface UserCardProps {
+  user: User
+  onEdit?: () => void
+}
+
+export function UserCard({ user, onEdit }: UserCardProps) {
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+        <Avatar className="h-10 w-10">
+          <AvatarImage src={user.avatar} alt={user.name} />
+          <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+        </Avatar>
+        <div className="ml-4 space-y-1">
+          <CardTitle className="text-sm font-medium">{user.name}</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
+            {user.email}
+          </CardDescription>
+        </div>
+        <Badge variant={user.isActive ? 'default' : 'secondary'} className="ml-auto">
+          {user.isActive ? 'Active' : 'Inactive'}
+        </Badge>
+      </CardHeader>
+      {onEdit && (
+        <CardContent className="pt-0">
+          <Button variant="outline" size="sm" onClick={onEdit} className="w-full">
+            Edit Profile
+          </Button>
+        </CardContent>
+      )}
+    </Card>
+  )
+}
+```
+
+## Responsive Design with Tailwind
+
+- Implement mobile-first responsive design
+- Use Tailwind's responsive prefixes systematically
+- Create reusable responsive patterns
+
+```typescript
+// Good - mobile-first responsive design
+function ResponsiveGrid({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {children}
+    </div>
+  )
+}
+
+// Good - responsive text and spacing
+function ResponsiveCard({ title, content }: { title: string; content: string }) {
+  return (
+    <Card className="p-4 sm:p-6 lg:p-8">
+      <CardTitle className="text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-4">
+        {title}
+      </CardTitle>
+      <CardContent className="text-sm sm:text-base text-muted-foreground">
+        {content}
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+## Performance Optimization
+
+### Minimize Client Components
+- Favor React Server Components (RSC) by default
+- Use `'use client'` only when absolutely necessary
+- Keep client components small and focused
+
+```typescript
+// Good - Server Component (default)
+async function UserDashboard({ userId }: { userId: string }) {
+  const user = await fetchUser(userId)
+  const posts = await fetchUserPosts(userId)
   
-  Naming Conventions
-  - Use lowercase with dashes for directories (e.g., components/auth-wizard).
-  - Favor named exports for components.
+  return (
+    <div className="space-y-6">
+      <UserProfile user={user} />
+      <PostsList posts={posts} />
+      <Suspense fallback={<InteractiveButtonsSkeleton />}>
+        <InteractiveButtons userId={userId} />
+      </Suspense>
+    </div>
+  )
+}
+
+// Good - Small, focused client component
+'use client'
+function InteractiveButtons({ userId }: { userId: string }) {
+  const [isFollowing, setIsFollowing] = useState(false)
   
-  TypeScript Usage
-  - Use TypeScript for all code; prefer interfaces over types.
-  - Avoid enums; use maps instead.
-  - Use functional components with TypeScript interfaces.
-  
-  Syntax and Formatting
-  - Use the "function" keyword for pure functions.
-  - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
-  - Use declarative JSX.
-  
-  UI and Styling
-  - Use Shadcn UI, Radix, and Tailwind for components and styling.
-  - Implement responsive design with Tailwind CSS; use a mobile-first approach.
-  
-  Performance Optimization
-  - Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC).
-  - Wrap client components in Suspense with fallback.
-  - Use dynamic loading for non-critical components.
-  - Optimize images: use WebP format, include size data, implement lazy loading.
-  
-  Key Conventions
-  - Use 'nuqs' for URL search parameter state management.
-  - Optimize Web Vitals (LCP, CLS, FID).
-  - Limit 'use client':
-    - Favor server components and Next.js SSR.
-    - Use only for Web API access in small components.
-    - Avoid for data fetching or state management.
-  
-  Follow Next.js docs for Data Fetching, Rendering, and Routing.
-  
+  return (
+    <div className="flex gap-2">
+      <Button 
+        onClick={() => setIsFollowing(!isFollowing)}
+        variant={isFollowing ? 'secondary' : 'default'}
+      >
+        {isFollowing ? 'Unfollow' : 'Follow'}
+      </Button>
+    </div>
+  )
+}
+```
+
+### Suspense and Loading States
+- Wrap client components in Suspense with meaningful fallbacks
+- Use Shadcn UI Skeleton components for loading states
+
+```typescript
+import { Skeleton } from '@/components/ui/skeleton'
+
+function UserProfileSkeleton() {
+  return (
+    <Card className="w-full max-w-md">
+      <CardHeader className="flex flex-row items-center space-y-0 pb-2">
+        <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="ml-4 space-y-1">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+        <Skeleton className="ml-auto h-5 w-16" />
+      </CardHeader>
+    </Card>
+  )
+}
+
+// Usage in parent component
+function UserDashboard() {
+  return (
+    <div className="space-y-4">
+      <Suspense fallback={<UserProfileSkeleton />}>
+        <UserProfile />
+      </Suspense>
+    </div>
+  )
+}
+```
+
+### Dynamic Loading
+- Use dynamic imports for non-critical components
+- Implement lazy loading for heavy components
+
+```typescript
+import dynamic from 'next/dynamic'
+
+// Dynamic loading with proper typing
+const HeavyChart = dynamic(() => import('@/components/heavy-chart'), {
+  loading: () => <Skeleton className="h-64 w-full" />,
+  ssr: false // Only if component requires browser APIs
+})
+
+function Analytics() {
+  return (
+    <div className="space-y-6">
+      <h1>Analytics Dashboard</h1>
+      <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+        <HeavyChart />
+      </Suspense>
+    </div>
+  )
+}
+```
+
+### Image Optimization
+- Use Next.js Image component with proper optimization
+- Implement WebP format and lazy loading
+- Include size data for better performance
+
+```typescript
+import Image from 'next/image'
+
+interface OptimizedImageProps {
+  src: string
+  alt: string
+  priority?: boolean
+}
+
+function OptimizedImage({ src, alt, priority = false }: OptimizedImageProps) {
+  return (
+    <div className="relative aspect-video overflow-hidden rounded-lg">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        priority={priority}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        className="object-cover transition-transform hover:scale-105"
+      />
+    </div>
+  )
+}
+```
+
+## URL Search Parameter State Management with nuqs
+
+- Use `nuqs` for URL search parameter state management
+- Maintain state in URL for better UX and sharing
+
+```typescript
+import { useQueryState, parseAsString, parseAsInteger } from 'nuqs'
+
+function ProductFilters() {
+  const [search, setSearch] = useQueryState('search', parseAsString.withDefault(''))
+  const [category, setCategory] = useQueryState('category', parseAsString.withDefault('all'))
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1))
+
+  return (
+    <div className="space-y-4">
+      <Input
+        placeholder="Search products..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+      
+      <Select value={category} onValueChange={setCategory}>
+        <SelectTrigger>
+          <SelectValue placeholder="Select category" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Categories</SelectItem>
+          <SelectItem value="electronics">Electronics</SelectItem>
+          <SelectItem value="clothing">Clothing</SelectItem>
+        </SelectContent>
+      </Select>
+      
+      <Pagination 
+        currentPage={page} 
+        onPageChange={setPage}
+        totalPages={10}
+      />
+    </div>
+  )
+}
+```
+
+## Data Fetching Patterns
+
+### Server Components Data Fetching
+```typescript
+// Server Component - fetch data directly
+async function UserPosts({ userId }: { userId: string }) {
+  const posts = await fetch(`${process.env.API_URL}/users/${userId}/posts`, {
+    next: { revalidate: 300 } // Revalidate every 5 minutes
+  }).then(res => res.json())
+
+  if (!posts.length) {
+    return (
+      <Card className="p-6 text-center">
+        <p className="text-muted-foreground">No posts found</p>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="grid gap-4">
+      {posts.map((post: Post) => (
+        <PostCard key={post.id} post={post} />
+      ))}
+    </div>
+  )
+}
+```
+
+### API Routes with Proper Error Handling
+```typescript
+// app/api/users/[id]/route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+
+const ParamsSchema = z.object({
+  id: z.string().min(1)
+})
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const { id } = ParamsSchema.parse(params)
+    
+    const user = await getUserById(id)
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ data: user })
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid user ID' },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+## Form Handling with Shadcn UI
+
+```typescript
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { Button } from '@/components/ui/button'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+
+const FormSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Please enter a valid email'),
+  message: z.string().min(10, 'Message must be at least 10 characters')
+})
+
+type FormData = z.infer<typeof FormSchema>
+
+export function ContactForm() {
+  const form = useForm<FormData>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      message: ''
+    }
+  })
+
+  async function onSubmit(data: FormData) {
+    try {
+      await submitContactForm(data)
+      form.reset()
+    } catch (error) {
+      // Handle error
+    }
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Your name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="your@email.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="message"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Message</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Your message..."
+                  className="min-h-24"
+                  {...field} 
+                />
+              </FormControl>
+              <FormDescription>
+                Please provide as much detail as possible.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <Button 
+          type="submit" 
+          disabled={form.formState.isSubmitting}
+          className="w-full"
+        >
+          {form.formState.isSubmitting ? 'Sending...' : 'Send Message'}
+        </Button>
+      </form>
+    </Form>
+  )
+}
+```
+
+## Key Conventions
+
+### Web Vitals Optimization
+- Optimize Largest Contentful Paint (LCP) with proper image optimization
+- Minimize Cumulative Layout Shift (CLS) with size attributes
+- Improve First Input Delay (FID) with code splitting
+
+### Client Component Usage Guidelines
+- **Use `'use client'` ONLY for:**
+  - Event handlers (`onClick`, `onChange`)
+  - Browser APIs (`localStorage`, `geolocation`)
+  - State that requires user interaction
+  - Third-party libraries that require client-side rendering
+
+- **AVOID `'use client'` for:**
+  - Data fetching (use Server Components instead)
+  - Static content rendering
+  - SEO-critical content
+  - Initial page loads
+
+### Project Structure
+```
+app/
+├── (auth)/                    # Route groups
+│   ├── login/
+│   └── register/
+├── api/                       # API routes
+├── globals.css
+├── layout.tsx
+├── loading.tsx
+├── error.tsx
+└── page.tsx
+
+components/
+├── ui/                        # Shadcn UI components
+├── forms/                     # Form components
+└── layout/                    # Layout components
+
+lib/
+├── utils.ts                   # Utility functions
+├── validations.ts             # Zod schemas
+└── api.ts                     # API client functions
+
+hooks/                         # Custom React hooks
+types/                         # TypeScript definitions
+```
+
+This comprehensive guide ensures optimal Next.js App Router applications with TypeScript, emphasizing server-first architecture, performance optimization, and modern UI patterns with Shadcn UI.

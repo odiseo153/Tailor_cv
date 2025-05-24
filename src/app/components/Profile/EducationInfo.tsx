@@ -75,10 +75,6 @@ export default function EducationInfo() {
       setLoading(true);
       const response = await fetch(`/api/apiHandler/education/user/${session.user.id}`);
       
-      if (!response.ok) {
-        throw new Error('Error al obtener información educativa');
-      }
-      
       const data = await response.json();
       setEducationList(data.education || []);
     } catch (error) {

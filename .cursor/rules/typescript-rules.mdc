@@ -1,106 +1,306 @@
 ---
 description: 
-globs: 
+globs: *.tsx,*.ts
 alwaysApply: false
 ---
+# TypeScript & React Development Guidelines
 
-  You are an expert in TypeScript, React Native, Expo, and Mobile UI development.
+You are an expert in TypeScript, React, and modern web development patterns.
 
-  Code Style and Structure
-  - Write concise, technical TypeScript code with accurate examples.
-  - Use functional and declarative programming patterns; avoid classes.
-  - Prefer iteration and modularization over code duplication.
-  - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
-  - Structure files: exported component, subcomponents, helpers, static content, types.
-  - Follow Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
+## Code Style and Structure
 
-  Naming Conventions
-  - Use lowercase with dashes for directories (e.g., components/auth-wizard).
-  - Favor named exports for components.
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes except when necessary (e.g., error boundaries)
+- Prefer composition over inheritance and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`, `canSubmit`)
+- Structure files: exported component, subcomponents, custom hooks, helpers, types/interfaces
+- Follow the principle of single responsibility for components and functions
 
-  TypeScript Usage
-  - Use TypeScript for all code; prefer interfaces over types.
-  - Avoid enums; use maps instead.
-  - Use functional components with TypeScript interfaces.
-  - Use strict mode in TypeScript for better type safety.
+## Naming Conventions
 
-  Syntax and Formatting
-  - Use the "function" keyword for pure functions.
-  - Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements.
-  - Use declarative JSX.
-  - Use Prettier for consistent code formatting.
+- Use kebab-case for directories (e.g., `components/user-profile`, `hooks/use-auth`)
+- Use PascalCase for component names and interfaces
+- Use camelCase for variables, functions, and props
+- Favor named exports for components and utilities
+- Use descriptive names that clearly indicate purpose and type
 
-  UI and Styling
-  - Use Expo's built-in components for common UI patterns and layouts.
-  - Implement responsive design with Flexbox and Expo's useWindowDimensions for screen size adjustments.
-  - Use styled-components or Tailwind CSS for component styling.
-  - Implement dark mode support using Expo's useColorScheme.
-  - Ensure high accessibility (a11y) standards using ARIA roles and native accessibility props.
-  - Leverage react-native-reanimated and react-native-gesture-handler for performant animations and gestures.
+## TypeScript Usage
 
-  Safe Area Management
-  - Use SafeAreaProvider from react-native-safe-area-context to manage safe areas globally in your app.
-  - Wrap top-level components with SafeAreaView to handle notches, status bars, and other screen insets on both iOS and Android.
-  - Use SafeAreaScrollView for scrollable content to ensure it respects safe area boundaries.
-  - Avoid hardcoding padding or margins for safe areas; rely on SafeAreaView and context hooks.
+- Use TypeScript for all code with strict mode enabled
+- Prefer interfaces over types for object shapes; use types for unions, primitives, and computed types
+- Avoid enums; use const assertions and union types instead
+- Define prop interfaces for all components with meaningful names (e.g., `UserCardProps`, `ModalState`)
+- Use generic types for reusable components and hooks
+- Leverage utility types (`Partial`, `Pick`, `Omit`, `Record`) for type transformations
+- Use branded types for primitive values that need semantic meaning
 
-  Performance Optimization
-  - Minimize the use of useState and useEffect; prefer context and reducers for state management.
-  - Use Expo's AppLoading and SplashScreen for optimized app startup experience.
-  - Optimize images: use WebP format where supported, include size data, implement lazy loading with expo-image.
-  - Implement code splitting and lazy loading for non-critical components with React's Suspense and dynamic imports.
-  - Profile and monitor performance using React Native's built-in tools and Expo's debugging features.
-  - Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately.
+```typescript
+// Good
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
-  Navigation
-  - Use react-navigation for routing and navigation; follow its best practices for stack, tab, and drawer navigators.
-  - Leverage deep linking and universal links for better user engagement and navigation flow.
-  - Use dynamic routes with expo-router for better navigation handling.
+type Status = 'loading' | 'success' | 'error';
 
-  State Management
-  - Use React Context and useReducer for managing global state.
-  - Leverage react-query for data fetching and caching; avoid excessive API calls.
-  - For complex state management, consider using Zustand or Redux Toolkit.
-  - Handle URL search parameters using libraries like expo-linking.
+// Better than enum
+const USER_ROLES = {
+  ADMIN: 'admin',
+  USER: 'user',
+  GUEST: 'guest'
+} as const;
 
-  Error Handling and Validation
-  - Use Zod for runtime validation and error handling.
-  - Implement proper error logging using Sentry or a similar service.
-  - Prioritize error handling and edge cases:
-    - Handle errors at the beginning of functions.
-    - Use early returns for error conditions to avoid deeply nested if statements.
-    - Avoid unnecessary else statements; use if-return pattern instead.
-    - Implement global error boundaries to catch and handle unexpected errors.
-  - Use expo-error-reporter for logging and reporting errors in production.
+type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+```
 
-  Testing
-  - Write unit tests using Jest and React Native Testing Library.
-  - Implement integration tests for critical user flows using Detox.
-  - Use Expo's testing tools for running tests in different environments.
-  - Consider snapshot testing for components to ensure UI consistency.
+## Syntax and Formatting
 
-  Security
-  - Sanitize user inputs to prevent XSS attacks.
-  - Use react-native-encrypted-storage for secure storage of sensitive data.
-  - Ensure secure communication with APIs using HTTPS and proper authentication.
-  - Use Expo's Security guidelines to protect your app: https://docs.expo.dev/guides/security/
+- Use function declarations for named functions, arrow functions for inline callbacks
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+- Use declarative JSX with proper fragment usage
+- Use Prettier and ESLint for consistent code formatting and quality
+- Prefer early returns to reduce nesting depth
 
-  Internationalization (i18n)
-  - Use react-native-i18n or expo-localization for internationalization and localization.
-  - Support multiple languages and RTL layouts.
-  - Ensure text scaling and font adjustments for accessibility.
+```typescript
+// Good
+function processUser(user: User | null) {
+  if (!user) return null;
+  if (!user.isActive) return { ...user, status: 'inactive' };
+  
+  return enhanceUser(user);
+}
+```
 
-  Key Conventions
-  1. Rely on Expo's managed workflow for streamlined development and deployment.
-  2. Prioritize Mobile Web Vitals (Load Time, Jank, and Responsiveness).
-  3. Use expo-constants for managing environment variables and configuration.
-  4. Use expo-permissions to handle device permissions gracefully.
-  5. Implement expo-updates for over-the-air (OTA) updates.
-  6. Follow Expo's best practices for app deployment and publishing: https://docs.expo.dev/distribution/introduction/
-  7. Ensure compatibility with iOS and Android by testing extensively on both platforms.
+## Component Architecture
 
-  API Documentation
-  - Use Expo's official documentation for setting up and configuring your projects: https://docs.expo.dev/
+- Use functional components exclusively with React hooks
+- Implement proper component composition with clear prop interfaces
+- Use compound components pattern for complex UI elements
+- Separate presentation components from container components
+- Create custom hooks for reusable stateful logic
+- Use React.memo for expensive components with stable props
 
-  Refer to Expo's documentation for detailed information on Views, Blueprints, and Extensions for best practices.
+```typescript
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  isLoading?: boolean;
+}
+
+export function Button({ 
+  variant = 'primary', 
+  size = 'md', 
+  isLoading = false,
+  children,
+  className,
+  ...props 
+}: ButtonProps) {
+  return (
+    <button
+      className={clsx(getButtonClasses(variant, size), className)}
+      disabled={isLoading || props.disabled}
+      {...props}
+    >
+      {isLoading ? <Spinner /> : children}
+    </button>
+  );
+}
+```
+
+## State Management
+
+- Use useState for local component state
+- Use useReducer for complex state logic with multiple sub-values
+- Implement React Context with custom hooks for global state
+- Use state machines (XState) for complex application flows
+- Consider Zustand or Jotai for lightweight global state
+- Use React Query/TanStack Query for server state management
+- Avoid prop drilling; lift state appropriately or use context
+
+```typescript
+// Custom hook pattern
+interface UseToggleReturn {
+  isOpen: boolean;
+  open: () => void;
+  close: () => void;
+  toggle: () => void;
+}
+
+export function useToggle(initialState = false): UseToggleReturn {
+  const [isOpen, setIsOpen] = useState(initialState);
+  
+  const open = useCallback(() => setIsOpen(true), []);
+  const close = useCallback(() => setIsOpen(false), []);
+  const toggle = useCallback(() => setIsOpen(prev => !prev), []);
+  
+  return { isOpen, open, close, toggle };
+}
+```
+
+## Performance Optimization
+
+- Use React.memo for components with expensive renders
+- Implement useMemo for expensive calculations
+- Use useCallback for stable function references in dependencies
+- Avoid creating objects/arrays in render; extract to constants or useMemo
+- Implement code splitting with React.lazy and Suspense
+- Use React DevTools Profiler to identify performance bottlenecks
+- Implement virtualization for large lists (react-window, react-virtualized)
+
+```typescript
+const ExpensiveComponent = React.memo(function ExpensiveComponent({ 
+  data, 
+  onSelect 
+}: ExpensiveComponentProps) {
+  const processedData = useMemo(() => 
+    data.map(item => expensiveTransform(item)), 
+    [data]
+  );
+  
+  const handleSelect = useCallback((id: string) => {
+    onSelect(id);
+  }, [onSelect]);
+  
+  return (
+    <div>
+      {processedData.map(item => (
+        <Item key={item.id} data={item} onSelect={handleSelect} />
+      ))}
+    </div>
+  );
+});
+```
+
+## Error Handling and Validation
+
+- Use Zod or Yup for runtime validation and schema definition
+- Implement error boundaries for graceful error handling
+- Use Result/Either patterns for explicit error handling in utilities
+- Handle async operations with proper error states
+- Implement retry logic for transient failures
+- Use type-safe error handling with discriminated unions
+
+```typescript
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  email: z.string().email(),
+  age: z.number().min(0).max(120)
+});
+
+type User = z.infer<typeof UserSchema>;
+
+// Result pattern for error handling
+type Result<T, E = Error> = 
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+async function fetchUser(id: string): Promise<Result<User>> {
+  try {
+    const response = await api.get(`/users/${id}`);
+    const user = UserSchema.parse(response.data);
+    return { success: true, data: user };
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error : new Error('Unknown error')
+    };
+  }
+}
+```
+
+## Testing
+
+- Write unit tests using Jest and React Testing Library
+- Focus on testing behavior, not implementation details
+- Use MSW (Mock Service Worker) for API mocking
+- Implement integration tests for critical user flows
+- Use data-testid sparingly; prefer semantic queries
+- Test custom hooks in isolation
+
+```typescript
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+describe('LoginForm', () => {
+  it('should handle successful login', async () => {
+    const mockOnLogin = jest.fn();
+    const user = userEvent.setup();
     
+    render(<LoginForm onLogin={mockOnLogin} />);
+    
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+    await user.type(screen.getByLabelText(/password/i), 'password123');
+    await user.click(screen.getByRole('button', { name: /log in/i }));
+    
+    await waitFor(() => {
+      expect(mockOnLogin).toHaveBeenCalledWith({
+        email: 'test@example.com',
+        password: 'password123'
+      });
+    });
+  });
+});
+```
+
+## Security and Best Practices
+
+- Sanitize user inputs and validate on both client and server
+- Use HTTPS for all API communications
+- Implement proper authentication and authorization patterns
+- Use secure storage for sensitive data
+- Avoid exposing sensitive information in client-side code
+- Implement Content Security Policy (CSP) headers
+- Use environment variables for configuration
+
+## Accessibility (a11y)
+
+- Use semantic HTML elements appropriately
+- Implement proper ARIA labels and roles
+- Ensure keyboard navigation support
+- Maintain proper color contrast ratios
+- Test with screen readers
+- Use focus management for dynamic content
+- Implement skip links for main content
+
+## Modern React Patterns
+
+- Use Suspense for data fetching and code splitting
+- Implement Concurrent Features (useTransition, useDeferredValue)
+- Use Server Components when appropriate (Next.js 13+)
+- Leverage React 18+ features for better UX
+- Use modern bundlers (Vite, Turbopack) for faster development
+
+## Key Conventions
+
+1. Prioritize type safety and compile-time error detection
+2. Write self-documenting code with clear interfaces
+3. Favor composition and hooks over inheritance and classes
+4. Implement progressive enhancement and graceful degradation
+5. Use modern JavaScript/TypeScript features appropriately
+6. Maintain consistent code style across the project
+7. Document complex logic and business rules
+8. Use automated testing to ensure code quality
+9. Implement proper error handling and user feedback
+10. Follow React best practices and stay updated with ecosystem changes
+
+## Project Structure Example
+
+```
+src/
+├── components/           # Reusable UI components
+│   ├── ui/              # Basic UI primitives
+│   └── composite/       # Complex composed components
+├── hooks/               # Custom React hooks
+├── services/            # API and external service logic
+├── types/               # TypeScript type definitions
+├── utils/               # Pure utility functions
+├── stores/              # Global state management
+├── pages/               # Page-level components
+└── __tests__/           # Test files
+```
+
+This approach ensures maintainable, scalable, and type-safe React applications with excellent developer experience and runtime reliability.
