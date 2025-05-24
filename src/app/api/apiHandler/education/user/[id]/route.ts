@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+/*
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
     const { id } = params;
@@ -19,7 +20,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       where: { userId: id },
       orderBy: { startDate: 'asc' }
     });
-
+    
     return NextResponse.json({ 
       success: true,
       education: education
@@ -33,3 +34,4 @@ export async function GET(request: Request, { params }: { params: { id: string }
     }, { status: 500 });
   }
 } 
+*/

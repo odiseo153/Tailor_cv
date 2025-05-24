@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 
 const education_handler = new EducationHandler();
 
+/*
 export async function POST(request: Request) {
   try {
     const jsonData = await request.json();
@@ -39,3 +40,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+*/
