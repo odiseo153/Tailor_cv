@@ -1,6 +1,5 @@
 import { EducationHandler } from '@/app/Handler/PrismaHandler/EducationHandler';
 import { NextResponse,NextRequest } from 'next/server';
-import  RouteContext from 'next'
 
 
 const education_handler = new EducationHandler();
@@ -14,7 +13,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'El payload debe ser un objeto válido' }, { status: 400 });
     }
     
-    const { id } =  params;
+    const id  =  params.id;
     const { institution, degree, startDate, endDate } = jsonData;
     
     // Check that all required fields are present.
