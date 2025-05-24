@@ -1,0 +1,44 @@
+import { NextRequest,NextResponse } from "next/server";
+import { SkillsHandler } from '@/app/Handler/PrismaHandler/SkillsHandler';
+
+const skill_handler = new SkillsHandler();
+
+export async function PUT(request: NextRequest,{ params }: { params: { id: string } }) {
+  try {
+    const jsonData = await request.json();
+    const { id } =  params;
+
+    console.log(id);
+
+
+    const { name, level, userId } = jsonData;
+
+    if (!name || !level || !userId) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const resultado = await skill_handler.update(id,jsonData);
+
+    return NextResponse.json({ resultado });
+
+  } catch (error: any) {
+    console.error("Error processing request in /api/route:", error);
+    return NextResponse.json({ error: 'Error al procesar la solicitud para iniciar sesion : ' + (error.message || 'Error desconocido') }, { status: 500 });
+  }
+}
+
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) 
+  {
+  try {
+    const { id } = params;
+
+    const resultado = await skill_handler.delete(id);
+
+    return NextResponse.json({ resultado });
+
+  } catch (error: any) {
+    console.error("Error processing request in /api/route:", error);
+    return NextResponse.json({ error: 'Error al procesar la solicitud para iniciar sesion : ' + (error.message || 'Error desconocido') }, { status: 500 });
+  }
+}
