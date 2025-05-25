@@ -3,11 +3,11 @@ import { NextResponse,NextRequest } from 'next/server';
 
 const social_handler = new SocialLinksHandler();
 
-export async function PUT(request: NextRequest,{ params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest,{ params }: { params: Promise<{ id: string }> }) {
   try {
     const data = await request.json();
     const jsonData = data;
-   const { id } = params;
+   const { id } = await params;
     console.log(id);
 
     const { platform, url, userId } = jsonData;

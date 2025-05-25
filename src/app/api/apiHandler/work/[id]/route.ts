@@ -3,9 +3,9 @@ import { NextResponse,NextRequest } from 'next/server';
 
 const work_handler = new WorkExperienceHandler();
 
-export async function PUT(request: NextRequest,{ params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest,{ params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
     const jsonData = data.formData;
 
@@ -27,9 +27,9 @@ export async function PUT(request: NextRequest,{ params }: { params: { id: strin
 }
 
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }>}) {
   try {
-    const { id } = params;
+    const { id } = await params;
     if (!id) {
       return NextResponse.json({ error: 'Missing work experience ID' }, { status: 400 });
     }
@@ -44,9 +44,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 }
 
 
-  export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }>  }) {
     try {
-      const { id } = params;
+      const { id } = await params;
       if (!id) {
         return NextResponse.json({ error: 'Missing User ID' }, { status: 400 });
       }

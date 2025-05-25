@@ -3,10 +3,10 @@ import { SkillsHandler } from '@/app/Handler/PrismaHandler/SkillsHandler';
 
 const skill_handler = new SkillsHandler();
 
-export async function PUT(request: NextRequest,{ params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest,{ params }: { params: Promise<{ id: string }> }) {
   try {
     const jsonData = await request.json();
-    const { id } =  params;
+    const { id } =  await params;
 
     console.log(id);
 
@@ -28,10 +28,10 @@ export async function PUT(request: NextRequest,{ params }: { params: { id: strin
 }
 
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) 
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) 
   {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const resultado = await skill_handler.delete(id);
 

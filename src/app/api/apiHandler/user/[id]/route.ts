@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 
 const user_handler = new UserHandler();
 
-export async function GET(request: Request,{ params }: { params: { id: string } }) {
+export async function GET(request: Request,{ params }: { params: Promise<{ id: string }> }) {
   try {
     // Obtener el ID de usuario desde los parámetros de la URL
-    const { id } =  params;
+    const { id } =  await params;
 
     const user = await user_handler.getById(id);
 
