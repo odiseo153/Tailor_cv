@@ -2,6 +2,7 @@ import { NextRequest,NextResponse } from "next/server";
 import { SkillsHandler } from '@/app/Handler/PrismaHandler/SkillsHandler';
 
 const skill_handler = new SkillsHandler();
+//probando comando git
 
 export async function PUT(request: NextRequest,{ params }: { params: Promise<{ id: string }> }) {
   try {
