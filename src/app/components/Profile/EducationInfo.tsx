@@ -523,7 +523,6 @@ export default function EducationInfo() {
                           <div className="flex items-start space-x-1">
                             <TooltipProvider>
                               <Tooltip>
-                               {/*
                                 <TooltipTrigger asChild>
                                   <Button 
                                     variant="ghost" 
@@ -534,7 +533,6 @@ export default function EducationInfo() {
                                     <Pencil className="h-4 w-4 text-muted-foreground" />
                                   </Button>
                                 </TooltipTrigger>
-                                  */}
                                 <TooltipContent>
                                   <p>Editar</p>
                                 </TooltipContent>

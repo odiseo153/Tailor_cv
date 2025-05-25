@@ -5,7 +5,6 @@ import { NextResponse,NextRequest } from 'next/server';
 const education_handler = new EducationHandler();
 
 
-/*
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const jsonData = await request.json();
@@ -49,4 +48,3 @@ export async function DELETE(request: NextRequest,{ params }: { params: { id: st
     return NextResponse.json({ error: 'Error al procesar la solicitud para delete para work experience : ' + (error.message || 'Error desconocido') }, { status: 500 });
   }
 }
-*/
