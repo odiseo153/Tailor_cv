@@ -5,7 +5,7 @@ import { NextResponse,NextRequest } from 'next/server';
 const education_handler = new EducationHandler();
 
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }>}) {
   try {
     const jsonData = await request.json();
     
@@ -14,7 +14,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'El payload debe ser un objeto válido' }, { status: 400 });
     }
     
-    const id  =  params.id;
+    const {id} = await params;
     const { institution, degree, startDate, endDate } = jsonData;
     
     // Check that all required fields are present.
@@ -34,10 +34,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 
 
-export async function DELETE(request: NextRequest,{ params }: { params: { id: string } }) 
+export async function DELETE(request: NextRequest,{ params }: { params: Promise<{ id: string }> }) 
 {
   try {
-    const {id} =  params;
+    const {id} =  await params;
     
     const resultado = await education_handler.delete(id);
     
