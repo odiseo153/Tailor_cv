@@ -10,7 +10,6 @@ const prisma = new PrismaClient();
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'No autorizado' },
@@ -18,9 +17,10 @@ export async function GET() {
       );
     }
 
+    // Buscar usuario con su stripeCustomerId y suscripciones
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { subscription: true }
+      include: { subscription: true }, // Usar "subscriptions" (plural) según tu esquema
     });
 
     if (!user) {
@@ -30,33 +30,60 @@ export async function GET() {
       );
     }
 
-    if (!user.subscription) {
-      return NextResponse.json({ subscription: null });
+    if (!user.stripeCustomerId) {
+      return NextResponse.json(
+        { error: 'Usuario no vinculado a Stripe' },
+        { status: 400 }
+      );
     }
 
-    // Obtener detalles adicionales de Stripe si es necesario
-    const stripeSubscription = await stripe.subscriptions.retrieve(
-      user.subscription.stripeSubscriptionId
+  
+
+    // Obtener suscripciones de Stripe para el usuario
+    const stripeSubscriptions = await stripe.subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: 'all', // Incluir activas, canceladas, etc.
+    });
+
+    // Mapear suscripciones para incluir detalles del plan
+    const subscriptions = await Promise.all(
+      stripeSubscriptions.data.map(async (sub) => {
+        const subscriptionItem = await stripe.subscriptionItems.list({
+          subscription: sub.id,
+          expand: ['data.price.product'], // Expandir detalles del precio y producto
+        });
+
+        const item = subscriptionItem.data[0];
+        const price = item?.price;
+
+        return {
+          id: sub.id,
+          status: sub.status,
+          planId: price?.id,
+          items : subscriptionItem.data,
+          interval: price?.recurring?.interval,
+          currentPeriodStart: new Date(sub.start_date * 1000),
+          currentPeriodEnd: new Date(sub.ended_at ?? 0 * 1000),
+          cancelAtPeriodEnd: sub.cancel_at_period_end,
+        };
+      })
     );
 
-    // Obtener información del plan
-    const plan = await prisma.subscriptionPlan.findFirst({
-      where: { id: user.subscription.planId }
-    });
-
     return NextResponse.json({
-      subscription: {
-        ...user.subscription,
-        stripeStatus: stripeSubscription.status,
-        plan
-      }
+      subscriptions,
     });
-  } catch (error) {
-    console.error('Error al obtener la suscripción:', error);
+    
+  } catch (error: any) {
+    console.error('Error al obtener la suscripción:', {
+      error: error.message,
+      stack: error.stack,
+    });
     return NextResponse.json(
       { error: 'Error al obtener información de suscripción' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -64,7 +91,6 @@ export async function GET() {
 export async function DELETE() {
   try {
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'No autorizado' },
@@ -74,38 +100,66 @@ export async function DELETE() {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { subscription: true }
+      include: { subscription: true },
     });
 
-    if (!user || !user.subscription) {
+    if (!user || !user.subscription || user.subscription === null) {
       return NextResponse.json(
         { error: 'No hay suscripción activa' },
         { status: 404 }
       );
     }
 
-    // Cancelar la suscripción en Stripe (al final del período actual)
-    await stripe.subscriptions.update(
-      user.subscription.stripeSubscriptionId,
-      { cancel_at_period_end: true }
+    const subscription = user?.subscription;
+    if (!subscription) {
+      return NextResponse.json(
+        { error: 'No hay suscripción activa para cancelar' },
+        { status: 404 }
+      );
+    }
+
+    // Verificar estado en Stripe
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscription.stripeSubscriptionId
     );
+    if (stripeSubscription.status === 'canceled') {
+      return NextResponse.json(
+        { error: 'La suscripción ya está cancelada' },
+        { status: 400 }
+      );
+    }
 
-    // Actualizar el estado en nuestra base de datos
+    // Cancelar la suscripción en Stripe
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      cancel_at_period_end: true,
+    });
+
+    // Actualizar en la base de datos
     await prisma.subscription.update({
-      where: { id: user.subscription.id },
-      data: { cancelAtPeriodEnd: true }
+      where: { id: subscription.id },
+      data: { cancelAtPeriodEnd: true },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Suscripción cancelada correctamente' 
+    console.log('Suscripción cancelada', {
+      userId: user.id,
+      subscriptionId: subscription.stripeSubscriptionId,
     });
-  } catch (error) {
-    console.error('Error al cancelar la suscripción:', error);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Suscripción cancelada correctamente',
+    });
+  } catch (error: any) {
+    console.error('Error al cancelar la suscripción:', {
+      error: error.message,
+      stack: error.stack,
+    });
     return NextResponse.json(
       { error: 'Error al cancelar la suscripción' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
@@ -113,7 +167,6 @@ export async function DELETE() {
 export async function PATCH(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'No autorizado' },
@@ -123,37 +176,65 @@ export async function PATCH(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      include: { subscription: true }
+      include: { subscription: true },
     });
 
-    if (!user || !user.subscription) {
+    if (!user || !user.subscription || user.subscription === null) {
       return NextResponse.json(
         { error: 'No hay suscripción para reactivar' },
         { status: 404 }
       );
     }
 
-    // Reactivar la suscripción en Stripe
-    await stripe.subscriptions.update(
-      user.subscription.stripeSubscriptionId,
-      { cancel_at_period_end: false }
+    const subscription = user.subscription;
+    if (!subscription) {
+      return NextResponse.json(
+        { error: 'No hay suscripción cancelada para reactivar' },
+        { status: 404 }
+      );
+    }
+
+    // Verificar estado en Stripe
+    const stripeSubscription = await stripe.subscriptions.retrieve(
+      subscription.stripeSubscriptionId
     );
+    if (!stripeSubscription.cancel_at_period_end) {
+      return NextResponse.json(
+        { error: 'La suscripción ya está activa' },
+        { status: 400 }
+      );
+    }
 
-    // Actualizar el estado en nuestra base de datos
+    // Reactivar la suscripción en Stripe
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      cancel_at_period_end: false,
+    });
+
+    // Actualizar en la base de datos
     await prisma.subscription.update({
-      where: { id: user.subscription.id },
-      data: { cancelAtPeriodEnd: false }
+      where: { id: subscription.id },
+      data: { cancelAtPeriodEnd: false },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Suscripción reactivada correctamente' 
+    console.log('Suscripción reactivada', {
+      userId: user.id,
+      subscriptionId: subscription.stripeSubscriptionId,
     });
-  } catch (error) {
-    console.error('Error al reactivar la suscripción:', error);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Suscripción reactivada correctamente',
+    });
+  } catch (error: any) {
+    console.error('Error al reactivar la suscripción:', {
+      error: error.message,
+      stack: error.stack,
+    });
     return NextResponse.json(
       { error: 'Error al reactivar la suscripción' },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
-} 
+}

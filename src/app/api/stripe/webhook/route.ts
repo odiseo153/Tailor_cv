@@ -1,131 +1,190 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
+import { buffer } from 'micro';
 import stripe from '@/lib/stripe';
 import { PrismaClient } from '@prisma/client';
+import { IncomingMessage } from 'http';
 
+// Inicializar Prisma
 const prisma = new PrismaClient();
 
-// Esta función debe configurarse como pública (no requiere autenticación)
-// en la configuración de Next.js
+// Deshabilitar el body parser para manejar webhooks de Stripe
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
+// Mapa de manejadores de eventos para modularidad
+const eventHandlers: Record<
+  string,
+  (event: any, prisma: PrismaClient) => Promise<void>
+> = {
+  'checkout.session.completed': async (event, prisma) => {
+    const checkoutSession = event.data.object;
+    if (checkoutSession.mode !== 'subscription') return;
+
+    const userId = checkoutSession.metadata?.userId;
+    const planId = checkoutSession.metadata?.planId;
+    const subscriptionId = checkoutSession.subscription;
+
+    if (!userId || !planId || !subscriptionId) {
+      throw new Error('Missing metadata: userId, planId, or subscriptionId');
+    }
+
+    // Obtener detalles de la suscripción
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+    // Crear o actualizar suscripción en la base de datos
+    await prisma.subscription.upsert({
+      where: { stripeSubscriptionId: subscription.id },
+      update: {
+        status: subscription.status,
+        currentPeriodStart: new Date(subscription.start_date * 1000),
+        currentPeriodEnd: new Date(subscription?.ended_at ?? 0 * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      },
+      create: {
+        userId,
+        stripeSubscriptionId: subscription.id,
+        status: subscription.status,
+        planId,
+        currentPeriodStart: new Date(subscription.start_date * 1000),
+        currentPeriodEnd: new Date(subscription?.ended_at ?? 0 * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      },
+    });
+  },
+
+  'customer.subscription.updated': async (event, prisma) => {
+    const subscription = event.data.object;
+    await prisma.subscription.update({
+      where: { stripeSubscriptionId: subscription.id },
+      data: {
+        status: subscription.status,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      },
+    });
+  },
+
+  'customer.subscription.deleted': async (event, prisma) => {
+    const subscription = event.data.object;
+    await prisma.subscription.update({
+      where: { stripeSubscriptionId: subscription.id },
+      data: { status: subscription.status },
+    });
+  },
+
+  'invoice.payment_succeeded': async (event, prisma) => {
+    const invoice = event.data.object;
+    const subscriptionId = invoice.subscription;
+    if (!subscriptionId) return;
+
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    await prisma.subscription.update({
+      where: { stripeSubscriptionId: subscription.id },
+      data: {
+        status: subscription.status,
+        currentPeriodStart: new Date(subscription.start_date * 1000),
+        currentPeriodEnd: new Date(subscription?.ended_at ?? 0 * 1000),
+      },
+    });
+  },
+
+  'invoice.payment_failed': async (event, prisma) => {
+    const invoice = event.data.object;
+    const subscriptionId = invoice.subscription;
+    if (!subscriptionId) return;
+
+    const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+    await prisma.subscription.update({
+      where: { stripeSubscriptionId: subscription.id },
+      data: { status: subscription.status },
+    });
+
+    // Opcional: Notificar al usuario (email, notificación en la app, etc.)
+    const user = await prisma.user.findFirst({
+      where: { subscription: { stripeSubscriptionId: subscription.id } },
+    });
+    if (user) {
+      console.log(`Notificar a ${user.email}: Pago fallido para suscripción ${subscription.id}`);
+      // Aquí podrías integrar un servicio de notificaciones
+    }
+  },
+};
+
 export async function POST(req: NextRequest) {
-  const body = await req.text();
-  const signature = (await headers()).get('stripe-signature') as string;
+  // Obtener el cuerpo de la solicitud como buffer
+  const buf = await buffer(req.body as unknown as IncomingMessage);
+  const signature = req.headers.get('stripe-signature') as string;
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET no está configurado');
+    return NextResponse.json(
+      { error: 'Webhook secret not configured' },
+      { status: 500 }
+    );
+  }
 
   let event;
-
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET as string
-    );
+    event = stripe.webhooks.constructEvent(buf, signature, webhookSecret);
   } catch (error: any) {
-    console.error(`Error al verificar webhook: ${error.message}`);
+    console.error(`Error al verificar webhook: ${error.message}`, {
+      eventId: event?.id,
+      signature,
+    });
     return NextResponse.json(
       { error: `Webhook Error: ${error.message}` },
       { status: 400 }
     );
   }
 
-  // Manejar los diferentes tipos de eventos
+  /*
+// Verificar idempotencia: Comprobar si el evento ya fue procesado
+const existingEvent = await prisma.webhookEvent.findUnique({
+where: { stripeEventId: event.id },
+});
+ 
+if (existingEvent) {
+console.log(`Evento ${event.id} ya procesado`);
+return NextResponse.json({ received: true });
+}
+ 
+// Registrar el evento para idempotencia
+await prisma.webhookEvent.create({
+data: {
+stripeEventId: event.id,
+eventType: event.type,
+processedAt: new Date(),
+},
+});
+*/
+
+  // Procesar el evento
   try {
-    switch (event.type) {
-      // Cuando una suscripción es creada
-      case 'checkout.session.completed':
-        const checkoutSession = event.data.object;
-        // Verificar que sea de tipo suscripción
-        if (checkoutSession.mode === 'subscription') {
-          const userId = checkoutSession.metadata?.userId;
-          const planId = checkoutSession.metadata?.planId;
-          const subscriptionId = checkoutSession.subscription;
-
-          // Obtener los detalles de la suscripción
-          const subscription = await stripe.subscriptions.retrieve(
-            subscriptionId as string
-          );
-
-          // Crear o actualizar la suscripción en nuestra base de datos
-          await prisma.subscription.upsert({
-            where: {
-              stripeSubscriptionId: subscription.id,
-            },
-            update: {
-              status: subscription.status,
-              currentPeriodStart: new Date(subscription.start_date * 1000),
-              currentPeriodEnd: new Date((subscription.ended_at ?? 0) * 1000),
-              cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            },
-            create: {
-              userId: userId as string,
-              stripeSubscriptionId: subscription.id,
-              status: subscription.status,
-              planId: planId as string,
-              currentPeriodStart: new Date(subscription.start_date * 1000),
-              currentPeriodEnd: new Date((subscription.ended_at ?? 0) * 1000),
-              cancelAtPeriodEnd: subscription.cancel_at_period_end,
-            },
-          });
-        }
-        break;
-
-      // Cuando se actualiza una suscripción
-      case 'customer.subscription.updated':
-        const updatedSubscription = event.data.object;
-        await prisma.subscription.update({
-          where: {
-            stripeSubscriptionId: updatedSubscription.id,
-          },
-          data: {
-            status: updatedSubscription.status,
-            currentPeriodStart: new Date(updatedSubscription.start_date * 1000),
-            currentPeriodEnd: new Date((updatedSubscription.ended_at ?? 0) * 1000),
-            cancelAtPeriodEnd: updatedSubscription.cancel_at_period_end,
-          },
-        });
-        break;
-
-      // Cuando se cancela una suscripción
-      case 'customer.subscription.deleted':
-        const deletedSubscription = event.data.object;
-        await prisma.subscription.update({
-          where: {
-            stripeSubscriptionId: deletedSubscription.id,
-          },
-          data: {
-            status: deletedSubscription.status,
-          },
-        });
-        break;
-
-      // Cuando falla un pago
-      /*
-      case 'invoice.payment_failed':
-        
-      const failedInvoice = event.data.object;
-      const failedSubscription = await stripe.subscriptions.retrieve(
-          failedInvoice.subscription as string
-        );
-        await prisma.subscription.update({
-          where: {
-            stripeSubscriptionId: failedSubscription.id,
-          },
-          data: {
-            status: failedSubscription.status,
-          },
-        });
-        break;
-        */
-
-      default:
-        console.log(`Evento no manejado: ${event.type}`);
+    const handler = eventHandlers[event.type];
+    if (handler) {
+      await handler(event, prisma);
+      console.log(`Evento procesado: ${event.type}`, { eventId: event.id });
+    } else {
+      console.log(`Evento no manejado: ${event.type}`, { eventId: event.id });
     }
 
     return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('Error al procesar webhook:', error);
+  } catch (error: any) {
+    console.error(`Error al procesar evento ${event.type}: ${error.message}`, {
+      eventId: event.id,
+      stack: error.stack,
+    });
     return NextResponse.json(
-      { error: 'Error al procesar el webhook' },
+      { error: `Error al procesar el webhook: ${error.message}` },
       { status: 500 }
     );
+  } finally {
+    // Desconectar Prisma para evitar memory leaks
+    await prisma.$disconnect();
   }
-} 
+}

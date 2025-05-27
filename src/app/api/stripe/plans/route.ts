@@ -1,17 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import {  NextResponse } from 'next/server';
+import stripe from '@/lib/stripe';
 
-const prisma = new PrismaClient();
-
-// Obtener todos los planes de suscripción activos
 export async function GET() {
   try {
-    const plans = await prisma.subscriptionPlan.findMany({
-      where: { active: true },
-      orderBy: { price: 'asc' }
-    });
+    const data = await stripe.products.list();
+    const dataWithPrices = await Promise.all(data.data.map(async (product) => {
+      const price = await stripe.prices.list({
+        product: product.id,
+        limit: 1
+      });
+      return { ...product, default_price: price.data[0] };
+    }));
 
-    return NextResponse.json({ plans });
+    return NextResponse.json({ data: dataWithPrices });
   } catch (error) {
     console.error('Error al obtener planes de suscripción:', error);
     return NextResponse.json(
@@ -20,3 +21,5 @@ export async function GET() {
     );
   }
 } 
+
+

@@ -6,10 +6,21 @@ import { motion } from "framer-motion";
 import { nameApp } from "@/app/utils/NameApp";
 import CVPreview from "./CVPreview";
 import { useI18n } from "@/app/context/I18nContext";
+import { useEffect } from "react";
 
 export default function HeroSection() {
   const { t } = useI18n();
-  
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      const response = await fetch("/api/stripe/plans");
+      const data = await response.json();
+      console.log(data);
+    };
+    fetchSubscription();
+  }, []);
+
+
   return (
     <section className="bg-gradient-to-b py-28 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-8 flex flex-col-reverse md:flex-row items-center gap-12 relative">

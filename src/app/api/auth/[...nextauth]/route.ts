@@ -16,6 +16,7 @@ declare module "next-auth" {
       phone?: string | null;
       location?: string | null;
       profilePicture?: string | null;
+      stripeCustomerId?: string | null;
     }
   }
 }
@@ -96,6 +97,7 @@ export const authOptions: NextAuthOptions = {
             phone: user.phone,
             location: user.location,
             profilePicture: user.profilePicture,
+            stripeCustomerId: user.stripeCustomerId,
 
           };
         } catch (error: any) {
@@ -193,6 +195,7 @@ export const authOptions: NextAuthOptions = {
               token.phone = dbUser.phone;
               token.location = dbUser.location;
               token.profilePicture = dbUser.profilePicture;
+              token.stripeCustomerId = dbUser.stripeCustomerId;
             }
           } catch (error) {
             console.error('Error al obtener datos adicionales del usuario:', error);
@@ -201,6 +204,7 @@ export const authOptions: NextAuthOptions = {
           if ('phone' in user) token.phone = user.phone as string | null;
           if ('location' in user) token.location = user.location as string | null;
           if ('profilePicture' in user) token.profilePicture = user.profilePicture as string | null;
+          if ('stripeCustomerId' in user) token.stripeCustomerId = user.stripeCustomerId as string | null;
         }
       }
 
@@ -220,6 +224,7 @@ export const authOptions: NextAuthOptions = {
         if ('phone' in token) session.user.phone = token.phone;
         if ('location' in token) session.user.location = token.location;
         if ('profilePicture' in token) session.user.profilePicture = token.profilePicture;
+        if ('stripeCustomerId' in token) session.user.stripeCustomerId = token.stripeCustomerId as string | null;
       }
       
       return session;
@@ -263,7 +268,7 @@ export const authOptions: NextAuthOptions = {
     }
   },
   // Habilitar CSRF Protection
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXT_PUBLIC_API_NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
   // Optimización de seguridad
   useSecureCookies: process.env.NODE_ENV === "production",

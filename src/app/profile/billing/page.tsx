@@ -46,21 +46,21 @@ export default function BillingPage() {
         </Button>
       </div>
 
+
       <Tabs 
         defaultValue="subscription" 
         value={activeTab}
         onValueChange={setActiveTab}
         className="w-full"
       >
+        
         <TabsList className="mb-8">
           <TabsTrigger value="subscription">Plan de suscripción</TabsTrigger>
           <TabsTrigger value="payment-methods">Métodos de pago</TabsTrigger>
         </TabsList>
         
         <TabsContent value="subscription" className="mt-0">
-          <SubscriptionManagement userId={session.user.id as string} />
-          
-        
+          <SubscriptionManagement />
         </TabsContent>
         
         <TabsContent value="payment-methods" className="mt-0">

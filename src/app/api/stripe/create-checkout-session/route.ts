@@ -22,13 +22,14 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
-
+    
     if (!user) {
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
       );
     }
+    console.log("llego");
 
     const { priceId, planId } = await req.json();
 
