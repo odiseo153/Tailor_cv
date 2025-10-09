@@ -114,15 +114,15 @@ export default function AnalysisResults({ result }: AnalysisResultsProps) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div>
             <span className="font-medium text-blue-700">{t('cv_analysis.visual_improvements')}:</span>
-            <span className="text-gray-600 ml-1">{result.visual.suggestions.length} {t('cv_analysis.suggestions_count', { count: result.visual.suggestions.length })}</span>
+            <span className="text-gray-600 ml-1">{result.visual.suggestions.length} {t('cv_analysis.suggestions_count', { count: result.visual.suggestions.length }.count.toString())}</span>
           </div>
           <div>
             <span className="font-medium text-purple-700">{t('cv_analysis.structural_enhancements')}:</span>
-            <span className="text-gray-600 ml-1">{result.structural.suggestions.length} {t('cv_analysis.suggestions_count', { count: result.structural.suggestions.length })}</span>
+            <span className="text-gray-600 ml-1">{result.structural.suggestions.length} {t('cv_analysis.suggestions_count', { count: result.structural.suggestions.length }.count.toString())}</span>
           </div>
           <div>
             <span className="font-medium text-green-700">{t('cv_analysis.content_optimization')}:</span>
-            <span className="text-gray-600 ml-1">{result.content.suggestions.length} {t('cv_analysis.suggestions_count', { count: result.content.suggestions.length })}</span>
+            <span className="text-gray-600 ml-1">{result.content.suggestions.length} {t('cv_analysis.suggestions_count', { count: result.content.suggestions.length }.count.toString())}</span>
           </div>
         </div>
       </div>
