@@ -15,10 +15,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
     
     const {id} = await params;
-    const { institution, degree, startDate, endDate } = jsonData;
+    const { institution, degree, startDate } = jsonData;
     
     // Check that all required fields are present.
-    if (!institution || !degree || !startDate || !endDate || !id) {
+    if (!institution || !degree || !startDate || !id) {
       return NextResponse.json({ error: 'Faltan parámetros requeridos' }, { status: 400 });
     }
     

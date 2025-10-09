@@ -11,11 +11,11 @@ export async function PUT(request: NextRequest,{ params }: { params: Promise<{ i
 
     const {company,jobTitle,startDate,endDate,description } = jsonData;
     
-    if (!company || !jobTitle || !startDate || !endDate || !description) {
+    if (!company || !jobTitle || !startDate || !description) {
       return NextResponse.json({ error: 'Faltan parametros',jsonData }, { status: 400 });
     }
     
-    console.log(id)
+    console.log(id,jsonData)
     const resultado = await work_handler.update(id,jsonData);
 
     return NextResponse.json({ resultado });

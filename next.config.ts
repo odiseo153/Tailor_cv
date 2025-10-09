@@ -21,11 +21,22 @@ const nextConfig: NextConfig = {
   experimental: {
     // No experimental flags needed currently
   },
-  webpack: (config: { resolve: { fallback: any; }; }) => {
-    // Handle canvas dependency issue by providing empty module
+  webpack: (config: { resolve: { fallback: any; alias?: Record<string, any> }; }) => {
+    // Handle Node.js dependencies in browser environment
     config.resolve.fallback = {
       ...config.resolve.fallback,
       canvas: false, // Provides an empty module for the canvas dependency
+      fs: false, // Disable fs module for browser compatibility
+      path: false, // Disable path module for browser compatibility
+      os: false, // Disable os module for browser compatibility
+    };
+
+    // Force browser-safe builds and stub node-only modules
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      canvas: require('path').resolve(__dirname, 'src/shims/canvas-shim.js'),
+      'pdfjs-dist/build/pdf': 'pdfjs-dist/legacy/build/pdf',
+      'pdfjs-dist': 'pdfjs-dist/legacy/build/pdf',
     };
     return config;
   },

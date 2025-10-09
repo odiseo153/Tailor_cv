@@ -15,21 +15,23 @@ export async function POST(request: Request) {
     const jsonData = Data.formData;
 
     let { company, jobTitle, startDate, endDate, description, userId } = jsonData;
-    
-    if (!company || !jobTitle || !startDate || !endDate || !description || !userId) {
+    console.log(jsonData);
+    if (!company || !jobTitle || !startDate || !description || !userId) {
       return NextResponse.json({ error: 'Missing parameters', params: jsonData }, { status: 400 });
     }
 
 
     try {
       startDate = new Date(startDate);
-      endDate = new Date(endDate);
+      if (endDate) {
+        endDate = new Date(endDate);
+      }
     } catch (dateError) {
       return NextResponse.json({ error: 'Invalid date format' }, { status: 400 });
     }
 
     const resultado = await work_handler.create({
-      company, jobTitle, startDate, endDate, description, userId
+      company, jobTitle, startDate, endDate: endDate || null, description, userId
     });
 
     return NextResponse.json({ resultado }, { status: 200 });

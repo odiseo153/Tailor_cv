@@ -3,9 +3,10 @@
 import { useState, Suspense, lazy, useRef } from "react"
 import { generatePdf } from "./htmlToPdf"
 import { generateWord } from "./htmlToWord"
-import { Download, Loader2 } from "lucide-react"
+import {  optimizeHtmlForExport, validateHtmlForExport } from "./ExportManager"
+import { Download, Loader2, AlertCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Editor } from "./EditView"
 import dynamic from "next/dynamic"
@@ -48,11 +49,14 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
     setActiveTab(value)
     // Solo cargar el editor Canva cuando el usuario selecciona esa pestaña
     if (value === "canva") {
-      setLoadCanvaEditor(true)
+      setLoadCanvaEditor(false)
     }
   }
 
   const previewRef = useRef<HTMLDivElement>(null)
+
+  const [validationIssues, setValidationIssues] = useState<string[]>([])
+  const [showAdvancedExport, setShowAdvancedExport] = useState(false)
 
   const handleDownload = async () => {
     // Crear un documento completo con HTML y CSS
@@ -69,12 +73,25 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
       </html>
     `
 
+    // Validate HTML before export
+    const validation = validateHtmlForExport(fullHtml)
+    if (!validation.valid) {
+      setValidationIssues(validation.issues)
+      return
+    }
+
+    // Optimize HTML for better export quality
+    const optimizedHtml = optimizeHtmlForExport(fullHtml)
+
     if (downloadType === "pdf") {
-      generatePdf(fullHtml)
+      generatePdf(optimizedHtml)
     } else if (downloadType === "word") {
-      generateWord(fullHtml)
+      generateWord(optimizedHtml, {
+        filename: 'cv.docx'
+      })
     }
   }
+
 
   return (
     <Card className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl rounded-3xl overflow-hidden">
@@ -82,40 +99,6 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
         {/* Controles superiores: Selección de pestañas y opciones de descarga */}
         <div className="flex  sm:flex-row items-center justify-between gap-4 border-b border-gray-300 pb-4">
           <div className=" w-full">
-            {/* Tabs para pantallas grandes */}
-           {/*
-            <div className="flex-col hidden sm:block">
-              <Tabs value={activeTab} onValueChange={handleTabChange}>
-                <TabsList className="  bg-gray-200 p-1 rounded-full">
-                  <TabsTrigger
-                    value="preview"
-                    className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-300"
-                  >
-                    Preview
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="canva"
-                    className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-300"
-                  >
-                    Editor Canva
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="editor"
-                    className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-300"
-                  >
-                    Editor Básico
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="code"
-                    className="px-5 py-2 text-sm sm:text-base rounded-full data-[state=active]:bg-white data-[state=active]:shadow-md transition-all duration-300"
-                  >
-                    Code Editor
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-                */}
-            {/* Select para pantallas pequeñas que lista todas las pestañas */}
             <div className="">
               <select
                 title="Seleccionar pestaña"
@@ -124,33 +107,59 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
                 className="w-full px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               >
                 <option value="preview">Preview</option>
-             {/*
-                <option value="editor">Editor Básico</option>
-                 <option value="canva">Editor Canva</option>
-              */}
+                <option value="canva">Editor de Texto Enriquecido</option>
                 <option value="code">Code Editor</option>
               </select>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <select
-              aria-label="Seleccionar tipo de descarga"
-              value={downloadType}
-              onChange={(e) => setDownloadType(e.target.value)}
-              className="px-4 py-2 text-sm sm:text-base bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            >
-              <option value="pdf">PDF</option>
-              <option value="word">Word</option>
-            </select>
-            <Button
-              onClick={handleDownload}
-              className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-transform duration-300"
-            >
-              <Download className="w-5 h-5 animate-bounce" />
-            </Button>
+              <>
+                <select
+                  aria-label="Seleccionar tipo de descarga"
+                  value={downloadType}
+                  onChange={(e) => setDownloadType(e.target.value)}
+                  className="px-4 py-2 text-sm sm:text-base bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                >
+                  <option value="pdf">PDF</option>
+                  <option value="word">Word</option>
+                </select>
+                <Button
+                  onClick={handleDownload}
+                  className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-transform duration-300"
+                >
+                  <Download className="w-5 h-5 animate-bounce" />
+                </Button>
+              </>
           </div>
         </div>
+
+
+        {/* Validation Issues */}
+        {validationIssues.length > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <h4 className="text-red-800 font-semibold">Export Validation Issues</h4>
+            </div>
+            <ul className="text-red-700 text-sm space-y-1">
+              {validationIssues.map((issue, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  <span className="w-1 h-1 bg-red-600 rounded-full"></span>
+                  {issue}
+                </li>
+              ))}
+            </ul>
+            <Button
+              onClick={() => setValidationIssues([])}
+              variant="outline"
+              size="sm"
+              className="mt-3"
+            >
+              Dismiss
+            </Button>
+          </div>
+        )}
 
         {/* Contenido de las pestañas */}
         <Suspense
@@ -162,31 +171,6 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
           }
         >
           <Tabs value={activeTab} className="flex-grow">
-            <TabsContent value="canva" className="h-full">
-              <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border border-gray-200">
-                {loadCanvaEditor ? (
-                  <CanvaEditor html={html} onSave={handleCanvaEditorSave} />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full bg-gray-50 p-10 text-center">
-                    <p className="text-gray-500 mb-4">
-                      El editor avanzado se cargará al seleccionar esta pestaña
-                    </p>
-                    <Button
-                      onClick={() => setLoadCanvaEditor(true)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full"
-                    >
-                      Cargar Editor Canva
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-
-            <TabsContent value="editor" className="h-full">
-              <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border border-gray-200">
-                <Editor html={html} />
-              </div>
-            </TabsContent>
 
             <TabsContent value="code" className="h-full">
               <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border border-gray-200">

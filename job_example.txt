@@ -1,0 +1,38 @@
+We’re looking for a talented and independent Software Developer with strong backend development expertise, hands-on experience with vector databases, and the ability to integrate AI models into scalable systems. If you're passionate about advanced technologies and thrive in a fast-paced environment, this role is for you.
+
+Core Technical Requirements:
+
+Proficient in at least one backend language (Python, Node.js, Go, or Java)
+Strong experience in API design, integration, and authentication (REST, GraphQL, OAuth)
+Familiar with webhooks and asynchronous service communication
+Experience with third-party APIs and SDKs (Zapier, Stripe, Salesforce, OpenAI, etc.)
+Skilled in troubleshooting and maintaining complex API integrations
+
+AI & Vector Database Experience:
+
+Experience with vector databases (Pinecone, Weaviate, Chroma, or FAISS)
+Understanding of embeddings and vector similarity search
+Familiarity with LLM workflows and semantic search architecture
+Experience integrating AI models (OpenAI, Cohere, or custom LLMs) into backend systems
+
+Infrastructure & DevOps Skills:
+
+Familiarity with cloud platforms (AWS, GCP, Azure)
+Experience with Docker (Kubernetes is a plus)
+Knowledge of Git and CI/CD pipelines
+
+Soft Skills & Work Style:
+
+Works independently and can prioritize tasks effectively
+Strong written and verbal communication
+Thrives in a fast-paced, problem-solving environment
+
+Bonus (Nice to Have):
+
+Experience with data pipelines and ETL tools
+Optimization of vector databases for performance and scalability
+Background in property management or real estate tech
+
+⚙️ If you’re confident in your advanced development skills and ready to take on meaningful, high-impact work, apply now!
+
+📩 Only qualified candidates will be considered.

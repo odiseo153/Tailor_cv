@@ -71,7 +71,7 @@ const CVPreview: React.FC<CVPreviewProps> = ({
     name = user.name as string;
     email = user.email as string;
     phone = user.phone as string;
-    userImage = user.image;
+    userImage = user.image || "https://cdn-icons-png.flaticon.com/512/219/219988.png";
   }
 
   // Sample job experiences

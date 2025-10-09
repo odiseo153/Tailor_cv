@@ -9,8 +9,8 @@ generator client {
 }
 
 datasource db { 
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL_LOCAL_MYSQL")
 }
 
 
@@ -22,9 +22,9 @@ model User {
   password       String
   phone          String?
   location       String?
-  profilePicture String?
-  createdAt      DateTime?     @default(now())
-  updatedAt      DateTime?     @updatedAt
+  profilePicture String?      @db.Text
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   stripeCustomerId String?    @unique
   
   workExperience WorkExperience[]
@@ -44,9 +44,9 @@ model WorkExperience {
   jobTitle    String
   startDate   DateTime
   endDate     DateTime?
-  description String?
-  updatedAt   DateTime?     @updatedAt
-  createdAt   DateTime? @default(now())
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
 }
 
 model Skill {
@@ -55,7 +55,7 @@ model Skill {
   user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   name     String
   level    Int     @default(1) // Nivel de habilidad, por ejemplo, de 1 a 5
-  createdAt DateTime? @default(now())
+  createdAt DateTime @default(now())
 }
 
 model Education {
@@ -66,7 +66,7 @@ model Education {
   degree      String
   startDate   DateTime
   endDate     DateTime?
-  createdAt   DateTime? @default(now())
+  createdAt   DateTime @default(now())
 }
 
 model SocialLink {
@@ -74,8 +74,8 @@ model SocialLink {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   platform  String   // LinkedIn, GitHub, Portfolio, etc.
-  url       String
-  createdAt DateTime? @default(now())
+  url       String   @db.Text
+  createdAt DateTime @default(now())
 }
 
 model CvPreferences {
@@ -92,8 +92,8 @@ model CvPreferences {
   showContact    Boolean @default(true)
   showSocial     Boolean @default(true)
   pageSize       String  @default("a4")
-  createdAt      DateTime? @default(now())
-  updatedAt      DateTime? @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Subscription {
@@ -130,12 +130,12 @@ model PaymentMethod {
 model SubscriptionPlan {
   id          String   @id @default(uuid())
   name        String
-  description String
+  description String   @db.Text
   price       Float
   currency    String   @default("USD")
   interval    String   // 'month', 'year'
   stripePriceId String  @unique
-  features    String[]
+  features    Json
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

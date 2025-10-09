@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { UploadIcon, TextIcon, ImageIcon, Eye, BriefcaseIcon, Check } from "lucide-react"
+import { UploadIcon, TextIcon, ImageIcon, Eye, BriefcaseIcon, Check, FileSearch, Sparkles } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ShowHtml from "../components/Edit_html/Index"
 import CVSkeleton from "../components/Edit_html/CV_Skeleton"
 import { CVHandler, ProgressCallback } from "../Handler/CVHandler"
@@ -17,9 +18,13 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { Session } from "../api/auth/[...nextauth]/route"
 import { detectBrowserLanguage, useI18n } from "../context/I18nContext"
+import { CVAnalysisTab, CVAnalysisFormData, CVAnalysisState, CVAnalysisResult, FileProcessingError } from "../types/cv-analysis"
+import { processUploadedCV, validateCVContent } from "../utils/file-processing"
+import AnalysisResults from "../components/CVAnalysis/AnalysisResults"
 
 
 export default function GenerarCV() {
+  // CV Generation states
   const [ofertaLaboral, setOfertaLaboral] = useState<string | File>("") // Allow string or File
   const [carrera, setCarrera] = useState<string>("") // Allow string or File
   const [plantillaCV, setPlantillaCV] = useState<File | null>(null)
@@ -35,6 +40,20 @@ export default function GenerarCV() {
   const [templateApiDone, setTemplateApiDone] = useState(false)
   const [apiProgress, setApiProgress] = useState(0)
   const startTimeRef = useRef<number | null>(null)
+
+  // Tab and CV Analysis states
+  const [activeTab, setActiveTab] = useState<CVAnalysisTab>("generate")
+  const [analysisFormData, setAnalysisFormData] = useState<CVAnalysisFormData>({
+    jobTitle: "",
+    industry: "",
+    cvFile: null
+  })
+  const [analysisState, setAnalysisState] = useState<CVAnalysisState>({
+    isAnalyzing: false,
+    result: null,
+    error: null,
+    progress: 0
+  })
   const { data: session } = useSession() as {
     data: Session | null;
   };
@@ -43,8 +62,7 @@ export default function GenerarCV() {
   const cvHandler = new CVHandler()
   
   // Add i18n context
-  const { t } = useI18n();
-  const detectedLenguaje = detectBrowserLanguage();
+  const { t, locale } = useI18n();
 
 
   // Cargar la plantilla seleccionada cuando se carga la página
@@ -74,6 +92,93 @@ export default function GenerarCV() {
     fetchSelectedTemplate();
   }, [templateId]);
   */
+
+  // CV Analysis handler
+  const handleAnalyzeCV = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!analysisFormData.jobTitle.trim()) {
+      Message.errorMessage("Please enter a job title");
+      return;
+    }
+    
+    if (!analysisFormData.industry.trim()) {
+      Message.errorMessage("Please enter an industry");
+      return;
+    }
+    
+    if (!analysisFormData.cvFile) {
+      Message.errorMessage("Please upload a CV file");
+      return;
+    }
+
+    setAnalysisState(prev => ({
+      ...prev,
+      isAnalyzing: true,
+      error: null,
+      result: null,
+      progress: 0
+    }));
+
+    try {
+      // Process the uploaded file
+      setAnalysisState(prev => ({ ...prev, progress: 10 }));
+      const fileResult = await processUploadedCV(analysisFormData.cvFile);
+      
+      setAnalysisState(prev => ({ ...prev, progress: 25 }));
+      
+      // Validate CV content
+      const validation = validateCVContent(fileResult.text);
+      if (!validation.isValid) {
+        console.warn("CV validation issues:", validation.issues);
+        // Continue with analysis but log issues
+      }
+
+      // Progress callback for analysis
+      const progressCallback: ProgressCallback = {
+        onProgress: (progress) => setAnalysisState(prev => ({ ...prev, progress }))
+      };
+
+      // Analyze the CV
+
+      const analysisResult = await cvHandler.analyzeCV(
+        fileResult.text,
+        analysisFormData.jobTitle,
+        analysisFormData.industry,
+        progressCallback,
+        locale
+      );
+      
+      setAnalysisState(prev => ({
+        ...prev,
+        result: analysisResult,
+        progress: 100
+      }));
+      
+      Message.successMessage("CV analysis completed successfully!");
+
+    } catch (error) {
+      console.error("CV analysis error:", error);
+      
+      let errorMessage = "Failed to analyze CV. Please try again.";
+      
+      if (error instanceof Error && 'code' in error) {
+        const fileError = error as FileProcessingError;
+        errorMessage = fileError.message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      setAnalysisState(prev => ({
+        ...prev,
+        error: errorMessage
+      }));
+      
+      Message.errorMessage(errorMessage);
+    } finally {
+      setAnalysisState(prev => ({ ...prev, isAnalyzing: false }));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -141,7 +246,7 @@ export default function GenerarCV() {
         undefined, // foto
         templateIdToUse,
         progressCallback,
-        detectedLenguaje
+        locale
       );
 
       setData(responseHtml)
@@ -177,23 +282,46 @@ export default function GenerarCV() {
   }
 
   return (
-    <div className="min-h-screen   p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
       <motion.main
         initial="hidden"
         animate="visible"
         variants={fadeIn}
-        className="container mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-5 gap-8 py-8"
+        className="container mx-auto max-w-7xl py-8"
       >
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as CVAnalysisTab)} className="w-full">
+          {/* Tab Navigation */}
+          <div className="flex justify-center mb-8">
+            <TabsList className="grid w-full max-w-md grid-cols-2 bg-gray-100 p-1 rounded-xl">
+              <TabsTrigger 
+                value="generate" 
+                className="flex items-center gap-2 px-6 py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                <Sparkles className="w-4 h-4" />
+                Generate CV
+              </TabsTrigger>
+              <TabsTrigger 
+                value="analyze" 
+                className="flex items-center gap-2 px-6 py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
+              >
+                <FileSearch className="w-4 h-4" />
+                Get Recommendations
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-        {/* Formulario - Left Column */}
-        <motion.form
-          onSubmit={handleSubmit}
-          variants={fadeIn}
-          className="lg:col-span-2 p-6 sm:p-8 bg-white border-2 rounded-2xl shadow-xl space-y-6 h-fit" // h-fit to prevent stretching
-        >
-          <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6" 
-              dangerouslySetInnerHTML={{ __html: t('cv_generator.title') }}>
-          </h1>
+          {/* Generate CV Tab */}
+          <TabsContent value="generate" className="space-y-0">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              {/* Formulario - Left Column */}
+              <motion.form
+                onSubmit={handleSubmit}
+                variants={fadeIn}
+                className="lg:col-span-2 p-6 sm:p-8 bg-white border-2 rounded-2xl shadow-xl space-y-6 h-fit"
+              >
+                <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6" 
+                    dangerouslySetInnerHTML={{ __html: t('cv_generator.title') }}>
+                </h1>
 
           {/* Oferta Laboral */}
 
@@ -339,32 +467,172 @@ export default function GenerarCV() {
           </Button>
         </motion.form>
 
-        {/* Vista Previa - Right Column */}
-        <motion.div
-          variants={fadeIn}
-          transition={{ delay: 0.2 }}
-          className="lg:col-span-3 p-3 border-2 bg-white rounded-2xl shadow-xl flex flex-col" // Use flex-col for content alignment
-        >
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('cv_generator.preview.title')}</h2>
-          <div className="flex-grow rounded-lg overflow-hidden  bg-gray-50"> {/* Added bg-gray-50 */}
-            {isLoading ? (
-              <CVSkeleton
-                progress={apiProgress}
-                isFirstApiDone={infoApiDone}
-                isSecondApiDone={templateApiDone}
-              />
-            ) : data ? (
-              <ShowHtml html={data.html} />
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 p-4">
-                <ImageIcon size={48} className="mb-4 text-gray-400" />
-                <p className="text-lg font-medium mb-2">{t('cv_generator.preview.placeholder.title')}</p>
-                <p className="text-sm">{t('cv_generator.preview.placeholder.description')}</p>
-              </div>
-            )}
-          </div>
-        </motion.div>
+              {/* Vista Previa - Right Column */}
+              <motion.div
+                variants={fadeIn}
+                transition={{ delay: 0.2 }}
+                className="lg:col-span-3 p-3 border-2 bg-white rounded-2xl shadow-xl flex flex-col"
+              >
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('cv_generator.preview.title')}</h2>
+                <div className="flex-grow rounded-lg overflow-hidden bg-gray-50">
+                  {isLoading ? (
+                    <CVSkeleton
+                      progress={apiProgress}
+                      isFirstApiDone={infoApiDone}
+                      isSecondApiDone={templateApiDone}
+                    />
+                  ) : data ? (
+                    <ShowHtml html={data.html} />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 p-4">
+                      <ImageIcon size={48} className="mb-4 text-gray-400" />
+                      <p className="text-lg font-medium mb-2">{t('cv_generator.preview.placeholder.title')}</p>
+                      <p className="text-sm">{t('cv_generator.preview.placeholder.description')}</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </TabsContent>
 
+          {/* CV Analysis Tab */}
+          <TabsContent value="analyze" className="space-y-0">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              {/* Analysis Form - Left Column */}
+              <motion.form
+                onSubmit={handleAnalyzeCV}
+                variants={fadeIn}
+                className="lg:col-span-2 p-6 sm:p-8 bg-white border-2 rounded-2xl shadow-xl space-y-6 h-fit"
+              >
+                <div className="text-center mb-6">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                    {t('cv_analysis.title')}
+                  </h1>
+                  <p className="text-gray-600 text-sm">
+                    {t('cv_analysis.subtitle')}
+                  </p>
+                </div>
+
+                {/* Job Title */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-gray-700">{t('cv_analysis.job_title_label')}</h2>
+                    <BriefcaseIcon className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <Input
+                    type="text"
+                    value={analysisFormData.jobTitle}
+                    onChange={(e) => setAnalysisFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                    placeholder={t('cv_analysis.job_title_placeholder')}
+                    className="bg-gray-50 rounded-xl border-gray-200"
+                    required
+                  />
+                </div>
+
+                <Separator />
+
+                {/* Industry */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-gray-700">{t('cv_analysis.industry_label')}</h2>
+                    <BriefcaseIcon className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <Input
+                    type="text"
+                    value={analysisFormData.industry}
+                    onChange={(e) => setAnalysisFormData(prev => ({ ...prev, industry: e.target.value }))}
+                    placeholder={t('cv_analysis.industry_placeholder')}
+                    className="bg-gray-50 rounded-xl border-gray-200"
+                    required
+                  />
+                </div>
+
+                <Separator />
+
+                {/* CV File Upload */}
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-gray-700">{t('cv_analysis.upload_label')}</h2>
+                  <Input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setAnalysisFormData(prev => ({ ...prev, cvFile: file }));
+                    }}
+                    className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    required
+                  />
+                  <p className="text-xs text-gray-500">
+                    {t('cv_analysis.upload_description')}
+                  </p>
+                </div>
+
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={analysisState.isAnalyzing || !analysisFormData.jobTitle || !analysisFormData.industry || !analysisFormData.cvFile}
+                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {analysisState.isAnalyzing ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                      {t('cv_analysis.analyzing_progress', { progress: analysisState.progress })}
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center gap-2">
+                      <FileSearch className="w-5 h-5" />
+                      {t('cv_analysis.analyze_button')}
+                    </span>
+                  )}
+                </Button>
+              </motion.form>
+
+              {/* Analysis Results - Right Column */}
+              <motion.div
+                variants={fadeIn}
+                transition={{ delay: 0.2 }}
+                className="lg:col-span-3 p-3 border-2 bg-white rounded-2xl shadow-xl flex flex-col"
+              >
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('cv_analysis.results_title')}</h2>
+                <div className="flex-grow rounded-lg overflow-hidden bg-gray-50">
+                  {analysisState.isAnalyzing ? (
+                    <div className="flex flex-col items-center justify-center h-full p-8">
+                      <div className="animate-spin h-12 w-12 border-4 border-purple-600 border-t-transparent rounded-full mb-4"></div>
+                      <p className="text-lg font-medium text-gray-700 mb-2">{t('cv_analysis.analyzing')}</p>
+                      <p className="text-sm text-gray-500 mb-4">{t('cv_analysis.ready_description')}</p>
+                      <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 relative overflow-hidden">
+                        <div 
+                          className={`bg-purple-600 h-2 rounded-full transition-all duration-300 absolute left-0 top-0`}
+                          style={{ 
+                            width: `${Math.min(100, Math.max(0, analysisState.progress))}%`,
+                            transform: 'translateZ(0)' // Force hardware acceleration
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">{analysisState.progress}% complete</p>
+                    </div>
+                  ) : analysisState.result ? (
+                    <div className="h-full overflow-auto p-4">
+                      <AnalysisResults result={analysisState.result} />
+                    </div>
+                  ) : analysisState.error ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center text-red-500 p-4">
+                      <FileSearch size={48} className="mb-4 text-red-400" />
+                      <p className="text-lg font-medium mb-2">{t('cv_analysis.analysis_failed')}</p>
+                      <p className="text-sm">{analysisState.error}</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 p-4">
+                      <FileSearch size={48} className="mb-4 text-gray-400" />
+                      <p className="text-lg font-medium mb-2">{t('cv_analysis.ready_to_analyze')}</p>
+                      <p className="text-sm">{t('cv_analysis.ready_description')}</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </motion.main>
     </div>
   )

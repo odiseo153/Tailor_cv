@@ -50,18 +50,35 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   // Cargar traducciones para un locale específico
   const loadTranslations = async (localeToLoad: string) => {
     try {
-      const commonTranslations = await import(`../../../public/locales/${localeToLoad}/common.json`);
+      const response = await fetch(`/locales/${localeToLoad}/common.json`);
+      if (!response.ok) {
+        throw new Error(`Failed to load translations for ${localeToLoad}`);
+      }
+      const commonTranslations = await response.json();
       setTranslations({
         common: commonTranslations,
       });
     } catch (error) {
       console.error(`Failed to load translations for ${localeToLoad}:`, error);
+      // Fallback to English if the requested locale fails
+      if (localeToLoad !== 'en') {
+        try {
+          const fallbackResponse = await fetch(`/locales/en/common.json`);
+          const fallbackTranslations = await fallbackResponse.json();
+          setTranslations({
+            common: fallbackTranslations,
+          });
+        } catch (fallbackError) {
+          console.error('Failed to load fallback translations:', fallbackError);
+        }
+      }
     }
   };
 
   // Inicialización - detectar idioma del navegador y cargar traducciones
   useEffect(() => {
     const detectedLocale = detectBrowserLanguage();
+    console.log('Detected locale:', detectedLocale);
     setLocale(detectedLocale);
     Cookies.set(LOCALE_COOKIE_NAME, detectedLocale, { expires: 365 });
     loadTranslations(detectedLocale);
@@ -94,6 +111,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
       if (current && typeof current === 'object' && k in current) {
         current = current[k];
       } else {
+        console.warn(`Translation missing for key: ${key} in locale: ${locale}`);
         return key; // Fallback a la clave si no se encuentra traducción
       }
     }

@@ -122,7 +122,3 @@ export const generatePdf = async (html: string): Promise<{ blob: Blob; pageCount
     }
   }
 };
-
-/*
-curl https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent -H "Content-Type: application/json" -H "X-Goog-Api-Key: AIzaSyDyiEsAP5m1AG5bqYOyfn9KBR6PBdrpw74" -d '{"generationConfig":{},"safetySettings":[],"contents":[{"role":"user","parts":[{"text":"Testing. Just say hi and nothing else."}]}]}'
-*/

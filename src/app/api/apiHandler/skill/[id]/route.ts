@@ -8,16 +8,14 @@ export async function PUT(request: NextRequest,{ params }: { params: Promise<{ i
   try {
     const jsonData = await request.json();
     const { id } =  await params;
-
-    console.log(id);
-
-
-    const { name, level, userId } = jsonData;
-
-    if (!name || !level || !userId) {
+    
+    const { name, level } = jsonData;
+    
+    console.log(id,jsonData);
+    if (!name || !level ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
-
+    
     const resultado = await skill_handler.update(id,jsonData);
 
     return NextResponse.json({ resultado });

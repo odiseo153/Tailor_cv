@@ -13,13 +13,13 @@ export async function POST(request: Request) {
     
     const { institution, degree, startDate, endDate, userId } = jsonData;
     
-    if (!institution || !degree || !startDate || !endDate || !userId) {
+    if (!institution || !degree || !startDate  || !userId) {
       return NextResponse.json({ error: 'Faltan parametros' }, { status: 400 });
     }
     
     // Convertir las fechas a objetos Date
     const parsedStartDate = new Date(startDate);
-    const parsedEndDate = new Date(endDate);
+    const parsedEndDate = endDate ? new Date(endDate) : null;
     
     const resultado = await education_handler.create({
       institution,

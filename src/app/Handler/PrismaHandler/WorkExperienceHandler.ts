@@ -44,8 +44,8 @@ export class WorkExperienceHandler implements BaseHandler<WorkExperience> {
             const updatedData = {
                 company: data.company || existingWork.company,
                 jobTitle: data.jobTitle || existingWork.jobTitle,
-                startDate: data.startDate || existingWork.startDate,
-                endDate: data.endDate || existingWork.endDate,
+                startDate: new Date(data.startDate || existingWork.startDate),
+                endDate: new Date(data.endDate || existingWork.endDate),
                 description: data.description || existingWork.description
             };
           
