@@ -64,35 +64,6 @@ export default function GenerarCV() {
   // Add i18n context
   const { t, locale } = useI18n();
 
-
-  // Cargar la plantilla seleccionada cuando se carga la página
- /*
- useEffect(() => {
-  const fetchSelectedTemplate = async () => {
-    if (templateId) {
-        try {
-          const response = await fetch("/api/templates");
-          if (response.ok) {
-            const data = await response.json();
-            const selectedTemplate = data.pdfFiles.find(
-              (template: any) => template.id.toString() === templateId
-            );
-
-            if (selectedTemplate) {
-              setSelectedTemplateName(selectedTemplate.name);
-              // No cargamos el archivo automáticamente, solo guardamos la información
-            }
-          }
-        } catch (error) {
-          console.error("Error al cargar la plantilla seleccionada:", error);
-        }
-      }
-    };
-
-    fetchSelectedTemplate();
-  }, [templateId]);
-  */
-
   // CV Analysis handler
   const handleAnalyzeCV = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -576,7 +547,7 @@ export default function GenerarCV() {
                   {analysisState.isAnalyzing ? (
                     <span className="flex items-center justify-center gap-2">
                       <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-                      {t('cv_analysis.analyzing_progress', { progress: analysisState.progress })}
+                      {t('cv_analysis.analyzing_progress', { progress: analysisState.progress }.progress.toString())}
                     </span>
                   ) : (
                     <span className="flex items-center justify-center gap-2">
