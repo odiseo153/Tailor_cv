@@ -5,11 +5,6 @@ import {
   TextRun, 
   AlignmentType, 
   HeadingLevel,
-  Table,
-  TableRow,
-  TableCell,
-  WidthType,
-  BorderStyle,
   ShadingType,
   UnderlineType
 } from "docx";
@@ -64,7 +59,7 @@ const parseHtmlToStructured = (html: string): ParsedElement[] => {
 
   const processElement = (element: cheerio.Element): ParsedElement | null => {
     const $el = $(element);
-    const tagName = element.name?.toLowerCase();
+    const tagName = element.type.toLowerCase();
     const classNames = $el.attr('class') || '';
     const text = $el.text().trim();
 
@@ -165,7 +160,7 @@ const parseHtmlToStructured = (html: string): ParsedElement[] => {
   return uniqueElements;
 };
 
-const extractStyles = ($el: cheerio.Cheerio<cheerio.Element>, classNames: string): ElementStyles => {
+const extractStyles = ($el: any, classNames: string): ElementStyles => {
   const styles: ElementStyles = {};
   const computedStyle = $el.attr('style') || '';
 
@@ -265,7 +260,7 @@ const createWordParagraph = (element: ParsedElement): Paragraph => {
                    element.styles.alignment === 'justify' ? AlignmentType.JUSTIFIED :
                    AlignmentType.LEFT;
 
-  let headingLevel: HeadingLevel | undefined;
+  let headingLevel: typeof HeadingLevel[keyof typeof HeadingLevel] | undefined;
   if (element.type === 'heading') {
     switch (element.level) {
       case 1: headingLevel = HeadingLevel.HEADING_1; break;

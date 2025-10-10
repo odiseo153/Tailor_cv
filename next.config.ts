@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
       fs: false, // Disable fs module for browser compatibility
       path: false, // Disable path module for browser compatibility
       os: false, // Disable os module for browser compatibility
+      'path2d-polyfill': false, // Ignore path2d-polyfill for browser compatibility
     };
 
     // Force browser-safe builds and stub node-only modules

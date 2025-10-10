@@ -19,9 +19,8 @@ export default function PdfPreviewGenerator({ pdfUrl, onComplete }: PdfPreviewGe
       try {
         // Only load PDF.js in the browser
         const pdfjs = await import('pdfjs-dist');
-        const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry');
-        
-        pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+
+        pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
         
         // Load the PDF
         const loadingTask = pdfjs.getDocument(pdfUrl);
