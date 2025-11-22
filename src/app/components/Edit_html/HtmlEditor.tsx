@@ -88,6 +88,7 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
       // Optimize HTML for better export quality
       const optimizedHtml = optimizeHtmlForExport(fullHtml)
 
+
       if (downloadType === "pdf") {
         const result = await generatePdf(optimizedHtml)
         if (result && result.blob) {

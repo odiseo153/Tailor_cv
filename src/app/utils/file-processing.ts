@@ -1,5 +1,5 @@
 import * as mammoth from 'mammoth';
-import { GlobalWorkerOptions, getDocument, version } from 'pdfjs-dist/legacy/build/pdf';
+import { GlobalWorkerOptions, getDocument, version } from 'pdfjs-dist';
 import { FileProcessingResult, FileProcessingError } from '../types/cv-analysis';
 
 // Configure PDF.js worker for browser environment
@@ -25,8 +25,8 @@ const SUPPORTED_TYPES = {
 export function validateFileType(file: File): boolean {
   const fileType = file.type.toLowerCase();
   const fileName = file.name.toLowerCase();
-  
-  return Object.values(SUPPORTED_TYPES).some(types => 
+
+  return Object.values(SUPPORTED_TYPES).some(types =>
     types.some(type => fileType === type || fileName.endsWith(type))
   );
 }
@@ -44,7 +44,7 @@ export function validateFileSize(file: File): boolean {
 export function getFileType(file: File): 'pdf' | 'docx' | 'doc' | 'txt' {
   const fileType = file.type.toLowerCase();
   const fileName = file.name.toLowerCase();
-  
+
   if (SUPPORTED_TYPES.PDF.some(type => fileType === type || fileName.endsWith(type))) {
     return 'pdf';
   }
@@ -64,26 +64,26 @@ async function extractTextFromPDF(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
-    
+
     // Load the PDF document
     const loadingTask = getDocument({ data: uint8Array });
     const pdf = await loadingTask.promise;
-    
+
     let fullText = '';
-    
+
     // Extract text from each page
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
       const page = await pdf.getPage(pageNum);
       const textContent = await page.getTextContent();
-      
+
       // Combine text items from the page
       const pageText = textContent.items
         .map((item: any) => 'str' in item ? item.str : '')
         .join(' ');
-      
+
       fullText += pageText + '\n';
     }
-    
+
     return fullText.trim();
   } catch (error) {
     console.error('PDF extraction error:', error);
@@ -98,11 +98,11 @@ async function extractTextFromWord(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer });
-    
+
     if (result.messages.length > 0) {
       console.warn('Word extraction warnings:', result.messages);
     }
-    
+
     return result.value;
   } catch (error) {
     console.error('Word extraction error:', error);
@@ -263,7 +263,7 @@ export function validateCVContent(text: string): { isValid: boolean; issues: str
  */
 export function extractKeywords(text: string): string[] {
   const keywords: string[] = [];
-  
+
   // Common technical skills patterns
   const techPatterns = [
     /\b(?:JavaScript|TypeScript|Python|Java|C\+\+|C#|PHP|Ruby|Go|Rust|Swift|Kotlin)\b/gi,
