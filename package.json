@@ -60,7 +60,6 @@
     "axios": "^1.7.9",
     "bcryptjs": "^3.0.2",
     "cheerio": "^1.0.0",
-    "chrome-aws-lambda": "^10.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
