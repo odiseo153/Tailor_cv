@@ -6,10 +6,10 @@ import { Menu, X, User, LogOut, Home, Settings, FileText, Info, Mail, ChevronDow
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
 import { nameApp } from "@/app/utils/NameApp"
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
@@ -25,7 +25,7 @@ import { useI18n } from "@/app/context/I18nContext"
 
 export default function Header() {
   const { authOpen, setAuthOpen } = useStore()
-  const { data: session,status } = useSession() as {
+  const { data: session, status } = useSession() as {
     data: Session | null;
     status: string;
   };
@@ -35,7 +35,7 @@ export default function Header() {
   const user = session?.user
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  
+
   // Determinar si estamos en páginas de autenticación
   const isAuthPage = pathname === "/auth/login" || pathname === "/auth/register"
 
@@ -54,52 +54,52 @@ export default function Header() {
 
   // Definir ítems del menú según el estado de autenticación
   const navigationItems = [
-    { 
-      label: t("header.home"), 
-      href: "/", 
+    {
+      label: t("header.home"),
+      href: "/",
       icon: <Home className="h-4 w-4 mr-2" />,
-      showWhen: "always" 
+      showWhen: "always"
     },
-    { 
-      label: t("header.how_it_works"), 
-      href: "/#how-it-works", 
+    {
+      label: t("header.how_it_works"),
+      href: "/#how-it-works",
       icon: <Info className="h-4 w-4 mr-2" />,
-      showWhen: "guest" 
+      showWhen: "guest"
     },
-    { 
-      label: t("header.why_tailorcv"), 
-      href: "/#benefits", 
+    {
+      label: t("header.why_tailorcv"),
+      href: "/#benefits",
       icon: <FileText className="h-4 w-4 mr-2" />,
-      showWhen: "guest" 
+      showWhen: "guest"
     },
-    { 
-      label: t("header.generate_cv"), 
-      href: "/generar-cv", 
+    {
+      label: t("header.generate_cv"),
+      href: "/generar-cv",
       icon: <FileText className="h-4 w-4 mr-2" />,
-      showWhen: "authenticated" 
+      showWhen: "authenticated"
     },
-    { 
-      label: t("header.contact"), 
-      href: "/#contact", 
+    {
+      label: t("header.contact"),
+      href: "/#contact",
       icon: <Mail className="h-4 w-4 mr-2" />,
-      showWhen: "always" 
+      showWhen: "always"
     },
   ]
-  
+
   const userMenuItems = [
-    { 
-      label: t("header.profile"), 
-      href: "/profile", 
-      icon: <User className="h-4 w-4 mr-2" /> 
+    {
+      label: t("header.profile"),
+      href: "/profile",
+      icon: <User className="h-4 w-4 mr-2" />
     },
-    { 
-      label: t("header.settings"), 
-      href: "/profile/billing", 
-      icon: <Settings className="h-4 w-4 mr-2" /> 
+    {
+      label: t("header.settings"),
+      href: "/profile/billing",
+      icon: <Settings className="h-4 w-4 mr-2" />
     },
-    { 
-      label: t("header.logout"), 
-      onClick: () => signOut(), 
+    {
+      label: t("header.logout"),
+      onClick: () => signOut(),
       icon: <LogOut className="h-4 w-4 mr-2" />
     }
   ]
@@ -112,10 +112,6 @@ export default function Header() {
     return false;
   });
 
-  if(status == "loading"){
-    return null;
-  }
-
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -123,16 +119,16 @@ export default function Header() {
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled 
-          ? "bg-background/95 backdrop-blur-md shadow-md py-2" 
+        scrolled
+          ? "bg-background/95 backdrop-blur-md shadow-md py-2"
           : "bg-transparent py-4"
       )}
     >
       <div className="container mx-auto px-4 flex items-center justify-between">
         {/* Logo */}
-        <Link 
-          href="/" 
-          className="flex items-center space-x-2" 
+        <Link
+          href="/"
+          className="flex items-center space-x-2"
           aria-label="TailorCV"
         >
           <div className="h-9 w-9 bg-primary rounded-lg flex items-center justify-center">
@@ -144,9 +140,9 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
           {filteredNavItems.map((item, i) => (
-            <Link 
-              key={i} 
-              href={item.href} 
+            <Link
+              key={i}
+              href={item.href}
               className={cn(
                 "px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 "hover:bg-primary/10 text-foreground/80 hover:text-foreground"
@@ -161,12 +157,14 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-3">
           {/* Language Selector */}
           <LanguageSelector />
-          
-          {user ? (
+
+          {status === "loading" ? (
+            <div className="h-9 w-9 rounded-full bg-primary/10 animate-pulse" />
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="flex items-center gap-2 hover:bg-primary/10 rounded-full p-2 h-auto"
                 >
                   <Avatar className="h-8 w-8 border border-border">
@@ -188,12 +186,12 @@ export default function Header() {
                     <p className="text-xs text-muted-foreground line-clamp-1">{user.email}</p>
                   </div>
                 </div>
-                
+
                 <div className="p-1">
                   {userMenuItems.map((item, i) => (
                     item.href ? (
-                      <Link 
-                        key={i} 
+                      <Link
+                        key={i}
                         href={item.href}
                         className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 w-full"
                       >
@@ -201,8 +199,8 @@ export default function Header() {
                         {item.label}
                       </Link>
                     ) : (
-                      <DropdownMenuItem 
-                        key={i} 
+                      <DropdownMenuItem
+                        key={i}
                         onClick={item.onClick}
                         className="cursor-pointer"
                       >
@@ -224,9 +222,9 @@ export default function Header() {
         </div>
 
         {/* Mobile Toggle */}
-        <Button 
-          variant="ghost" 
-          onClick={() => setIsOpen(!isOpen)} 
+        <Button
+          variant="ghost"
+          onClick={() => setIsOpen(!isOpen)}
           className="md:hidden p-1 h-auto"
           aria-label={isOpen ? t("header.close_menu") : t("header.open_menu")}
           aria-expanded={isOpen}
@@ -269,12 +267,12 @@ export default function Header() {
                   </Link>
                 ))}
               </div>
-              
+
               {/* Language Selector Mobile */}
               <div className="mb-4 pb-3 border-b border-border">
                 <LanguageSelector className="w-full justify-between" />
               </div>
-              
+
               {user ? (
                 <div className="pt-4 border-t border-border">
                   <div className="flex items-center gap-3 px-3 py-2 mb-2">
