@@ -31,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="antialiased min-h-screen flex flex-col">
         <title>TailorCV</title>
+
         <SessionProvider>
           <I18nProvider>
             <AppContextProvider>

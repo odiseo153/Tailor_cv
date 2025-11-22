@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import GoogleTranslate from "./GoogleTranslate";
 
 const languageNames = {
   en: { name: "English", flag: "🇺🇸" },
@@ -33,35 +34,41 @@ export default function LanguageSelector({ className }: { className?: string }) 
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn("flex items-center gap-2 px-3", className)}
-        >
-          <Globe className="h-4 w-4" />
-          <span className="hidden md:inline-block">
-            {languageNames[locale as keyof typeof languageNames]?.flag || "🌐"}{" "}
-            {t("languageSelector.label")}
-          </span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {Object.entries(languageNames).map(([code, { name, flag }]) => (
-          <DropdownMenuItem
-            key={code}
-            onClick={() => changeLocale(code)}
-            className={cn(
-              "flex items-center gap-2 cursor-pointer",
-              locale === code && "font-bold bg-primary/10"
-            )}
+    <div className={cn("flex items-center gap-2", className)}>
+      {/* Selector de idiomas nativo */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2 px-3"
           >
-            <span className="mr-1">{flag}</span>
-            {t(`languageSelector.${code}`)}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            <Globe className="h-4 w-4" />
+            <span className="hidden md:inline-block">
+              {languageNames[locale as keyof typeof languageNames]?.flag || "🌐"}{" "}
+              {t("languageSelector.label")}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {Object.entries(languageNames).map(([code, { name, flag }]) => (
+            <DropdownMenuItem
+              key={code}
+              onClick={() => changeLocale(code)}
+              className={cn(
+                "flex items-center gap-2 cursor-pointer",
+                locale === code && "font-bold bg-primary/10"
+              )}
+            >
+              <span className="mr-1">{flag}</span>
+              {t(`languageSelector.${code}`)}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      {/* Google Translate */}
+      <GoogleTranslate />
+    </div>
   );
 } 

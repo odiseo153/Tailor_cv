@@ -24,7 +24,7 @@
     "privacy": "Politique de Confidentialité",
     "terms": "Conditions d'Utilisation",
     "cookies": "Politique des Cookies",
-    "address": "Madrid, Espagne",
+    "address": "Santo Domingo west, République dominicaine",
     "rights": "Tous droits réservés."
   },
   "languageSelector": {
@@ -502,8 +502,25 @@
       "illustrator": "Adobe Illustrator",
       "photoshop": "Photoshop",
       "uiux": "UI/UX",
-      "webdesign": "Web Design",
-      "branding": "Branding"
+      "webdesign": "Conception Web",
+      "branding": "Image de Marque"
     }
+  },
+  "googleTranslate": {
+    "autoTranslate": "Traduction Automatique",
+    "title": "Google Translate",
+    "description": "Traduire automatiquement cette page dans votre langue préférée",
+    "loading": "Chargement du traducteur..."
+  },
+  "thinking": {
+    "generating_cv": "Création de Votre CV Parfait",
+    "analyzing_cv": "Analyse de Votre CV",
+    "processing": "L'IA réfléchit...",
+    "translating": "Traduction du contenu..."
+  },
+  "translation": {
+    "translating_to": "Traduction vers",
+    "translation_complete": "Traduction terminée",
+    "auto_translation": "Traduction automatique active"
   }
 } 

@@ -151,7 +151,7 @@
       "email": "邮箱",
       "phone": "电话",
       "location": "位置",
-      "address": "西班牙马德里",
+      "address": "多明尼加共和國聖多明哥埃斯特",
       "businessHours": "营业时间",
       "businessHoursTime": "周一至周五：上午9:00 - 下午6:00",
       "sendMessage": "给我们发送消息",
@@ -500,5 +500,22 @@
       "webdesign": "网页设计",
       "branding": "品牌设计"
     }
+  },
+  "googleTranslate": {
+    "autoTranslate": "自动翻译",
+    "title": "谷歌翻译",
+    "description": "自动将此页面翻译为您的首选语言",
+    "loading": "正在加载翻译器..."
+  },
+  "thinking": {
+    "generating_cv": "正在制作您的完美简历",
+    "analyzing_cv": "正在分析您的简历",
+    "processing": "AI正在思考...",
+    "translating": "正在翻译内容..."
+  },
+  "translation": {
+    "translating_to": "正在翻译为",
+    "translation_complete": "翻译完成",
+    "auto_translation": "自动翻译已激活"
   }
 } 

@@ -21,6 +21,7 @@ import { detectBrowserLanguage, useI18n } from "../context/I18nContext"
 import { CVAnalysisTab, CVAnalysisFormData, CVAnalysisState, CVAnalysisResult, FileProcessingError } from "../types/cv-analysis"
 import { processUploadedCV, validateCVContent } from "../utils/file-processing"
 import AnalysisResults from "../components/CVAnalysis/AnalysisResults"
+import ThinkingAnimation from "../components/ThinkingAnimation"
 
 
 export default function GenerarCV() {
@@ -60,24 +61,24 @@ export default function GenerarCV() {
   const { template } = useAppContext()
   const { templateId } = useStore()
   const cvHandler = new CVHandler()
-  
+
   // Add i18n context
   const { t, locale } = useI18n();
 
   // CV Analysis handler
   const handleAnalyzeCV = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!analysisFormData.jobTitle.trim()) {
       Message.errorMessage("Please enter a job title");
       return;
     }
-    
+
     if (!analysisFormData.industry.trim()) {
       Message.errorMessage("Please enter an industry");
       return;
     }
-    
+
     if (!analysisFormData.cvFile) {
       Message.errorMessage("Please upload a CV file");
       return;
@@ -95,9 +96,9 @@ export default function GenerarCV() {
       // Process the uploaded file
       setAnalysisState(prev => ({ ...prev, progress: 10 }));
       const fileResult = await processUploadedCV(analysisFormData.cvFile);
-      
+
       setAnalysisState(prev => ({ ...prev, progress: 25 }));
-      
+
       // Validate CV content
       const validation = validateCVContent(fileResult.text);
       if (!validation.isValid) {
@@ -119,32 +120,32 @@ export default function GenerarCV() {
         progressCallback,
         locale
       );
-      
+
       setAnalysisState(prev => ({
         ...prev,
         result: analysisResult,
         progress: 100
       }));
-      
+
       Message.successMessage("CV analysis completed successfully!");
 
     } catch (error) {
       console.error("CV analysis error:", error);
-      
+
       let errorMessage = "Failed to analyze CV. Please try again.";
-      
+
       if (error instanceof Error && 'code' in error) {
         const fileError = error as FileProcessingError;
         errorMessage = fileError.message;
       } else if (error instanceof Error) {
         errorMessage = error.message;
       }
-      
+
       setAnalysisState(prev => ({
         ...prev,
         error: errorMessage
       }));
-      
+
       Message.errorMessage(errorMessage);
     } finally {
       setAnalysisState(prev => ({ ...prev, isAnalyzing: false }));
@@ -187,26 +188,26 @@ export default function GenerarCV() {
 
       // Preparar toda la información del usuario antes de generar el CV
       let userInfoString = informacion;
-      
-      if(session) {
+
+      if (session) {
         try {
           const user = session.user;
           const response = await fetch(`/api/apiHandler/user/${user.id}`);
-          
-          if(response.ok) {
-            const {data} = await response.json();
+
+          if (response.ok) {
+            const { data } = await response.json();
             console.log("Datos del usuario cargados:", data);
-            
+
             // Crear un nuevo string con los datos del usuario en lugar de modificar el estado
             userInfoString = informacion ? `${informacion}\n${JSON.stringify(data)}` : JSON.stringify(data);
           } else {
             console.error("Error al obtener los datos del usuario:", response.statusText);
           }
-        } catch(error) {
+        } catch (error) {
           console.error("Error al cargar datos del usuario:", error);
         }
       }
-     
+
       // Create the CV with progress tracking using userInfoString que ya contiene los datos del usuario
       const responseHtml = await cvHandler.crearCV(
         ofertaLaboral,
@@ -264,15 +265,15 @@ export default function GenerarCV() {
           {/* Tab Navigation */}
           <div className="flex justify-center mb-8">
             <TabsList className="grid w-full max-w-md grid-cols-2 bg-gray-100 p-1 rounded-xl">
-              <TabsTrigger 
-                value="generate" 
+              <TabsTrigger
+                value="generate"
                 className="flex items-center gap-2 px-6 py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
                 <Sparkles className="w-4 h-4" />
                 Generate CV
               </TabsTrigger>
-              <TabsTrigger 
-                value="analyze" 
+              <TabsTrigger
+                value="analyze"
                 className="flex items-center gap-2 px-6 py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm"
               >
                 <FileSearch className="w-4 h-4" />
@@ -290,79 +291,79 @@ export default function GenerarCV() {
                 variants={fadeIn}
                 className="lg:col-span-2 p-6 sm:p-8 bg-white border-2 rounded-2xl shadow-xl space-y-6 h-fit"
               >
-                <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6" 
-                    dangerouslySetInnerHTML={{ __html: t('cv_generator.title') }}>
+                <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-6"
+                  dangerouslySetInnerHTML={{ __html: t('cv_generator.title') }}>
                 </h1>
 
-          {/* Oferta Laboral */}
+                {/* Oferta Laboral */}
 
-          <Separator />
+                <Separator />
 
-          {/* Plantilla */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.career.label')}</h2>
-              {/* You can choose a different icon if Briefcase is not suitable */}
-              <BriefcaseIcon className="w-5 h-5 text-gray-500" />
-            </div>
-            <Input
-              type="text"
-              value={carrera}
-              onChange={(e) => setCarrera(e.target.value)}
-              placeholder={t('cv_generator.career.placeholder')}
-              className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-          </div>
+                {/* Plantilla */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.career.label')}</h2>
+                    {/* You can choose a different icon if Briefcase is not suitable */}
+                    <BriefcaseIcon className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <Input
+                    type="text"
+                    value={carrera}
+                    onChange={(e) => setCarrera(e.target.value)}
+                    placeholder={t('cv_generator.career.placeholder')}
+                    className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                </div>
 
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.job_offer.label')}</h2>
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.job_offer.label')}</h2>
 
-            <div className="flex gap-2">
-              {[
-                { type: "pdf", icon: UploadIcon, label: t('cv_generator.job_offer.types.pdf') },
-                { type: "image", icon: ImageIcon, label: t('cv_generator.job_offer.types.image') },
-                { type: "text", icon: TextIcon, label: t('cv_generator.job_offer.types.text') },
-              ].map(({ type, icon: Icon, label }) => (
-                <Button
-                  key={type}
-                  type="button"
-                  variant={ofertaType === type ? "default" : "outline"}
-                  onClick={() => {
-                    setOfertaType(type as any);
-                    setOfertaLaboral(""); // Clear input when changing type
-                  }}
-                  className="flex-1 flex items-center justify-center gap-2 text-sm sm:text-base rounded-full transition-all duration-300"
-                >
-                  <Icon size={16} /> <span className="hidden sm:inline">{label}</span>
-                </Button>
-              ))}
-            </div>
-            {ofertaType === "text" ? (
-              <Textarea
-                value={ofertaLaboral as string} // Cast to string for Textarea
-                onChange={(e) => setOfertaLaboral(e.target.value)}
-                placeholder={t('cv_generator.job_offer.text_placeholder')}
-                className="h-32 bg-gray-50 rounded-xl border-gray-200 focus:ring-blue-500"
-                required
-              />
-            ) : (
-              <Input
-                type="file"
-                accept={ofertaType === "pdf" ? ".pdf" : "image/*"}
-                onChange={(e) => handleFileChange(e, setOfertaLaboral as any)} // Cast to any for File type
-                className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                required
-              />
-            )}
-          </div>
+                  <div className="flex gap-2">
+                    {[
+                      { type: "pdf", icon: UploadIcon, label: t('cv_generator.job_offer.types.pdf') },
+                      { type: "image", icon: ImageIcon, label: t('cv_generator.job_offer.types.image') },
+                      { type: "text", icon: TextIcon, label: t('cv_generator.job_offer.types.text') },
+                    ].map(({ type, icon: Icon, label }) => (
+                      <Button
+                        key={type}
+                        type="button"
+                        variant={ofertaType === type ? "default" : "outline"}
+                        onClick={() => {
+                          setOfertaType(type as any);
+                          setOfertaLaboral(""); // Clear input when changing type
+                        }}
+                        className="flex-1 flex items-center justify-center gap-2 text-sm sm:text-base rounded-full transition-all duration-300"
+                      >
+                        <Icon size={16} /> <span className="hidden sm:inline">{label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                  {ofertaType === "text" ? (
+                    <Textarea
+                      value={ofertaLaboral as string} // Cast to string for Textarea
+                      onChange={(e) => setOfertaLaboral(e.target.value)}
+                      placeholder={t('cv_generator.job_offer.text_placeholder')}
+                      className="h-32 bg-gray-50 rounded-xl border-gray-200 focus:ring-blue-500"
+                      required
+                    />
+                  ) : (
+                    <Input
+                      type="file"
+                      accept={ofertaType === "pdf" ? ".pdf" : "image/*"}
+                      onChange={(e) => handleFileChange(e, setOfertaLaboral as any)} // Cast to any for File type
+                      className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      required
+                    />
+                  )}
+                </div>
 
-          <Separator />
+                <Separator />
 
-          {/* Plantilla */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.template.label')}</h2>
+                {/* Plantilla */}
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.template.label')}</h2>
 
-{/*
+                  {/*
             {templateId && (
               <div className="flex items-center p-2 bg-green-50 rounded-lg border border-green-200 mb-2">
                 <Check className="text-green-500 mr-2 h-5 w-5" />
@@ -377,66 +378,66 @@ export default function GenerarCV() {
 
 */}
 
-            <Input
-              type="file"
-              accept=".pdf"
-              onChange={(e) => handleFileChange(e, setPlantillaCV, setPreviewTemplate)}
-              className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
+                  <Input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => handleFileChange(e, setPlantillaCV, setPreviewTemplate)}
+                    className="bg-gray-50 rounded-xl border-gray-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
 
 
-            {previewTemplate && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="ghost" className="mt-2 text-blue-600 hover:text-blue-800 flex items-center gap-2">
-                    <Eye size={20} /> {t('cv_generator.template.preview')}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-3xl">
-                  <DialogHeader>
-                    <DialogTitle>{t('cv_generator.template.preview')}</DialogTitle>
-                  </DialogHeader>
-                  <iframe src={previewTemplate} className="w-full h-96 rounded-lg border" />
-                </DialogContent>
-              </Dialog>
-            )}
-            {!plantillaCV && !templateId && template && ( // Indicate which template is being used if none is uploaded
-              <p className="text-sm text-gray-500 mt-2">{t('cv_generator.template.using_default')}</p>
-            )}
-            {plantillaCV && templateId && (
-              <p className="text-sm text-amber-500 mt-2">{t('cv_generator.template.template_override')}</p>
-            )}
-          </div>
+                  {previewTemplate && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" className="mt-2 text-blue-600 hover:text-blue-800 flex items-center gap-2">
+                          <Eye size={20} /> {t('cv_generator.template.preview')}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-3xl">
+                        <DialogHeader>
+                          <DialogTitle>{t('cv_generator.template.preview')}</DialogTitle>
+                        </DialogHeader>
+                        <iframe src={previewTemplate} className="w-full h-96 rounded-lg border" />
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                  {!plantillaCV && !templateId && template && ( // Indicate which template is being used if none is uploaded
+                    <p className="text-sm text-gray-500 mt-2">{t('cv_generator.template.using_default')}</p>
+                  )}
+                  {plantillaCV && templateId && (
+                    <p className="text-sm text-amber-500 mt-2">{t('cv_generator.template.template_override')}</p>
+                  )}
+                </div>
 
-          <Separator />
+                <Separator />
 
-          {/* Información Adicional */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.additional_info.label')}</h2>
-            <Textarea
-              value={informacion}
-              onChange={(e) => setInformacion(e.target.value)}
-              placeholder={t('cv_generator.additional_info.placeholder')}
-              className="h-24 bg-gray-50 rounded-xl border-gray-200 focus:ring-blue-500"
-            />
-          </div>
+                {/* Información Adicional */}
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-gray-700">{t('cv_generator.additional_info.label')}</h2>
+                  <Textarea
+                    value={informacion}
+                    onChange={(e) => setInformacion(e.target.value)}
+                    placeholder={t('cv_generator.additional_info.placeholder')}
+                    className="h-24 bg-gray-50 rounded-xl border-gray-200 focus:ring-blue-500"
+                  />
+                </div>
 
-          {/* Botón Submit */}
-          <Button
-            type="submit"
-            disabled={isLoading || (ofertaType === 'text' && !ofertaLaboral) || (ofertaType !== 'text' && !ofertaLaboral)}
-            className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-                {t('cv_generator.buttons.generating')}
-              </span>
-            ) : (
-              t('cv_generator.buttons.generate')
-            )}
-          </Button>
-        </motion.form>
+                {/* Botón Submit */}
+                <Button
+                  type="submit"
+                  disabled={isLoading || (ofertaType === 'text' && !ofertaLaboral) || (ofertaType !== 'text' && !ofertaLaboral)}
+                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                      {t('cv_generator.buttons.generating')}
+                    </span>
+                  ) : (
+                    t('cv_generator.buttons.generate')
+                  )}
+                </Button>
+              </motion.form>
 
               {/* Vista Previa - Right Column */}
               <motion.div
@@ -447,11 +448,13 @@ export default function GenerarCV() {
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('cv_generator.preview.title')}</h2>
                 <div className="flex-grow rounded-lg overflow-hidden bg-gray-50">
                   {isLoading ? (
-                    <CVSkeleton
-                      progress={apiProgress}
-                      isFirstApiDone={infoApiDone}
-                      isSecondApiDone={templateApiDone}
-                    />
+                    <div className="h-full flex items-center justify-center">
+                      <ThinkingAnimation 
+                        type="generate" 
+                        progress={apiProgress}
+                        message={t('thinking.generating_cv')}
+                      />
+                    </div>
                   ) : data ? (
                     <ShowHtml html={data.html} />
                   ) : (
@@ -567,20 +570,12 @@ export default function GenerarCV() {
                 <h2 className="text-lg font-semibold text-gray-700 mb-4">{t('cv_analysis.results_title')}</h2>
                 <div className="flex-grow rounded-lg overflow-hidden bg-gray-50">
                   {analysisState.isAnalyzing ? (
-                    <div className="flex flex-col items-center justify-center h-full p-8">
-                      <div className="animate-spin h-12 w-12 border-4 border-purple-600 border-t-transparent rounded-full mb-4"></div>
-                      <p className="text-lg font-medium text-gray-700 mb-2">{t('cv_analysis.analyzing')}</p>
-                      <p className="text-sm text-gray-500 mb-4">{t('cv_analysis.ready_description')}</p>
-                      <div className="w-full max-w-xs bg-gray-200 rounded-full h-2 relative overflow-hidden">
-                        <div 
-                          className={`bg-purple-600 h-2 rounded-full transition-all duration-300 absolute left-0 top-0`}
-                          style={{ 
-                            width: `${Math.min(100, Math.max(0, analysisState.progress))}%`,
-                            transform: 'translateZ(0)' // Force hardware acceleration
-                          }}
-                        />
-                      </div>
-                      <p className="text-xs text-gray-500 mt-2">{analysisState.progress}% complete</p>
+                    <div className="h-full flex items-center justify-center">
+                      <ThinkingAnimation 
+                        type="analyze" 
+                        progress={analysisState.progress}
+                        message={t('thinking.analyzing_cv')}
+                      />
                     </div>
                   ) : analysisState.result ? (
                     <div className="h-full overflow-auto p-4">

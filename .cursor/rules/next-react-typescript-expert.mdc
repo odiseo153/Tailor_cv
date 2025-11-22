@@ -1,7 +1,5 @@
 ---
-description: for react and next
-globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Next.js App Router with TypeScript & Shadcn UI Guidelines
 

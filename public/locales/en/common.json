@@ -157,7 +157,7 @@
       "email": "Email",
       "phone": "Phone",
       "location": "Location",
-      "address": "Madrid, Spain",
+      "address": "Santo Domingo west, Dominican Republic",
       "businessHours": "Business Hours",
       "businessHoursTime": "Monday to Friday: 9:00 AM - 6:00 PM",
       "sendMessage": "Send us a message",
@@ -506,5 +506,22 @@
       "webdesign": "Web Design",
       "branding": "Branding"
     }
+  },
+  "googleTranslate": {
+    "autoTranslate": "Auto Translate",
+    "title": "Google Translate",
+    "description": "Automatically translate this page to your preferred language",
+    "loading": "Loading translator..."
+  },
+  "thinking": {
+    "generating_cv": "Crafting Your Perfect CV",
+    "analyzing_cv": "Analyzing Your CV",
+    "processing": "AI is thinking...",
+    "translating": "Translating content..."
+  },
+  "translation": {
+    "translating_to": "Translating to",
+    "translation_complete": "Translation complete",
+    "auto_translation": "Auto-translation active"
   }
 } 

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { CheckCircle2, Shield, Send, Mail, Phone, MapPin } from "lucide-react"
+import { CheckCircle2, Shield, Send, Mail, Phone, MapPin, Instagram, Linkedin, Facebook } from "lucide-react"
 import { useState } from 'react';
 import { Message } from "@/app/utils/Message"
 import { motion } from "framer-motion"
@@ -11,7 +11,6 @@ import { useI18n } from "@/app/context/I18nContext"
 
 export default function ContactSection() {
   const { t } = useI18n();
-  
   const industries = [
     t("home.contact.industries.technology"),
     t("home.contact.industries.finance"),
@@ -28,274 +27,313 @@ export default function ContactSection() {
     t("home.contact.industries.government"),
     t("home.contact.industries.transportation"),
     t("home.contact.industries.energy"),
-  ]
+  ];
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     industry: '',
     message: '',
+    industryOther: '',
   });
-  
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
-  const handleChange = (e: { target: { name: any; value: any } }) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const fields = [
+    { name: "name", label: t("home.contact.fullName") },
+    { name: "email", label: "Email" },
+    { name: "industry", label: t("home.contact.yourIndustry") },
+    { name: "message", label: t("home.contact.message") }
+  ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+      ...(name === "industry" && value !== "other" ? { industryOther: '' } : {}) // Reset industryOther if another industry picked
+    }));
+    setMissingFields([]); // Clean missing on change
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate form data
-    if (!formData.name || !formData.email || !formData.industry || !formData.message) {
-      Message.errorMessage('Por favor, completa todos los campos.');
+    // Validate fields
+    let fieldList = ["name", "email", "industry", "message"];
+    let missing = fieldList.filter(f => {
+      if (f === "industry" && formData.industry === "other") return !formData.industryOther;
+      return !formData[f as keyof typeof formData];
+    });
+    if (missing.length) {
+      setMissingFields(missing);
+      Message.errorMessage(
+        "Por favor completa los campos: " +
+        missing.map(name =>
+          name === "name" ? t("home.contact.fullName")
+          : name === "email" ? "Email"
+          : name === "industry" ? t("home.contact.yourIndustry")
+          : name === "message" ? t("home.contact.message")
+          : name
+        ).join(', ')
+      );
       return;
     }
-    
+
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+      const res = await fetch('/api/email', {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          industry: formData.industry === "other" ? formData.industryOther : formData.industry
+        })
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`Error al enviar el mensaje: ${response.status}`);
-      }
-
-      console.log(data);
-
+      const data = await res.json();
+      if (!res.ok) throw new Error();
       Message.successMessage(t("home.contact.success"));
-      setFormData({ name: '', email: '', industry: '', message: '' });
-    } catch (error) {
-      console.error(error);
+      setFormData({ name: '', email: '', industry: '', message: '', industryOther: '' });
+    } catch {
       Message.errorMessage(t("home.contact.error"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-  
-  const itemVariants = {
+  // Animaciones simples
+  const fade = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.5 }
-    }
+    visible: (i:number) => ({
+      opacity: 1, y: 0, transition: { duration: 0.45, delay: i * 0.08 }
+    })
   };
 
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+    <section className="py-20 bg-gradient-to-b from-white to-blue-50 overflow-hidden">
+      <div className="container mx-auto px-4 max-w-5xl">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
+          variants={{
+            hidden: { opacity: 0, y: 24 },
+            visible: { opacity: 1, y: 0, transition: { duration: .7 } }
+          }}
+          className="text-center mb-12"
         >
-          <div className="inline-block mb-3 px-4 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-            {t("home.contact.tagline")}
+          <div className="inline-flex items-center gap-2 px-5 py-1.5 mb-3 rounded-full bg-gradient-to-r from-blue-100 via-indigo-100 to-blue-200 shadow text-blue-700 text-sm font-medium">
+            <Mail className="w-4 h-4 text-blue-600" /> {t("home.contact.tagline")}
           </div>
-          <h2 className="text-3xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 bg-clip-text text-transparent drop-shadow">
             {t("home.contact.title")}
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 max-w-xl mx-auto mt-2">
             {t("home.contact.description")}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 max-w-6xl mx-auto">
-          {/* Información de contacto */}
-          <motion.div 
-            variants={containerVariants}
+        <div className="flex flex-col lg:flex-row gap-10 max-w-5xl mx-auto">
+          {/* Contact Info */}
+          <motion.div
+            className="flex-1"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.3 }}
-            className="lg:col-span-2"
+            variants={fade}
+            custom={0}
           >
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-8 text-white shadow-xl h-full flex flex-col justify-between">
+            <div className="w-full h-full bg-gradient-to-br from-blue-700 to-indigo-700 shadow-2xl rounded-3xl px-8 py-8 flex flex-col gap-10 justify-between relative overflow-hidden">
+              {/* Efecto Glow decorativo */}
+              <div className="absolute left-0 top-0 w-32 h-32 bg-blue-300/30 rounded-full blur-3xl -z-10 animate-pulse" />
+              <div className="absolute right-0 bottom-0 w-28 h-28 bg-indigo-400/20 rounded-full blur-3xl -z-10 animate-pulse" />
               <div>
-                <motion.h3 variants={itemVariants} className="text-2xl font-bold mb-6">{t("home.contact.letsTalk")}</motion.h3>
-                <motion.p variants={itemVariants} className="text-blue-100 mb-10">
-                  {t("home.contact.commitment")}
-                </motion.p>
-
-                <motion.div variants={itemVariants} className="space-y-6">
-                  <div className="flex items-start">
-                    <Mail className="w-6 h-6 text-blue-200 mt-1 mr-4" />
-                    <div>
-                      <p className="font-medium">{t("home.contact.email")}</p>
-                      <p className="text-blue-100">soporte@tailorcv.com</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <Phone className="w-6 h-6 text-blue-200 mt-1 mr-4" />
-                    <div>
-                      <p className="font-medium">{t("home.contact.phone")}</p>
-                      <p className="text-blue-100">+34 91 123 4567</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <MapPin className="w-6 h-6 text-blue-200 mt-1 mr-4" />
-                    <div>
-                      <p className="font-medium">{t("home.contact.location")}</p>
-                      <p className="text-blue-100">{t("home.contact.address")}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                <motion.h3
+                  variants={fade}
+                  custom={1}
+                  className="text-3xl md:text-4xl font-extrabold mb-6 bg-gradient-to-r from-blue-200 via-indigo-200 to-blue-400 bg-clip-text text-transparent drop-shadow-lg tracking-tight"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <span className="inline-block w-2 h-2 rounded-full bg-blue-400 animate-pulse shadow-lg mr-2" />
+                    {t("home.contact.letsTalk")}
+                    <span className="inline-block w-2 h-2 rounded-full bg-indigo-300 animate-pulse shadow-lg ml-2" />
+                  </span>
+                </motion.h3>
+                <motion.p variants={fade} custom={2} className="text-blue-100 mb-7">{t("home.contact.commitment")}</motion.p>
+                <motion.ul 
+                  variants={fade} 
+                  custom={3} 
+                  className="flex flex-col gap-5 text-sm mt-3"
+                >
+                  <li className="flex items-center gap-4 bg-gradient-to-r from-blue-600/60 to-indigo-700/80 rounded-xl px-4 py-3 shadow-lg hover:from-blue-700/70 hover:to-indigo-800/80 transition">
+                    <span className="flex justify-center items-center w-10 h-10 rounded-full bg-white/10 border border-blue-200/20 shadow">
+                      <Mail className="w-6 h-6 text-blue-100" />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="uppercase tracking-wide font-semibold text-xs text-blue-200">{t("home.contact.email")}</span>
+                      <span className="font-medium text-base text-blue-50">odiseorincon@gmail.com</span>
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-4 bg-gradient-to-r from-blue-600/60 to-indigo-700/80 rounded-xl px-4 py-3 shadow-lg hover:from-blue-700/70 hover:to-indigo-800/80 transition">
+                    <span className="flex justify-center items-center w-10 h-10 rounded-full bg-white/10 border border-blue-200/20 shadow">
+                      <Phone className="w-6 h-6 text-blue-100" />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="uppercase tracking-wide font-semibold text-xs text-blue-200">{t("home.contact.phone")}</span>
+                      <span className="font-medium text-base text-blue-50">+829-789-0766</span>
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-4 bg-gradient-to-r from-blue-600/60 to-indigo-700/80 rounded-xl px-4 py-3 shadow-lg hover:from-blue-700/70 hover:to-indigo-800/80 transition">
+                    <span className="flex justify-center items-center w-10 h-10 rounded-full bg-white/10 border border-blue-200/20 shadow">
+                      <MapPin className="w-6 h-6 text-blue-100" />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="uppercase tracking-wide font-semibold text-xs text-blue-200">{t("home.contact.location")}</span>
+                      <span className="font-medium text-base text-blue-50">{t("home.contact.address")}</span>
+                    </span>
+                  </li>
+                </motion.ul>
               </div>
-              
-              {/* Horario y redes sociales */}
-              <motion.div variants={itemVariants} className="mt-12 pt-6 border-t border-blue-500/30">
-                <p className="font-medium mb-2">{t("home.contact.businessHours")}</p>
-                <p className="text-blue-100 mb-4">{t("home.contact.businessHoursTime")}</p>
-                
-                <div className="flex space-x-4 mt-4">
-                  {['facebook', 'twitter', 'instagram', 'linkedin'].map((social, i) => (
-                    <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors">
-                      <span className="sr-only">{social}</span>
-                      <div className="w-5 h-5 text-white"></div>
+              <div>
+                <div className="mt-0 pt-4 border-t border-blue-200/30">
+                  <div className="flex items-center gap-2 text-xs text-blue-100 mb-2">
+                    <Shield className="h-4 w-4 text-blue-200" />
+                    <span>{t("home.contact.dataProtected")}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-blue-100">
+                    <CheckCircle2 className="h-4 w-4 text-green-200" />
+                    <span>{t("home.contact.gdprCompliant")}</span>
+                  </div>
+                </div>
+                <div className="mt-6 flex gap-3">
+                  {[
+                    { name: 'Facebook', url: 'https://www.facebook.com/Odise0', icon: <Facebook />},
+                    { name: 'Instagram', url: 'https://www.instagram.com/odiseo153/', icon: <Instagram />},
+                    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/odiseo-esmerlin-rincon-sanchez-48053524b/', icon: <Linkedin /> }
+                  ].map(s => (
+                    <a key={s.name} href={s.url} aria-label={s.name}
+                      className="w-10 h-10 flex items-center justify-center bg-white/10 text-white rounded-full hover:bg-white/20 transition"
+                      target="_blank" rel="noopener noreferrer"
+                    >
+                      {s.icon}
                     </a>
                   ))}
                 </div>
-              </motion.div>
-            </div>
-          </motion.div>
-
-          {/* Formulario de contacto */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="lg:col-span-3"
-          >
-            <div className="bg-white rounded-xl p-8 shadow-lg border border-gray-100">
-              <h3 className="text-2xl font-bold mb-6 text-gray-900">{t("home.contact.sendMessage")}</h3>
-
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center">
-                      {t("home.contact.fullName")} <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <Input 
-                      id="name" 
-                      name="name" 
-                      placeholder={t("home.contact.namePlaceholder")}
-                      onChange={handleChange} 
-                      value={formData.name} 
-                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center">
-                      Email <span className="text-red-500 ml-1">*</span>
-                    </label>
-                    <Input 
-                      id="email" 
-                      name="email" 
-                      type="email" 
-                      placeholder={t("home.contact.emailPlaceholder")}
-                      onChange={handleChange} 
-                      value={formData.email} 
-                      className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="industry" className="text-sm font-medium text-gray-700 flex items-center">
-                    {t("home.contact.yourIndustry")} <span className="text-red-500 ml-1">*</span>
-                  </label>
-                  <div className="space-y-2">
-                    <select 
-                      id="industry"
-                      name="industry"
-                      value={formData.industry} 
-                      onChange={handleChange}
-                      aria-label={t("home.contact.yourIndustry")}
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                    >
-                      <option value="">{t("home.contact.industryPlaceholder")}</option>
-                      {industries.map((industry, index) => (
-                        <option key={index} value={industry}>{industry}</option>
-                      ))}
-                      <option value="other">{t("home.contact.otherIndustry")}</option>
-                    </select>
-                    
-                    {formData.industry === "other" && (
-                      <Input
-                        id="industryCustom"
-                        name="industry"
-                        type="text"
-                        placeholder={t("home.contact.specifyIndustry")}
-                        onChange={handleChange}
-                        value={formData.industry}
-                        className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                      />
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label htmlFor="message" className="text-sm font-medium text-gray-700 flex items-center">
-                    {t("home.contact.message")} <span className="text-red-500 ml-1">*</span>
-                  </label>
-                  <Textarea 
-                    id="message" 
-                    name="message" 
-                    placeholder={t("home.contact.messagePlaceholder")}
-                    rows={4} 
-                    onChange={handleChange} 
-                    value={formData.message} 
-                    className="border-gray-200 focus:border-blue-500 focus:ring-blue-500 resize-none"
-                  />
-                </div>
-
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg flex items-center justify-center gap-2"
-                >
-                  <Send className="h-4 w-4" />
-                  <span>{isSubmitting ? t("home.contact.sending") : t("home.contact.sendButton")}</span>
-                </Button>
-              </form>
-
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-start gap-2">
-                    <Shield className="h-5 w-5 text-blue-500 mt-0.5" />
-                    <span className="text-sm text-gray-600">{t("home.contact.dataProtected")}</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                    <span className="text-sm text-gray-600">{t("home.contact.gdprCompliant")}</span>
-                  </div>
-                </div>
               </div>
             </div>
           </motion.div>
+
+          {/* Contact Form */}
+          <motion.div
+            className="flex-1"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fade}
+            custom={1}
+          >
+            <div className="bg-white  rounded-3xl shadow-2xl border border-gray-100 px-8 py-8 relative">
+              <motion.form onSubmit={handleSubmit} className="flex flex-col gap-6" initial="hidden" animate="visible">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Input
+                      id="name"
+                      name="name"
+                      placeholder={t("home.contact.namePlaceholder")}
+                      onChange={handleChange}
+                      value={formData.name}
+                      className={`border-2 px-3 py-2 rounded-md text-base w-full focus:border-blue-400 ${missingFields.includes('name') ? 'border-red-400' : 'border-gray-200'}`}
+                      aria-invalid={missingFields.includes('name')}
+                      aria-label={t("home.contact.fullName")}
+                    />
+                    <span className="block text-xs text-gray-500 mt-1">{t("home.contact.fullName")} *</span>
+                  </div>
+                  <div>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder={t("home.contact.emailPlaceholder")}
+                      onChange={handleChange}
+                      value={formData.email}
+                      className={`border-2 px-3 py-2 rounded-md text-base w-full focus:border-blue-400 ${missingFields.includes('email') ? 'border-red-400' : 'border-gray-200'}`}
+                      aria-invalid={missingFields.includes('email')}
+                      aria-label="Email"
+                    />
+                    <span className="block text-xs text-gray-500 mt-1">Email *</span>
+                  </div>
+                </div>
+
+                <div>
+                  <select
+                    id="industry"
+                    name="industry"
+                    value={formData.industry}
+                    onChange={handleChange}
+                    className={`w-full h-10 px-3 border-2 rounded-md bg-white text-base focus:border-indigo-500 ${missingFields.includes('industry') ? 'border-red-400' : 'border-gray-200'}`}
+                    aria-invalid={missingFields.includes('industry') ? 'true' : 'false'}
+                    aria-label={t("home.contact.yourIndustry")}
+                  >
+                    <option value="">{t("home.contact.industryPlaceholder")}</option>
+                    {industries.map((industry, index) => (
+                      <option key={index} value={industry}>{industry}</option>
+                    ))}
+                    <option value="other">{t("home.contact.otherIndustry")}</option>
+                  </select>
+                  {formData.industry === "other" && (
+                    <Input
+                      id="industryOther"
+                      name="industryOther"
+                      type="text"
+                      placeholder={t("home.contact.specifyIndustry")}
+                      onChange={handleChange}
+                      value={formData.industryOther}
+                      className={`mt-2 border-2 px-3 py-2 rounded-md text-base w-full focus:border-blue-400 ${missingFields.includes('industry') ? 'border-red-400' : 'border-gray-200'}`}
+                    />
+                  )}
+                  <span className="block text-xs text-gray-500 mt-1">{t("home.contact.yourIndustry")} *</span>
+                </div>
+
+                <div>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    placeholder={t("home.contact.messagePlaceholder")}
+                    rows={4}
+                    onChange={handleChange}
+                    value={formData.message}
+                    className={`h-24 border-2 px-3 py-2 rounded-md text-base w-full focus:border-indigo-500 resize-none ${missingFields.includes('message') ? 'border-red-400' : 'border-gray-200'}`}
+                    aria-invalid={missingFields.includes('message')}
+                  />
+                  <span className="block text-xs text-gray-500 mt-1">{t("home.contact.message")} *</span>
+                </div>
+
+                {missingFields.length > 0 && (
+                  <div className="rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-2 text-sm flex gap-2 items-center">
+                    <span>
+                      {missingFields.map(name =>
+                        name === "name" ? t("home.contact.fullName") :
+                        name === "email" ? "Email" :
+                        name === "industry" ? t("home.contact.yourIndustry") :
+                        name === "message" ? t("home.contact.message") : name
+                      ).join(', ')}
+                    </span>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg text-lg uppercase tracking-wide transition"
+                >
+                  <Send className="h-5 w-5" />
+                  <span>{isSubmitting ? t("home.contact.sending") : t("home.contact.sendButton")}</span>
+                </Button>
+              </motion.form>
+            </div>
+          </motion.div>
         </div>
-      
       </div>
     </section>
   )

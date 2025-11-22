@@ -156,7 +156,7 @@
       "email": "Email",
       "phone": "Teléfono",
       "location": "Ubicación",
-      "address": "Madrid, España",
+      "address": "Santo Domingo este, República Dominicana",
       "businessHours": "Horario de atención",
       "businessHoursTime": "Lunes a Viernes: 9:00 - 18:00",
       "sendMessage": "Envíanos un mensaje",
@@ -505,5 +505,22 @@
       "webdesign": "Diseño Web",
       "branding": "Branding"
     }
+  },
+  "googleTranslate": {
+    "autoTranslate": "Traducir Automáticamente",
+    "title": "Google Translate",
+    "description": "Traduce automáticamente esta página a tu idioma preferido",
+    "loading": "Cargando traductor..."
+  },
+  "thinking": {
+    "generating_cv": "Creando Tu CV Perfecto",
+    "analyzing_cv": "Analizando Tu CV",
+    "processing": "La IA está pensando...",
+    "translating": "Traduciendo contenido..."
+  },
+  "translation": {
+    "translating_to": "Traduciendo a",
+    "translation_complete": "Traducción completada",
+    "auto_translation": "Traducción automática activa"
   }
 } 

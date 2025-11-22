@@ -3,7 +3,7 @@
 import { useState, Suspense, lazy, useRef } from "react"
 import { generatePdf } from "./htmlToPdf"
 import { generateWord } from "./htmlToWord"
-import {  optimizeHtmlForExport, validateHtmlForExport } from "./ExportManager"
+import { optimizeHtmlForExport, validateHtmlForExport } from "./ExportManager"
 import { Download, Loader2, AlertCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
@@ -58,37 +58,57 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   const [validationIssues, setValidationIssues] = useState<string[]>([])
   const [showAdvancedExport, setShowAdvancedExport] = useState(false)
 
+  const [isDownloading, setIsDownloading] = useState(false)
+
   const handleDownload = async () => {
-    // Crear un documento completo con HTML y CSS
-    const fullHtml = `
-      <html>
-        <head>
-          <style>
-            ${css}
-          </style>
-        </head>
-        <body>
-          ${html}
-        </body>
-      </html>
-    `
+    setIsDownloading(true)
+    try {
+      // Crear un documento completo con HTML y CSS
+      const fullHtml = `
+        <html>
+          <head>
+            <style>
+              ${css}
+            </style>
+          </head>
+          <body>
+            ${html}
+          </body>
+        </html>
+      `
 
-    // Validate HTML before export
-    const validation = validateHtmlForExport(fullHtml)
-    if (!validation.valid) {
-      setValidationIssues(validation.issues)
-      return
-    }
+      // Validate HTML before export
+      const validation = validateHtmlForExport(fullHtml)
+      if (!validation.valid) {
+        setValidationIssues(validation.issues)
+        setIsDownloading(false)
+        return
+      }
 
-    // Optimize HTML for better export quality
-    const optimizedHtml = optimizeHtmlForExport(fullHtml)
+      // Optimize HTML for better export quality
+      const optimizedHtml = optimizeHtmlForExport(fullHtml)
 
-    if (downloadType === "pdf") {
-      generatePdf(optimizedHtml)
-    } else if (downloadType === "word") {
-      generateWord(optimizedHtml, {
-        filename: 'cv.docx'
-      })
+      if (downloadType === "pdf") {
+        const result = await generatePdf(optimizedHtml)
+        if (result && result.blob) {
+          const url = window.URL.createObjectURL(result.blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = 'cv.pdf'
+          document.body.appendChild(a)
+          a.click()
+          window.URL.revokeObjectURL(url)
+          document.body.removeChild(a)
+        }
+      } else if (downloadType === "word") {
+        await generateWord(optimizedHtml, {
+          filename: 'cv.docx'
+        })
+      }
+    } catch (error) {
+      console.error("Error downloading:", error)
+    } finally {
+      setIsDownloading(false)
     }
   }
 
@@ -114,23 +134,28 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
           </div>
 
           <div className="flex items-center gap-3">
-              <>
-                <select
-                  aria-label="Seleccionar tipo de descarga"
-                  value={downloadType}
-                  onChange={(e) => setDownloadType(e.target.value)}
-                  className="px-4 py-2 text-sm sm:text-base bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                >
-                  <option value="pdf">PDF</option>
-                  <option value="word">Word</option>
-                </select>
-                <Button
-                  onClick={handleDownload}
-                  className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-transform duration-300"
-                >
+            <>
+              <select
+                aria-label="Seleccionar tipo de descarga"
+                value={downloadType}
+                onChange={(e) => setDownloadType(e.target.value)}
+                className="px-4 py-2 text-sm sm:text-base bg-white border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+              >
+                <option value="pdf">PDF</option>
+                <option value="word">Word</option>
+              </select>
+              <Button
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="flex items-center gap-2 bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-2 rounded-full shadow-lg hover:scale-105 hover:shadow-xl transition-transform duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isDownloading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
                   <Download className="w-5 h-5 animate-bounce" />
-                </Button>
-              </>
+                )}
+              </Button>
+            </>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { jsonrepair } from "jsonrepair";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { validation_prompt } from "../utils/cv_validations";
 import { CVAnalysisResult } from "../types/cv-analysis";
+import { generateLanguageInstruction, generateCVLanguageInstruction, getLanguageConfig } from "../utils/language-helper";
 
 
 export interface ProgressCallback {
@@ -90,27 +91,25 @@ export class CVHandler {
     }
   }
 
-  async getPlantillaFromPdf(file: File, progressCallback?: ProgressCallback): Promise<string> {
+  async getPlantillaFromPdf(file: File): Promise<string> {
     const model = genAI.getGenerativeModel({
       model: API_CONFIG.GEMINI.model,
       generationConfig: { temperature: 0.3 },
     });
 
-    const prompt = `Generate valid HTML with ${CSS_FRAMEWORK} replicating CV structure:
-      - Semantic HTML5 with responsive design
-      - Section hierarchy, layout (grid/flex), typography, and spacing
-      - Use ${CSS_FRAMEWORK} classes only
-      Return ONLY clean HTML code.`;
+    const prompt = `Generate valid HTML with ${CSS_FRAMEWORK} replicating the CV's visual layout and structure:
+      - Use semantic HTML5, responsive layout (grid/flex), consistent spacing, and typography scale
+      - Output should contain placeholder text for content (e.g., {{name}}, {{summary}}, {{experience_item}})
+      - STRICT: Refrain from introducing any external CSS frameworks or scripts
+      - Favor minimal, readable class names derived from the original PDF's visual groupings
+      - Keep a single-page layout suitable for A4/PDF export
+      - Return ONLY clean HTML code (no Markdown, no explanations).`;
 
-    progressCallback?.onProgress?.(60);
     try {
       const base64Data = await this.fileToBase64(file);
-      progressCallback?.onProgress?.(70);
 
       const parts = [{ text: prompt }, { inlineData: { mimeType: "application/pdf", data: base64Data } }];
       const { response } = await model.generateContent(parts);
-      progressCallback?.onTemplateProcessed?.();
-      progressCallback?.onProgress?.(90);
 
       return this.cleanGeneratedContent(response.text(), "html");
     } catch (error) {
@@ -120,13 +119,11 @@ export class CVHandler {
   }
 
   async getPlantillaById(templateId: string, progressCallback?: ProgressCallback): Promise<string> {
-    progressCallback?.onProgress?.(60);
     try {
       const response = await fetch("/api/templates");
       if (!response.ok) throw new Error(`Failed to fetch templates: ${response.statusText}`);
 
       const { pdfFiles } = await response.json();
-      progressCallback?.onProgress?.(70);
 
       const template = pdfFiles.find((t: any) => t.id.toString() === templateId);
       if (!template) throw new Error(`Template with ID ${templateId} not found`);
@@ -134,11 +131,10 @@ export class CVHandler {
       const pdfResponse = await fetch(template.pdfUrl);
       if (!pdfResponse.ok) throw new Error(`Failed to fetch PDF: ${pdfResponse.statusText}`);
 
-      progressCallback?.onProgress?.(80);
       const pdfBlob = await pdfResponse.blob();
       const pdfFile = new File([pdfBlob], template.name, { type: "application/pdf" });
 
-      return this.getPlantillaFromPdf(pdfFile, progressCallback);
+      return this.getPlantillaFromPdf(pdfFile);
     } catch (error) {
       console.error("Error fetching template by ID:", error);
       throw error;
@@ -155,41 +151,41 @@ export class CVHandler {
     progressCallback?: ProgressCallback,
     language: string = "en"
   ): Promise<string> {
-   
+
     const systemPrompt = `
     You are a senior CV designer and recruiter with deep expertise in crafting visually appealing, professional resumes in HTML using ${CSS_FRAMEWORK}.
     
     Your task is to generate a **single-page CV** perfectly aligned with a specific job offer, based on provided candidate data.
     
+    ${generateLanguageInstruction(language)}
+    
     ### 🎯 Output Requirements
     - Produce **clean, semantic, valid HTML5**, ready for PDF or Word export.
-    - Write in the **same language as the job offer**, unless the user explicitly requests another language.
     - Design must be **responsive**, minimalist, and elegant, using ${CSS_FRAMEWORK}.
     - Typography: **10–12pt** for body text, **14–16pt** for headings.
     - Margins: **10mm** on all sides.
     - Emphasize skills, experiences, and achievements that **best match the job offer**.
     - Maintain consistent section hierarchy (e.g., Profile, Experience, Education, Skills, Contact Info).
     - Use professional, localized terminology for ${language}.
-    - ${
-      plantilla
-        ? `Base the design and layout on the provided template: ${plantilla}.`
-        : "Create a modern, ATS-friendly layout using best UX/UI practices."
-    }
-    - ${
-      foto
+    - If a template HTML is provided, you MUST:
+      1) Preserve the exact structural layout, section order, and container hierarchy
+      2) Reuse the same class names and IDs; DO NOT rename classes or add frameworks
+      3) Keep the same spacing, grid/flex structure, and typography scales
+      4) Replace only the textual content and image sources while keeping elements and wrappers intact
+      5) Do not introduce external CSS/JS; only inline or embedded ${CSS_FRAMEWORK} styles allowed
+    - If no template is provided, create a modern, ATS-friendly layout using best UX/UI practices.
+    - ${foto
         ? `Include the candidate photo (${foto}) if culturally appropriate for the target country.`
         : "Exclude the photo section for a neutral, global presentation."
-    }
-    - ${
-      infoAdicional
+      }
+    - ${infoAdicional
         ? `Incorporate the following additional information where relevant: ${infoAdicional}.`
         : "Exclude any additional information not provided."
-    }
-    - ${
-      carrera
+      }
+    - ${carrera
         ? `Adapt structure, keywords, and achievements to align with the career field: ${carrera}.`
         : "Use a balanced, cross-industry approach for general applications."
-    }
+      }
     
     ### ⚙️ Formatting Rules
     - Output **only HTML code** (no Markdown, explanations, or comments).
@@ -197,9 +193,14 @@ export class CVHandler {
     - Ensure the design looks professional, clean, and export-friendly.
     - The result must feel **human-written**, with natural phrasing and contextual emphasis.
     
+    ### 📌 ATS/HR Optimization Guidelines (Translate to ${language} and ENFORCE)
+    The following expert recommendations must be applied to maximize ATS compatibility and recruiter screening success. Translate all content and headings to the target language and implement the practices within the generated HTML and text content.
+
+    ${validation_prompt}
+
     Your goal: produce a **recruiter-ready HTML CV** that stands out visually and contextually.
     `.trim();
-    
+
     const userPrompt = `
     Generate a **one-page HTML CV** using ${CSS_FRAMEWORK}.
     
@@ -209,18 +210,32 @@ export class CVHandler {
     Candidate Data:
     ${JSON.stringify(infoCV, null, 2)}
     
+    ${generateCVLanguageInstruction(language)}
+    
+    ${plantilla ? `
+    ### Template HTML (STRICTLY PRESERVE STRUCTURE & CLASSES)
+    """
+    ${plantilla}
+    """
+    
+    CRITICAL Template Rules:
+    - Reuse containers, wrappers, and section tags exactly as in the template
+    - Keep all class names and IDs unchanged; do not add UI libraries
+    - Replace placeholder text and image URLs only; do not alter DOM structure
+    - Keep layout (grid/flex) and spacing scales intact
+    ` : ''}
+    
     ### Guidelines:
     - Tailor the CV to highlight **skills, experiences, and achievements** matching the job offer.
     - Ensure a **responsive, printable layout** that looks great on screen and in PDF.
-    - Write in **${language}**, using professional and natural language.
-    - ${
-      infoAdicional
+    - ${infoAdicional
         ? `Include this additional information where relevant: ${infoAdicional}.`
         : "No additional information."
-    }
+      }
+    - Strictly apply the ATS/HR optimization guidelines provided in the system instructions (translated to the selected language)
     - Return **only valid HTML code**, without explanations or Markdown.
     `.trim();
-    
+
 
     progressCallback?.onProgress?.(85);
     try {
@@ -251,10 +266,10 @@ export class CVHandler {
     progressCallback?: ProgressCallback,
     language: string = "en"
   ): Promise<CVAnalysisResult> {
-    console.log('CVHandler analyzeCV called with language:', language);
-    const model = genAI.getGenerativeModel({ 
+
+    const model = genAI.getGenerativeModel({
       model: API_CONFIG.GEMINI.model,
-      generationConfig: { 
+      generationConfig: {
         temperature: 0.3,
         maxOutputTokens: 4000
       }
@@ -263,10 +278,7 @@ export class CVHandler {
     const systemPrompt = `
 You are an expert CV consultant and career advisor with deep expertise in resume optimization, ATS systems, and modern recruitment practices. Your role is to analyze CVs and provide comprehensive, actionable improvement recommendations.
 
-### Language Requirements
-- Respond in ${language === 'en' ? 'English' : language === 'es' ? 'Spanish' : language === 'fr' ? 'French' : language === 'zh' ? 'Chinese' : 'English'}
-- All explanations, suggestions, and content must be in the specified language
-- Use professional terminology appropriate for the target language and region
+${generateLanguageInstruction(language)}
 
 ### Analysis Framework
 Analyze the provided CV across three key dimensions:
@@ -370,7 +382,8 @@ ${cvText}
 
 Target Role: ${jobTitle}
 Industry: ${industry}
-Language: ${language}
+
+${generateLanguageInstruction(language)}
 
 Please provide a comprehensive analysis with specific, actionable recommendations to improve this CV's effectiveness for the target role. Focus on:
 
@@ -391,13 +404,13 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional te
         { text: systemPrompt },
         { text: userPrompt }
       ]);
-      
+
       progressCallback?.onProgress?.(75);
       console.log("System result:", result);
       const rawResponse = (await result.response).text();
       const responseText = this.cleanGeneratedContent(rawResponse, "json");
       progressCallback?.onProgress?.(90);
-      
+
       // Try to parse JSON with better error handling
       let analysisResult;
       try {
@@ -405,14 +418,14 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional te
       } catch (parseError) {
         console.error("JSON parse error:", parseError);
         console.error("Raw response:", responseText);
-        
+
         // Try to repair JSON using jsonrepair
         try {
           const repairedJson = jsonrepair(responseText);
           analysisResult = JSON.parse(repairedJson);
         } catch (repairError) {
           console.error("JSON repair failed:", repairError);
-          
+
           // Provide a fallback response structure
           const fallbackResponse = {
             overallScore: 50,
@@ -441,14 +454,14 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional te
             jobTitle: jobTitle,
             industry: industry
           };
-          
+
           console.warn("Using fallback response due to JSON parsing failure");
           return fallbackResponse;
         }
       }
-      
+
       progressCallback?.onProgress?.(100);
-      
+
       return analysisResult;
     } catch (error) {
       console.error("Error analyzing CV:", error);
@@ -477,7 +490,7 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional te
 
       let plantillaHTML: string | null = null;
       if (plantilla && typeof plantilla !== "string") {
-        plantillaHTML = await this.getPlantillaFromPdf(plantilla, progressCallback);
+        plantillaHTML = await this.getPlantillaFromPdf(plantilla);
       } else if (templateId) {
         plantillaHTML = await this.getPlantillaById(templateId, progressCallback);
       } else if (typeof plantilla === "string") {
