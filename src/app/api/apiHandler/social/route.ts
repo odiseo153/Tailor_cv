@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const jsonData = data;
     
-    console.log(data);
     const { platform, url, userId } = jsonData;
 
     

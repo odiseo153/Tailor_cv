@@ -22,7 +22,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Faltan parámetros requeridos' }, { status: 400 });
     }
     
-    console.log("Payload recibido para actualizar:", jsonData);
     const resultado = await education_handler.update(id, jsonData);
     
     return NextResponse.json({ resultado });

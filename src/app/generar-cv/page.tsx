@@ -426,7 +426,7 @@ export default function GenerarCV() {
                   onToggle={() => toggleSection("model")}
                 >
                   <Select value={selectedModel} onValueChange={setSelectedModel}>
-                    <SelectTrigger className="bg-gray-50 border-gray-200">
+                    <SelectTrigger className="bg-gray-50 border-gray-200 p-5">
                       <SelectValue placeholder={t("cv_generator.ai_model.placeholder") || "Auto (with fallback)"} />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">

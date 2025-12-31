@@ -15,7 +15,6 @@ export async function PUT(request: NextRequest,{ params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Faltan parametros',jsonData }, { status: 400 });
     }
     
-    console.log(id,jsonData)
     const resultado = await work_handler.update(id,jsonData);
 
     return NextResponse.json({ resultado });

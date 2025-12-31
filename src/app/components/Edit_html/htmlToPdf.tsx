@@ -15,7 +15,6 @@ export const generatePdf = async (html: string): Promise<{ blob: Blob; pageCount
       throw new Error(errorData.error || 'Failed to generate PDF');
     }
 
-    console.log(response)
     const blob = await response.blob();
 
     // Note: Server-side generation doesn't easily return page count without parsing the PDF.

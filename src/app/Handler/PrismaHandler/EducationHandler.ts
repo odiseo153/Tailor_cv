@@ -49,7 +49,6 @@ export class EducationHandler implements BaseHandler<Education> {
             if (data.startDate) updateData.startDate = new Date(data.startDate);
             if (data.endDate) updateData.endDate = new Date(data.endDate);
 
-            console.log(updateData)
             const updatedEducation = await prisma.education.update({
                 where: { id },
                 data: updateData,

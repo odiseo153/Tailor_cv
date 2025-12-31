@@ -168,7 +168,6 @@ processedAt: new Date(),
     const handler = eventHandlers[event.type];
     if (handler) {
       await handler(event, prisma);
-      console.log(`Evento procesado: ${event.type}`, { eventId: event.id });
     } else {
       console.log(`Evento no manejado: ${event.type}`, { eventId: event.id });
     }

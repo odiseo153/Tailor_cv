@@ -34,7 +34,6 @@ export default function PlansPage() {
                 planId: planId,
             }),
           });
-          console.log(response);
           const { url } = await response.json();
           window.location.href = url; // Redirige a Stripe Checkout
         } catch (error) {
@@ -48,7 +47,6 @@ export default function PlansPage() {
         const fetchPlans = async () => {
             const request = await fetch("/api/stripe/plans");
             const response = await request.json();
-            console.log(response);
             setPlans(response.data);
         }
         fetchPlans();

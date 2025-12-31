@@ -65,7 +65,6 @@ export async function middleware(request: NextRequest) {
 
     // 🔐 Redirigir si el usuario NO tiene sesión y la ruta NO es pública
     if (!token) {
-      console.log("El token no existe", token);
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('callbackUrl', request.url);
       return NextResponse.redirect(loginUrl);

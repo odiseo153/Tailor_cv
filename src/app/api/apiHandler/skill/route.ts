@@ -9,7 +9,6 @@ export async function POST(request: Request) {
 
     const { name, level, userId } = jsonData;
 
-    console.log(jsonData);
 
     if (!name || !level || !userId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

@@ -140,11 +140,6 @@ export async function DELETE() {
       data: { cancelAtPeriodEnd: true },
     });
 
-    console.log('Suscripción cancelada', {
-      userId: user.id,
-      subscriptionId: subscription.stripeSubscriptionId,
-    });
-
     return NextResponse.json({
       success: true,
       message: 'Suscripción cancelada correctamente',
@@ -214,11 +209,6 @@ export async function PATCH(req: NextRequest) {
     await prisma.subscription.update({
       where: { id: subscription.id },
       data: { cancelAtPeriodEnd: false },
-    });
-
-    console.log('Suscripción reactivada', {
-      userId: user.id,
-      subscriptionId: subscription.stripeSubscriptionId,
     });
 
     return NextResponse.json({

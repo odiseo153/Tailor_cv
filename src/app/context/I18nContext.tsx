@@ -62,10 +62,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
         );
       }
       const commonTranslations = await response.json();
-      console.log(
-        `Translations loaded for ${localeToLoad}`,
-        Object.keys(commonTranslations)
-      );
+    
       setTranslations({
         common: commonTranslations,
       });
@@ -74,7 +71,6 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
       // Fallback to English if the requested locale fails
       if (localeToLoad !== "en") {
         try {
-          console.log("Attempting fallback to English...");
           const fallbackResponse = await fetch(`/locales/en/common.json`);
           if (!fallbackResponse.ok) {
             throw new Error(
@@ -95,7 +91,6 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   // Inicialización - detectar idioma del navegador y cargar traducciones
   useEffect(() => {
     const detectedLocale = detectBrowserLanguage();
-    console.log("Detected locale:", detectedLocale);
     setLocale(detectedLocale);
     Cookies.set(LOCALE_COOKIE_NAME, detectedLocale, { expires: 365 });
     loadTranslations(detectedLocale);

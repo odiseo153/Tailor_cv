@@ -12,7 +12,6 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
    
-    console.log("Datos del session: ",session);
     
     if (!session?.user?.email) {
       
@@ -71,7 +70,6 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    console.log(session);
     if (!session?.user?.email) {
       return NextResponse.json(
         { error: 'No autorizado' },

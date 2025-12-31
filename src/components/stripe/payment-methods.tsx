@@ -129,7 +129,6 @@ function AddPaymentMethodForm({ onSuccess }: { onSuccess: () => void }) {
       if (!paymentMethod) {
         throw new Error('Error al crear el método de pago');
       }
-      console.log("Aui es el error");
 
       // Guardar método de pago en el backend
       await axios.post('/api/stripe/payment-methods', {

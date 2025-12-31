@@ -8,7 +8,6 @@ export async function PUT(request: NextRequest,{ params }: { params: Promise<{ i
     const data = await request.json();
     const jsonData = data;
    const { id } = await params;
-    console.log(id);
 
     const { platform, url, userId } = jsonData;
 

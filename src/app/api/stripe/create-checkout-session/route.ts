@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
         { status: 404 }
       );
     }
-    console.log("llego");
 
     const { priceId, planId } = await req.json();
 

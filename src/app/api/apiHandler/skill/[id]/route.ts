@@ -11,7 +11,6 @@ export async function PUT(request: NextRequest,{ params }: { params: Promise<{ i
     
     const { name, level } = jsonData;
     
-    console.log(id,jsonData);
     if (!name || !level ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }

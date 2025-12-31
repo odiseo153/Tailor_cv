@@ -9,15 +9,6 @@ import HowItWorks from "./components/Home/HowItWorks";
 
 export default function Home() {
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch('/api/groq');
-      const data = await response.json();
-      console.log(data);
-    };
-    fetchData();
-  }, []);
-
   return (
     <div className="min-h-screen ">
       <main>

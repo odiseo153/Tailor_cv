@@ -20,8 +20,6 @@ export class SkillsHandler implements BaseHandler<Skill> {
     }
 
     async create(data: any): Promise<HandlerResult> {
-        console.log(data);
-
         try {
             const newSkill = await prisma.skill.create({
                 data: data

@@ -13,7 +13,6 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'El parametro "id" es requerido' }, { status: 400 });
     }
     
-    console.log(jsonData)
 
     const resultado = await user_handler.update(id,jsonData);
 

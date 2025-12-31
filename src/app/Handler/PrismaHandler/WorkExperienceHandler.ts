@@ -21,7 +21,6 @@ export class WorkExperienceHandler implements BaseHandler<WorkExperience> {
     }
 
     async create(data: any): Promise<HandlerResult> {
-        console.log(data);
         try {
             const newWork = await prisma.workExperience.create({ data });
 
@@ -40,8 +39,6 @@ export class WorkExperienceHandler implements BaseHandler<WorkExperience> {
             if (data.startDate) updateData.startDate = new Date(data.startDate);
             if (data.endDate) updateData.endDate = new Date(data.endDate);
             if (data.description) updateData.description = data.description;
-
-            console.log(updateData);
 
             const updatedWork = await prisma.workExperience.update({
                 where: { id },

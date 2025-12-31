@@ -11,11 +11,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid request body: Missing Data or formData' }, { status: 400 });
     }
 
-    console.log(Data);
     const jsonData = Data.formData;
 
     let { company, jobTitle, startDate, endDate, description, userId } = jsonData;
-    console.log(jsonData);
     if (!company || !jobTitle || !startDate || !description || !userId) {
       return NextResponse.json({ error: 'Missing parameters', params: jsonData }, { status: 400 });
     }
