@@ -230,6 +230,11 @@
   },
   "cv_generator": {
     "title": "Create your <span>Personalized Resume</span>",
+    "ai_model": {
+      "label": "AI Model",
+      "placeholder": "Auto (with fallback)",
+      "description": "Select a model or use auto-fallback if one fails."
+    },
     "career": {
       "label": "Career you belong to",
       "placeholder": "E.g. Software Engineering, Digital Marketing, etc."

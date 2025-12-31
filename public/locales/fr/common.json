@@ -229,6 +229,11 @@
   },
   "cv_generator": {
     "title": "Créez votre <span>CV Personnalisé</span>",
+    "ai_model": {
+      "label": "Modèle IA",
+      "placeholder": "Auto (avec repli)",
+      "description": "Sélectionnez un modèle ou utilisez le repli automatique en cas d'échec."
+    },
     "career": {
       "label": "Carrière à laquelle vous appartenez",
       "placeholder": "Ex. Ingénierie Logicielle, Marketing Digital, etc."

@@ -224,6 +224,11 @@
   },
   "cv_generator": {
     "title": "创建您的<span>定制简历</span>",
+    "ai_model": {
+      "label": "AI 模型",
+      "placeholder": "自动（带备用）",
+      "description": "选择模型或使用自动备用（如果失败）。"
+    },
     "career": {
       "label": "您所属的职业领域",
       "placeholder": "例如：软件工程、数字营销等"

@@ -229,6 +229,11 @@
   },
   "cv_generator": {
     "title": "Crea tu <span>CV Personalizado</span>",
+    "ai_model": {
+      "label": "Modelo de IA",
+      "placeholder": "Auto (con respaldo)",
+      "description": "Selecciona un modelo o usa auto-respaldo si uno falla."
+    },
     "career": {
       "label": "Carrera a la que perteneces",
       "placeholder": "Ej. Ingeniería de Software, Marketing Digital, etc."
