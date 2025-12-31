@@ -1,8 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import Cookies from 'js-cookie';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
+import { useRouter, usePathname } from "next/navigation";
+import Cookies from "js-cookie";
 
 // Tipos para el contexto
 interface I18nContextType {
@@ -13,7 +19,7 @@ interface I18nContextType {
 
 // Valores por defecto
 const defaultContextValue: I18nContextType = {
-  locale: 'en',
+  locale: "en",
   changeLocale: () => {},
   t: (key: string) => key,
 };
@@ -22,23 +28,22 @@ const defaultContextValue: I18nContextType = {
 const I18nContext = createContext<I18nContextType>(defaultContextValue);
 
 // Idiomas soportados
-const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'zh'];
-const DEFAULT_LOCALE = 'en';
-const LOCALE_COOKIE_NAME = 'NEXT_LOCALE';
+const SUPPORTED_LOCALES = ["en", "es", "fr", "zh"];
+const DEFAULT_LOCALE = "en";
+const LOCALE_COOKIE_NAME = "NEXT_LOCALE";
 
 export const detectBrowserLanguage = (): string => {
-   if (typeof window === 'undefined') return DEFAULT_LOCALE;
-   
-   const savedLocale = Cookies.get(LOCALE_COOKIE_NAME);
-   if (savedLocale && SUPPORTED_LOCALES.includes(savedLocale)) {
-     return savedLocale;
-   }
+  if (typeof window === "undefined") return DEFAULT_LOCALE;
 
-   const browserLang = window.navigator.language.split('-')[0];
-   return SUPPORTED_LOCALES.includes(browserLang) ? browserLang : DEFAULT_LOCALE;
- };
+  const savedLocale = Cookies.get(LOCALE_COOKIE_NAME);
+  if (savedLocale && SUPPORTED_LOCALES.includes(savedLocale)) {
+    return savedLocale;
+  }
 
- 
+  const browserLang = window.navigator.language.split("-")[0];
+  return SUPPORTED_LOCALES.includes(browserLang) ? browserLang : DEFAULT_LOCALE;
+};
+
 export const I18nProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -52,24 +57,36 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await fetch(`/locales/${localeToLoad}/common.json`);
       if (!response.ok) {
-        throw new Error(`Failed to load translations for ${localeToLoad}`);
+        throw new Error(
+          `Failed to load translations for ${localeToLoad}, status: ${response.status}`
+        );
       }
       const commonTranslations = await response.json();
+      console.log(
+        `Translations loaded for ${localeToLoad}`,
+        Object.keys(commonTranslations)
+      );
       setTranslations({
         common: commonTranslations,
       });
     } catch (error) {
       console.error(`Failed to load translations for ${localeToLoad}:`, error);
       // Fallback to English if the requested locale fails
-      if (localeToLoad !== 'en') {
+      if (localeToLoad !== "en") {
         try {
+          console.log("Attempting fallback to English...");
           const fallbackResponse = await fetch(`/locales/en/common.json`);
+          if (!fallbackResponse.ok) {
+            throw new Error(
+              `Failed to load fallback translations, status: ${fallbackResponse.status}`
+            );
+          }
           const fallbackTranslations = await fallbackResponse.json();
           setTranslations({
             common: fallbackTranslations,
           });
         } catch (fallbackError) {
-          console.error('Failed to load fallback translations:', fallbackError);
+          console.error("Failed to load fallback translations:", fallbackError);
         }
       }
     }
@@ -78,7 +95,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   // Inicialización - detectar idioma del navegador y cargar traducciones
   useEffect(() => {
     const detectedLocale = detectBrowserLanguage();
-    console.log('Detected locale:', detectedLocale);
+    console.log("Detected locale:", detectedLocale);
     setLocale(detectedLocale);
     Cookies.set(LOCALE_COOKIE_NAME, detectedLocale, { expires: 365 });
     loadTranslations(detectedLocale);
@@ -90,11 +107,11 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
       console.error(`Locale ${newLocale} not supported`);
       return;
     }
-    
+
     setLocale(newLocale);
     Cookies.set(LOCALE_COOKIE_NAME, newLocale, { expires: 365 });
     loadTranslations(newLocale);
-    
+
     // Actualizar la URL con el nuevo locale
     const url = pathname;
     if (url) {
@@ -103,15 +120,14 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Función de traducción simplificada
-  const t = (key: string, namespace = 'common'): string => {
-    const keys = key.split('.');
+  const t = (key: string, namespace = "common"): string => {
+    const keys = key.split(".");
     let current: any = translations[namespace] || {};
-    
+
     for (const k of keys) {
-      if (current && typeof current === 'object' && k in current) {
+      if (current && typeof current === "object" && k in current) {
         current = current[k];
       } else {
-        console.warn(`Translation missing for key: ${key} in locale: ${locale}`);
         return key; // Fallback a la clave si no se encuentra traducción
       }
     }
@@ -126,11 +142,9 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <I18nContext.Provider value={contextValue}>
-      {children}
-    </I18nContext.Provider>
+    <I18nContext.Provider value={contextValue}>{children}</I18nContext.Provider>
   );
 };
 
 // Hook para usar el contexto de i18n
-export const useI18n = () => useContext(I18nContext); 
+export const useI18n = () => useContext(I18nContext);

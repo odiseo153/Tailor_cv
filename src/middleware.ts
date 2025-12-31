@@ -26,29 +26,32 @@ const authRoutes = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
+
   // Verificar si es una ruta pública o de recursos estáticos sin necesidad de verificar token
-  const isStaticAsset = pathname.includes('/_next') || 
-                       pathname.includes('/images') || 
-                       pathname.endsWith('.ico') || 
-                       pathname.endsWith('.png') || 
-                       pathname.endsWith('.jpg') ||
-                       pathname.includes('/api/auth');
+  const isStaticAsset = pathname.includes('/_next') ||
+    pathname.includes('/images') ||
+    pathname.includes('/locales') ||
+    pathname.endsWith('.ico') ||
+    pathname.endsWith('.png') ||
+    pathname.endsWith('.jpg') ||
+    pathname.endsWith('.json') ||
+    pathname.includes('/api/auth');
 
   const isPublicRoute = publicRoutes.some(route =>
-    pathname === route || pathname.startsWith(route)
+    route === '/' ? pathname === route : pathname.startsWith(route)
   );
 
-  // No verificar token para recursos estáticos o rutas públicas - esto mejora el rendimiento
   if (isStaticAsset || isPublicRoute) {
     return NextResponse.next();
   }
+
 
   // 🔐 Obtener token del usuario autenticado con opciones optimizadas
   try {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET,
+      secret: process.env.NEXT_PUBLIC_API_NEXTAUTH_SECRET,
       secureCookie: process.env.NODE_ENV === 'production',
       cookieName: "next-auth.session-token",
     });
@@ -61,6 +64,7 @@ export async function middleware(request: NextRequest) {
 
     // 🔐 Redirigir si el usuario NO tiene sesión y la ruta NO es pública
     if (!token) {
+      console.log("El token no existe", token);
       const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('callbackUrl', request.url);
       return NextResponse.redirect(loginUrl);

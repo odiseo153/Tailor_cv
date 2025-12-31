@@ -1,35 +1,36 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { WorkExperienceHandler } from '@/app/Handler/PrismaHandler/WorkExperienceHandler';
 
-const prisma = new PrismaClient();
+const work_handler = new WorkExperienceHandler();
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    
+
     if (!id) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: false,
         error: 'ID de usuario requerido'
       }, { status: 400 });
     }
 
-    // Obtener todas las experiencias laborales del usuario
-    const workExperiences = await prisma.workExperience.findMany({
-      where: { userId: id },
-      orderBy: { startDate: 'desc' }
-    });
+    // Obtener todas las experiencias laborales del usuario usando el handler
+    const result = await work_handler.get(id);
 
-    return NextResponse.json({ 
+    if (!result.success) {
+      throw new Error(typeof result.data === 'string' ? result.data : 'Error al obtener experiencias');
+    }
+
+    return NextResponse.json({
       success: true,
-      experiences: workExperiences
+      experiences: result.data
     });
 
   } catch (error: any) {
     console.error("Error obteniendo experiencias del usuario:", error);
-    return NextResponse.json({ 
-      success: false, 
+    return NextResponse.json({
+      success: false,
       error: 'Error al obtener experiencias: ' + (error.message || 'Error desconocido')
     }, { status: 500 });
   }
-} 
+}

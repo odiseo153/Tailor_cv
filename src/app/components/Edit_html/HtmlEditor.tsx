@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import { useState, Suspense, lazy, useRef } from "react"
-import { generatePdf } from "./htmlToPdf"
-import { generateWord } from "./htmlToWord"
-import { optimizeHtmlForExport, validateHtmlForExport } from "./ExportManager"
-import { Download, Loader2, AlertCircle } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsContent } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Editor } from "./EditView"
-import dynamic from "next/dynamic"
+import { useState, Suspense, lazy, useRef } from "react";
+import { generatePdf } from "./htmlToPdf";
+import { generateWord } from "./htmlToWord";
+import { optimizeHtmlForExport, validateHtmlForExport } from "./ExportManager";
+import { Download, Loader2, AlertCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Editor } from "./EditView";
+import dynamic from "next/dynamic";
 
 // Importaciones dinámicas para mejorar el rendimiento
-const CodeEditor = lazy(() => import("./CodeEditor"))
+const CodeEditor = lazy(() => import("./CodeEditor"));
 // Importamos CanvaEditor solo cuando se active la pestaña, no al inicio
 const CanvaEditor = dynamic(() => import("./CanvaEditor"), {
   ssr: false,
@@ -21,47 +21,57 @@ const CanvaEditor = dynamic(() => import("./CanvaEditor"), {
       <div className="text-center">
         <Loader2 className="h-10 w-10 animate-spin text-gray-500 mx-auto mb-4" />
         <p className="text-gray-600">Inicializando editor avanzado...</p>
-        <p className="text-sm text-gray-500 mt-2">Por favor espere, esto puede tardar unos segundos</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Por favor espere, esto puede tardar unos segundos
+        </p>
       </div>
     </div>
-  )
-})
+  ),
+});
+
+// Importacion del nuevo CanvasEditor
+const CanvasEditor = dynamic(() => import("./CustomCanvas/CanvasEditor"), {
+  ssr: false,
+  loading: () => (
+    <div className="text-center p-4">Cargando modo interactivo...</div>
+  ),
+});
 
 interface HtmlEditorProps {
-  initialHtml: string
+  initialHtml: string;
 }
 
 export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
-  const [html, setHtml] = useState(initialHtml)
-  const [activeTab, setActiveTab] = useState("preview")
-  const [downloadType, setDownloadType] = useState("pdf")
-  const [css, setCss] = useState("")
-  const [loadCanvaEditor, setLoadCanvaEditor] = useState(false)
+  const [html, setHtml] = useState(initialHtml);
+  const [activeTab, setActiveTab] = useState("preview");
+  const [downloadType, setDownloadType] = useState("pdf");
+  const [css, setCss] = useState("");
+  const [loadCanvaEditor, setLoadCanvaEditor] = useState(false);
 
-  const handleHtmlChange = (newHtml: string) => setHtml(newHtml)
+  const handleHtmlChange = (newHtml: string) => setHtml(newHtml);
 
   const handleCanvaEditorSave = (newHtml: string, newCss: string) => {
-    setHtml(newHtml)
-    setCss(newCss)
-  }
+    setHtml(newHtml);
+    setCss(newCss);
+  };
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value)
+    setActiveTab(value);
     // Solo cargar el editor Canva cuando el usuario selecciona esa pestaña
     if (value === "canva") {
-      setLoadCanvaEditor(false)
+      setLoadCanvaEditor(true);
     }
-  }
+  };
 
-  const previewRef = useRef<HTMLDivElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null);
 
-  const [validationIssues, setValidationIssues] = useState<string[]>([])
-  const [showAdvancedExport, setShowAdvancedExport] = useState(false)
+  const [validationIssues, setValidationIssues] = useState<string[]>([]);
+  const [showAdvancedExport, setShowAdvancedExport] = useState(false);
 
-  const [isDownloading, setIsDownloading] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = async () => {
-    setIsDownloading(true)
+    setIsDownloading(true);
     try {
       // Crear un documento completo con HTML y CSS
       const fullHtml = `
@@ -75,44 +85,42 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
             ${html}
           </body>
         </html>
-      `
+      `;
 
       // Validate HTML before export
-      const validation = validateHtmlForExport(fullHtml)
+      const validation = validateHtmlForExport(fullHtml);
       if (!validation.valid) {
-        setValidationIssues(validation.issues)
-        setIsDownloading(false)
-        return
+        setValidationIssues(validation.issues);
+        setIsDownloading(false);
+        return;
       }
 
       // Optimize HTML for better export quality
-      const optimizedHtml = optimizeHtmlForExport(fullHtml)
-
+      const optimizedHtml = optimizeHtmlForExport(fullHtml);
 
       if (downloadType === "pdf") {
-        const result = await generatePdf(optimizedHtml)
+        const result = await generatePdf(optimizedHtml);
         if (result && result.blob) {
-          const url = window.URL.createObjectURL(result.blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = 'cv.pdf'
-          document.body.appendChild(a)
-          a.click()
-          window.URL.revokeObjectURL(url)
-          document.body.removeChild(a)
+          const url = window.URL.createObjectURL(result.blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "cv.pdf";
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
         }
       } else if (downloadType === "word") {
         await generateWord(optimizedHtml, {
-          filename: 'cv.docx'
-        })
+          filename: "cv.docx",
+        });
       }
     } catch (error) {
-      console.error("Error downloading:", error)
+      console.error("Error downloading:", error);
     } finally {
-      setIsDownloading(false)
+      setIsDownloading(false);
     }
-  }
-
+  };
 
   return (
     <Card className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 shadow-xl rounded-3xl overflow-hidden">
@@ -128,7 +136,8 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
                 className="w-full px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               >
                 <option value="preview">Preview</option>
-                <option value="canva">Editor de Texto Enriquecido</option>
+                <option value="canva">Editor Visual (Legacy)</option>
+                <option value="interactive">Canvas Style (Beta)</option>
                 <option value="code">Code Editor</option>
               </select>
             </div>
@@ -160,13 +169,14 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
           </div>
         </div>
 
-
         {/* Validation Issues */}
         {validationIssues.length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <AlertCircle className="w-5 h-5 text-red-600" />
-              <h4 className="text-red-800 font-semibold">Export Validation Issues</h4>
+              <h4 className="text-red-800 font-semibold">
+                Export Validation Issues
+              </h4>
             </div>
             <ul className="text-red-700 text-sm space-y-1">
               {validationIssues.map((issue, index) => (
@@ -197,15 +207,31 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
           }
         >
           <Tabs value={activeTab} className="flex-grow">
-
             <TabsContent value="code" className="h-full">
               <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border border-gray-200">
                 <CodeEditor htmlView={html} onChange={handleHtmlChange} />
               </div>
             </TabsContent>
 
+            <TabsContent value="canva" className="h-full">
+              <div className="h-full w-full rounded-lg overflow-hidden shadow-inner border border-gray-200 bg-white">
+                {loadCanvaEditor && (
+                  <CanvaEditor html={html} onSave={handleCanvaEditorSave} />
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="interactive" className="h-full">
+              <div className="h-full w-full rounded-lg overflow-hidden border border-gray-200 shadow-inner bg-gray-50">
+                <CanvasEditor initialHtml={html} />
+              </div>
+            </TabsContent>
+
             <TabsContent value="preview" className="h-full">
-              <div ref={previewRef} className="h-full w-full rounded-lg overflow-hidden border border-gray-200 shadow-inner bg-white">
+              <div
+                ref={previewRef}
+                className="h-full w-full rounded-lg overflow-hidden border border-gray-200 shadow-inner bg-white"
+              >
                 <iframe
                   srcDoc={`
                     <html>
@@ -224,5 +250,5 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
         </Suspense>
       </CardContent>
     </Card>
-  )
+  );
 }

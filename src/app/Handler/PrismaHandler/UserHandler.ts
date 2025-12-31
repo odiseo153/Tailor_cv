@@ -6,7 +6,7 @@ import { prisma } from '@/lib/utils';
 
 
 export class UserHandler implements BaseHandler<User> {
-    async create(data: any):Promise<HandlerResult> {
+    async create(data: any): Promise<HandlerResult> {
         try {
             const newUser = await prisma.user.create({
                 data: data,
@@ -25,7 +25,7 @@ export class UserHandler implements BaseHandler<User> {
         }
     }
 
-    async update(id: string, data: any):Promise<HandlerResult>{
+    async update(id: string, data: any): Promise<HandlerResult> {
         try {
             const existingUser = await prisma.user.findUnique({
                 where: { id }
@@ -43,7 +43,7 @@ export class UserHandler implements BaseHandler<User> {
                 location: data.location || existingUser.location,
                 profilePicture: data.profilePicture || existingUser.profilePicture,
             };
- 
+
             const updatedUser = await prisma.user.update({
                 where: { id },
                 data: mergedData,
@@ -55,12 +55,12 @@ export class UserHandler implements BaseHandler<User> {
             return { success: false, data: `User update failed: ${error}` };
         }
     }
-    
+
     async delete(id: string): Promise<HandlerResult> {
         try {
             await prisma.user.delete({ where: { id } });
 
-            const result: HandlerResult = { success: true};
+            const result: HandlerResult = { success: true };
 
             return result;
         } catch (error) {
@@ -68,7 +68,7 @@ export class UserHandler implements BaseHandler<User> {
             return { success: false, data: `User deleted failed: ${error}` };
         }
     }
-    
+
     async getById(id: string): Promise<User | null> {
         try {
             const user = await prisma.user.findUnique({
@@ -81,10 +81,23 @@ export class UserHandler implements BaseHandler<User> {
                     cvPreferences: true,
                 }
             });
-            
+
             return user;
         } catch (error) {
             console.error("Error fetching user by ID:", error);
+            return null;
+        }
+    }
+
+    async getUserProfile(id: string): Promise<User | null> {
+        try {
+            const user = await prisma.user.findUnique({
+                where: { id }
+            });
+
+            return user;
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
             return null;
         }
     }

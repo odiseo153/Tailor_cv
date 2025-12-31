@@ -5,9 +5,23 @@ import { PrismaClient, Skill } from '@prisma/client';
 
 
 export class SkillsHandler implements BaseHandler<Skill> {
+    async get(userId: string): Promise<HandlerResult> {
+        try {
+            const skills = await prisma.skill.findMany({
+                where: { userId: userId },
+                orderBy: { name: 'asc' }
+            });
+
+            return { success: true, data: skills };
+        } catch (error) {
+            console.error("Skill fetching failed:", error);
+            return { success: false, data: "Skill fetching failed" };
+        }
+    }
+
     async create(data: any): Promise<HandlerResult> {
         console.log(data);
-        
+
         try {
             const newSkill = await prisma.skill.create({
                 data: data
@@ -23,37 +37,30 @@ export class SkillsHandler implements BaseHandler<Skill> {
 
     async update(id: string, data: any): Promise<HandlerResult> {
         try {
-            const existingSkill = await prisma.skill.findUnique({
-                where: { id }
-            });
+            const updateData: any = {};
+            if (data.name) updateData.name = data.name;
+            if (data.level) updateData.level = data.level;
 
-            if (!existingSkill) {
-                return { success: false, data: "Skill not found" };
-            }
-
-            // Merge existing user data with new data, keeping existing values if new data is empty
-            const mergedData = {
-                name: data.name || existingSkill.name,
-                level: data.level || existingSkill.level,
-            };
- 
             const updatedSkill = await prisma.skill.update({
                 where: { id },
-                data: mergedData,
+                data: updateData,
             });
 
             return { success: true, data: updatedSkill };
-        } catch (error) {
+        } catch (error: any) {
             console.error("Skill update failed:", error);
-            return { success: false, data: `Skill update failed: ${error}` };
+            if (error.code === 'P2025') {
+                return { success: false, data: "Skill not found" };
+            }
+            return { success: false, data: `Skill update failed: ${error.message}` };
         }
     }
-    
+
     async delete(id: string): Promise<HandlerResult> {
         try {
             await prisma.skill.delete({ where: { id } });
 
-            const result: HandlerResult = { success: true};
+            const result: HandlerResult = { success: true };
 
             return result;
         } catch (error) {
@@ -61,7 +68,7 @@ export class SkillsHandler implements BaseHandler<Skill> {
             return { success: false, data: `Skill delete failed: ${error}` };
         }
     }
-    
+
 }
 
 

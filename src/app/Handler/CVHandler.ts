@@ -1,10 +1,8 @@
-import { OpenAI } from "openai";
 import { jsonrepair } from "jsonrepair";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { validation_prompt } from "../utils/cv_validations";
 import { CVAnalysisResult } from "../types/cv-analysis";
-import { generateLanguageInstruction, generateCVLanguageInstruction, getLanguageConfig } from "../utils/language-helper";
-
+import { generateLanguageInstruction, generateCVLanguageInstruction } from "../utils/language-helper";
 
 export interface ProgressCallback {
   onProgress?: (progress: number) => void;
@@ -12,36 +10,44 @@ export interface ProgressCallback {
   onTemplateProcessed?: () => void;
 }
 
+export interface AIModelConfig {
+  provider: "groq" | "openrouter";
+  modelId: string;
+}
+
 const API_CONFIG = {
-  DEEPSEEK: {
-    key: process.env.NEXT_PUBLIC_API_URL_DEESEEK ?? "",
-    url: "https://api.deepseek.com",
-  },
   GEMINI: {
     key: process.env.NEXT_PUBLIC_API_URL_GEMINIS ?? "",
     model: "gemini-flash-latest",
   },
-  GPT: {
-    key: process.env.NEXT_PUBLIC_API_GPT_API_KEY ?? "",
-    url: "https://api.openai.com/v1",
-    model: "gpt-5",
-  },
-  OPENROUTER: {
-    key: process.env.NEXT_PUBLIC_API_OPENROUTER ?? "",
-    url: "https://openrouter.ai/api/v1",
-    model: "openai/gpt-4.1-mini",
-  },
 };
-
-const openAIClient = new OpenAI({
-  apiKey: API_CONFIG.OPENROUTER.key,
-  baseURL: API_CONFIG.OPENROUTER.url,
-  dangerouslyAllowBrowser: true, // Consider removing for production
-});
-
 
 const genAI = new GoogleGenerativeAI(API_CONFIG.GEMINI.key);
 const CSS_FRAMEWORK = "CSS";
+
+// Call AI via server-side API route (avoids CSP issues)
+async function callAIWithFallback(
+  messages: { role: "system" | "user"; content: string }[],
+  config?: AIModelConfig
+): Promise<string> {
+  const res = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      messages,
+      provider: config?.provider,
+      modelId: config?.modelId,
+    }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || "AI request failed");
+  }
+
+  const data = await res.json();
+  return data.content;
+}
 
 export class CVHandler {
   private async fileToBase64(file: File): Promise<string> {
@@ -52,6 +58,8 @@ export class CVHandler {
       reader.readAsDataURL(file);
     });
   }
+
+  
 
   private cleanGeneratedContent(raw: string, type: "html" | "json"): string {
     return raw
@@ -149,7 +157,8 @@ export class CVHandler {
     carrera: string = "",
     foto: string = "",
     progressCallback?: ProgressCallback,
-    language: string = "en"
+    language: string = "en",
+    modelConfig?: AIModelConfig
   ): Promise<string> {
 
     const systemPrompt = `
@@ -239,20 +248,15 @@ export class CVHandler {
 
     progressCallback?.onProgress?.(85);
     try {
-      const response = await openAIClient.chat.completions.create({
-        model: API_CONFIG.OPENROUTER.model,
-        messages: [
+      const content = await callAIWithFallback(
+        [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      });
-
-      if (!response.choices?.[0]?.message?.content) throw new Error("Empty response from model");
+        modelConfig
+      );
       progressCallback?.onProgress?.(95);
-
-      return this.cleanGeneratedContent(response.choices[0].message.content, "html");
+      return this.cleanGeneratedContent(content, "html");
     } catch (error) {
       console.error("Error generating CV:", error);
       throw new Error(`CV generation failed: ${error}`);
@@ -264,16 +268,9 @@ export class CVHandler {
     jobTitle: string,
     industry: string,
     progressCallback?: ProgressCallback,
-    language: string = "en"
+    language: string = "en",
+    modelConfig?: AIModelConfig
   ): Promise<CVAnalysisResult> {
-
-    const model = genAI.getGenerativeModel({
-      model: API_CONFIG.GEMINI.model,
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 4000
-      }
-    });
 
     const systemPrompt = `
 You are an expert CV consultant and career advisor with deep expertise in resume optimization, ATS systems, and modern recruitment practices. Your role is to analyze CVs and provide comprehensive, actionable improvement recommendations.
@@ -400,68 +397,40 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional te
 
     progressCallback?.onProgress?.(25);
     try {
-      const result = await model.generateContent([
-        { text: systemPrompt },
-        { text: userPrompt }
-      ]);
-
+      const rawResponse = await callAIWithFallback(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        modelConfig
+      );
       progressCallback?.onProgress?.(75);
-      console.log("System result:", result);
-      const rawResponse = (await result.response).text();
       const responseText = this.cleanGeneratedContent(rawResponse, "json");
       progressCallback?.onProgress?.(90);
 
-      // Try to parse JSON with better error handling
       let analysisResult;
       try {
         analysisResult = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError);
-        console.error("Raw response:", responseText);
-
-        // Try to repair JSON using jsonrepair
+      } catch {
         try {
-          const repairedJson = jsonrepair(responseText);
-          analysisResult = JSON.parse(repairedJson);
-        } catch (repairError) {
-          console.error("JSON repair failed:", repairError);
-
-          // Provide a fallback response structure
-          const fallbackResponse = {
+          analysisResult = JSON.parse(jsonrepair(responseText));
+        } catch {
+          return {
             overallScore: 50,
-            overallExplanation: "Unable to complete full analysis due to response formatting issues.",
-            visual: {
-              score: 50,
-              explanation: "Analysis incomplete - please try again.",
-              suggestions: []
-            },
-            structural: {
-              score: 50,
-              explanation: "Analysis incomplete - please try again.",
-              suggestions: []
-            },
-            content: {
-              score: 50,
-              explanation: "Analysis incomplete - please try again.",
-              suggestions: [],
-              missingKeywords: [],
-              recommendedKeywords: []
-            },
+            overallExplanation: "Analysis incomplete - please try again.",
+            visual: { score: 50, explanation: "Analysis incomplete.", suggestions: [] },
+            structural: { score: 50, explanation: "Analysis incomplete.", suggestions: [] },
+            content: { score: 50, explanation: "Analysis incomplete.", suggestions: [], missingKeywords: [], recommendedKeywords: [] },
             actionPlan: [],
             improvedSamples: [],
             resources: [],
             analysisDate: new Date().toISOString(),
-            jobTitle: jobTitle,
-            industry: industry
+            jobTitle,
+            industry,
           };
-
-          console.warn("Using fallback response due to JSON parsing failure");
-          return fallbackResponse;
         }
       }
-
       progressCallback?.onProgress?.(100);
-
       return analysisResult;
     } catch (error) {
       console.error("Error analyzing CV:", error);
@@ -478,7 +447,8 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional te
     foto?: string,
     templateId?: string,
     progressCallback?: ProgressCallback,
-    language: string = "en"
+    language: string = "en",
+    modelConfig?: AIModelConfig
   ): Promise<{ html: string }> {
     progressCallback?.onProgress?.(5);
     try {
@@ -511,7 +481,8 @@ CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional te
         carrera,
         foto,
         progressCallback,
-        language
+        language,
+        modelConfig
       );
 
       progressCallback?.onProgress?.(100);

@@ -1,13 +1,22 @@
+'use client'
+
+import { useEffect } from "react";
 import About from "./components/Home/About";
 import Benefits from "./components/Home/Benefits";
 import ContactSection from "./components/Home/Contact";
 import HeroSection from "./components/Home/HeroSection";
 import HowItWorks from "./components/Home/HowItWorks";
-import PricingPage from "./components/Home/PricingSection";
-
-
 
 export default function Home() {
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('/api/groq');
+      const data = await response.json();
+      console.log(data);
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen ">
@@ -22,9 +31,9 @@ export default function Home() {
           <HowItWorks />
         </section>
         <section id="benefits">
-          <Benefits /> 
+          <Benefits />
         </section>
-      
+
         <section id="contact">
           <ContactSection />
         </section>

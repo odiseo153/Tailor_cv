@@ -35,10 +35,10 @@ const LoadingCard = memo<{ title: string }>(({ title }) => (
 LoadingCard.displayName = 'LoadingCard';
 
 // Memoized ErrorCard component
-const ErrorCard = memo<{ title: string; error: string; onRetry?: () => void }>(({ 
-  title, 
-  error, 
-  onRetry 
+const ErrorCard = memo<{ title: string; error: string; onRetry?: () => void }>(({
+  title,
+  error,
+  onRetry
 }) => (
   <Card className="transition-all duration-300 bg-card border hover:shadow-md">
     <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -50,7 +50,7 @@ const ErrorCard = memo<{ title: string; error: string; onRetry?: () => void }>((
         <AlertDescription className="flex items-center justify-between">
           <span>{error}</span>
           {onRetry && (
-            <button 
+            <button
               onClick={onRetry}
               className="text-sm underline hover:no-underline"
             >
@@ -70,7 +70,7 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
   const { t } = useI18n();
   const { data: session, update, status } = useSession() as {
     data: Session | null;
-    update: (data: Partial<Session["user"]>) => Promise<Session | null>;
+    update: (data: Partial<Session["user"]> | { user: Partial<Session["user"]> }) => Promise<Session | null>;
     status: "loading" | "authenticated" | "unauthenticated";
   };
 
@@ -125,31 +125,33 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
     try {
       // Use the new /api/profile endpoint
       const updatedUser = await updateProfile(userData);
-      
+
       // Update session with new data
       await update({
-        name: updatedUser.name,
-        email: updatedUser.email,
-        phone: updatedUser.phone,
-        location: updatedUser.location,
-        profilePicture: updatedUser.profilePicture
+        user: {
+          name: updatedUser.name,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          location: updatedUser.location,
+          profilePicture: updatedUser.profilePicture
+        }
       });
 
       // Update optimistic state with server response
       setOptimisticUser(updatedUser);
       setLoadingState('success');
       setIsEditing(false);
-      
+
       // Show success message
       Message.successMessage(t('profile.personal_info.success'));
 
     } catch (error) {
       console.error('Profile update error:', error);
       setLoadingState('error');
-      
+
       // Revert optimistic update
       setOptimisticUser(user as UserType);
-      
+
       const errorMessage = handleApiError(error);
       setError(errorMessage);
       Message.errorMessage(errorMessage);
@@ -168,8 +170,8 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
   // Loading state
   if (status === "loading" || !currentUser) {
     return (
-      <LoadingCard 
-        title={t('profile.personal_info.title')} 
+      <LoadingCard
+        title={t('profile.personal_info.title')}
       />
     );
   }
@@ -177,7 +179,7 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
   // Error state with retry option
   if (error && !isEditing) {
     return (
-      <ErrorCard 
+      <ErrorCard
         title={t('profile.personal_info.title')}
         error={error}
         onRetry={handleRetry}
@@ -202,7 +204,7 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
           className="transition-all duration-300"
         />
       )}
-      
+
       {/* Loading overlay during save operations */}
       {loadingState === 'submitting' && !isEditing && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -218,4 +220,4 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
 
 PersonalInfo.displayName = 'PersonalInfo';
 
-export default PersonalInfo; 
+export default PersonalInfo;

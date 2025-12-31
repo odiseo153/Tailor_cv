@@ -6,6 +6,20 @@ import { prisma } from '@/lib/utils';
 
 
 export class EducationHandler implements BaseHandler<Education> {
+    async get(userId: string): Promise<HandlerResult> {
+        try {
+            const education = await prisma.education.findMany({
+                where: { userId: userId },
+                orderBy: { startDate: 'desc' }
+            });
+
+            return { success: true, data: education };
+        } catch (error) {
+            console.error("Education fetching failed:", error);
+            return { success: false, data: "Education fetching failed" };
+        }
+    }
+
     async create(data: any): Promise<HandlerResult> {
         try {
             const safeData = data && typeof data === 'object' ? data : {};
@@ -27,53 +41,41 @@ export class EducationHandler implements BaseHandler<Education> {
         }
     }
 
-    async update(id: string, data: any):Promise<HandlerResult> {
+    async update(id: string, data: any): Promise<HandlerResult> {
         try {
-            const existingEntity = await prisma.education.findUnique({
-                where: { id }
-            });
+            const updateData: any = {};
+            if (data.institution) updateData.institution = data.institution;
+            if (data.degree) updateData.degree = data.degree;
+            if (data.startDate) updateData.startDate = new Date(data.startDate);
+            if (data.endDate) updateData.endDate = new Date(data.endDate);
 
-            if (!existingEntity) {
-                return {
-                data: "Entity with that Id doesnt exist",
-                success: false,
-                };
-            }
-
-            // Merge existing user data with new data, keeping existing values if new data is empty
-            const mergedData = {
-                institution: data.institution || existingEntity.institution,
-                degree: data.degree || existingEntity.degree,
-                startDate: data.startDate || existingEntity.startDate,
-                endDate: data.endDate || existingEntity.endDate,
-            };
- 
-            const safeData = mergedData && typeof mergedData === 'object' ? mergedData : {};
- 
-            console.log(safeData)
+            console.log(updateData)
             const updatedEducation = await prisma.education.update({
                 where: { id },
-                data: safeData,
+                data: updateData,
             });
 
 
             const result: HandlerResult = { success: true, data: updatedEducation };
 
             return result;
-        } catch (error) {
+        } catch (error: any) {
             console.error("Education update failed:", error);
+            if (error.code === 'P2025') {
+                return { success: false, data: "Education not found" };
+            }
             return {
-                data: "Sometimes happend ",
+                data: "Sometimes happend " + error.message,
                 success: false,
             };
         }
     }
-    
-    async delete(id: string):Promise<HandlerResult> {
+
+    async delete(id: string): Promise<HandlerResult> {
         try {
             await prisma.education.delete({ where: { id } });
 
-            const result: HandlerResult = { success: true};
+            const result: HandlerResult = { success: true };
 
             return result;
         } catch (error) {
@@ -83,6 +85,6 @@ export class EducationHandler implements BaseHandler<Education> {
             };
         }
     }
-    
+
 }
 

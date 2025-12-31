@@ -8,12 +8,15 @@
     "build_local": "next build",
     "start": "next start",
     "seed": "node .\\prisma\\seed.js",
-    "lint": "next lint",
-    "postinstall": "prisma generate"
+    "lint": "next lint"
   },
   "prisma": {},
   "dependencies": {
+    "@ai-sdk/groq": "^3.0.2",
     "@codemirror/lang-html": "^6.4.9",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@google/generative-ai": "^0.24.0",
     "@hookform/resolvers": "^4.0.0",
     "@nextui-org/react": "^2.6.11",
@@ -56,6 +59,7 @@
     "@vercel/analytics": "^1.5.0",
     "@vercel/blob": "^0.23.4",
     "ace-builds": "^1.37.5",
+    "ai": "^6.0.5",
     "autoprefixer": "^10.4.21",
     "axios": "^1.7.9",
     "bcryptjs": "^3.0.2",
@@ -72,6 +76,7 @@
     "grapesjs-blocks-basic": "^1.0.2",
     "grapesjs-preset-webpage": "^1.0.3",
     "grapesjs-style-bg": "^2.0.2",
+    "groq-sdk": "^0.37.0",
     "html-docx-js": "^0.3.1",
     "html-pdf": "^3.0.1",
     "html-to-text": "^9.0.5",

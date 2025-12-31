@@ -6,6 +6,20 @@ import { prisma } from '@/lib/utils';
 
 
 export class SocialLinksHandler implements BaseHandler<SocialLink> {
+    async get(userId: string): Promise<HandlerResult> {
+        try {
+            const socialLinks = await prisma.socialLink.findMany({
+                where: { userId: userId },
+                orderBy: { platform: 'asc' }
+            });
+
+            return { success: true, data: socialLinks };
+        } catch (error) {
+            console.error("Social fetching failed:", error);
+            return { success: false, data: "Social fetching failed" };
+        }
+    }
+
     async create(data: any): Promise<HandlerResult> {
         try {
             const newSocial = await prisma.socialLink.create({
@@ -20,29 +34,22 @@ export class SocialLinksHandler implements BaseHandler<SocialLink> {
 
     async update(id: string, data: any): Promise<HandlerResult> {
         try {
-            const existingSocial = await prisma.socialLink.findUnique({
-                where: { id }
-            });
+            const updateData: any = {};
+            if (data.platform) updateData.platform = data.platform;
+            if (data.url) updateData.url = data.url;
 
-            if (!existingSocial) {
-                return { success: false, data: "Social not found" };
-            }
-
-            // Merge existing user data with new data, keeping existing values if new data is empty
-            const mergedData = {
-                platform: data.platform || existingSocial.platform,
-                url: data.url || existingSocial.url,
-            };
- 
             const updatedSocial = await prisma.socialLink.update({
                 where: { id },
-                data: mergedData,
+                data: updateData,
             });
 
             return { success: true, data: updatedSocial };
-        } catch (error) {
+        } catch (error: any) {
             console.error("Social update failed:", error);
-            return { success: false, data: `Social update failed: ${error}` };
+            if (error.code === 'P2025') {
+                return { success: false, data: "Social not found" };
+            }
+            return { success: false, data: `Social update failed: ${error.message}` };
         }
     }
 
@@ -50,7 +57,7 @@ export class SocialLinksHandler implements BaseHandler<SocialLink> {
         try {
             await prisma.socialLink.delete({ where: { id } });
 
-            const result: HandlerResult = { success: true};
+            const result: HandlerResult = { success: true };
 
             return result;
         } catch (error) {
@@ -58,7 +65,7 @@ export class SocialLinksHandler implements BaseHandler<SocialLink> {
             return { success: false, data: `Social Links deleted failed: ${error}` };
         }
     }
-    
-    
+
+
 }
 

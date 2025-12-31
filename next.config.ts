@@ -11,13 +11,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  i18n: {
-    // Configuración de i18n
-    defaultLocale: 'en',
-    locales: ['en', 'es', 'fr', 'zh'],
-    // No configuramos localeDetection a true para gestionarlo manualmente
-    localeDetection: false,
-  },
+
   experimental: {
     // No experimental flags needed currently
   },

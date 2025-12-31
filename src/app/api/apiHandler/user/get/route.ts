@@ -10,17 +10,17 @@ export async function GET(request: Request) {
     const userId = searchParams.get('id');
 
     if (!userId) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: false,
         error: 'El parámetro "id" es requerido'
       }, { status: 400 });
     }
 
     // Obtener los datos del usuario
-    const user = await user_handler.getById(userId);
+    const user = await user_handler.getUserProfile(userId);
 
     if (!user) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: false,
         error: 'Usuario no encontrado'
       }, { status: 404 });
@@ -29,14 +29,14 @@ export async function GET(request: Request) {
     // Eliminar campos sensibles antes de enviar la respuesta
     const { password, ...userWithoutPassword } = user;
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       data: userWithoutPassword
     });
 
   } catch (error: any) {
     console.error("Error obteniendo datos de usuario:", error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: false,
       error: 'Error al procesar la solicitud: ' + (error.message || 'Error desconocido')
     }, { status: 500 });

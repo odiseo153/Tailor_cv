@@ -14,21 +14,23 @@ import { useI18n } from '../context/I18nContext'
 
 
 export default function Profile() {
-  const { data: session,status } = useSession() as {
+  const { data: session, status } = useSession() as {
     data: Session | null;
-    status: string;
+    status: "loading" | "authenticated" | "unauthenticated";
   }
   const router = useRouter()
   const { t } = useI18n();
 
   useEffect(() => {
-    if (status != "authenticated") {
-      router.push('/api/auth/signin')
+    if (status === "unauthenticated") {
+      router.push('/')
     }
-  }, [session, router,status])
+  }, [status, router])
+  
 
-  if (status == "loading") {
-    return <Loading/>
+  
+  if (status === "loading") {
+    return <Loading />
   }
 
   return (
@@ -42,14 +44,14 @@ export default function Profile() {
                 <CardTitle className="text-xl">{t('profile.quick_actions.title')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                
+
                 <Button asChild variant="outline" className="w-full justify-start hover:bg-gray-100 transition-colors">
                   <Link href="/generar-cv">
                     <FileText className="mr-3 h-5 w-5 text-primary" />
                     {t('profile.quick_actions.generate_cv')}
                   </Link>
                 </Button>
-                
+
                 <Button asChild variant="outline" className="w-full justify-start hover:bg-gray-100 transition-colors">
                   <Link href="/profile/billing">
                     <CreditCard className="mr-3 h-5 w-5 text-primary" />
@@ -60,7 +62,7 @@ export default function Profile() {
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Main content */}
           <div className="lg:col-span-3">
             <ProfessionalProfile />
