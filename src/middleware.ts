@@ -12,6 +12,7 @@ const publicRoutes = [
   '/auth/verify-email',
   '/auth/error',
   '/pricing',
+  '/generar-cv',
   '/api',
   '/_next',
   '/images',
