@@ -31,8 +31,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  CVHandler,
+import type {
+  CVHandler as CVHandlerType,
   ProgressCallback,
   AIModelConfig,
 } from "../Handler/CVHandler";
@@ -181,7 +181,7 @@ export default function GenerarCV() {
   const { data: session } = useSession() as { data: Session | null };
   const { template } = useAppContext();
   const { templateId } = useStore();
-  const cvHandler = new CVHandler();
+  // cvHandler instantiated dynamically
   const { t, locale } = useI18n();
 
   // Fetch AI models
@@ -266,6 +266,10 @@ export default function GenerarCV() {
           setAnalysisState((prev) => ({ ...prev, progress })),
       };
 
+      // Dynamically load CVHandler
+      const { CVHandler } = await import("../Handler/CVHandler");
+      const cvHandler = new CVHandler();
+
       const analysisResult = await cvHandler.analyzeCV(
         fileResult.text,
         analysisFormData.jobTitle,
@@ -347,6 +351,10 @@ export default function GenerarCV() {
           console.error("User data fetch error:", error);
         }
       }
+
+      // Dynamically load CVHandler
+      const { CVHandler } = await import("../Handler/CVHandler");
+      const cvHandler = new CVHandler();
 
       const responseHtml = await cvHandler.crearCV(
         ofertaLaboral,

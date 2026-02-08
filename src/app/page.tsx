@@ -1,14 +1,13 @@
-'use client'
-
-import { useEffect } from "react";
-import About from "./components/Home/About";
-import Benefits from "./components/Home/Benefits";
-import ContactSection from "./components/Home/Contact";
+import dynamic from "next/dynamic";
 import HeroSection from "./components/Home/HeroSection";
-import HowItWorks from "./components/Home/HowItWorks";
+
+// Lazy load non-critical sections below the fold
+const About = dynamic(() => import("./components/Home/About"));
+const Benefits = dynamic(() => import("./components/Home/Benefits"));
+const ContactSection = dynamic(() => import("./components/Home/Contact"));
+const HowItWorks = dynamic(() => import("./components/Home/HowItWorks"));
 
 export default function Home() {
-
   return (
     <div className="min-h-screen ">
       <main>
@@ -30,5 +29,5 @@ export default function Home() {
         </section>
       </main>
     </div>
-  )
+  );
 }

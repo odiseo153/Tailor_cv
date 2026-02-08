@@ -3,11 +3,23 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true, // If you're using strict mode
   images: {
-    unoptimized: true, // or remove the images block entirely to allow all domains by default
+    // Enable optimization by default (remove unoptimized: true)
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "cdn-icons-png.flaticon.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com", // For Google Auth images
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com", // Specific Google content domain
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
       },
     ],
   },
@@ -15,7 +27,9 @@ const nextConfig: NextConfig = {
   experimental: {
     // No experimental flags needed currently
   },
-  webpack: (config: { resolve: { fallback: any; alias?: Record<string, any> }; }) => {
+  webpack: (config: {
+    resolve: { fallback: any; alias?: Record<string, any> };
+  }) => {
     // Handle Node.js dependencies in browser environment
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -23,15 +37,15 @@ const nextConfig: NextConfig = {
       fs: false, // Disable fs module for browser compatibility
       path: false, // Disable path module for browser compatibility
       os: false, // Disable os module for browser compatibility
-      'path2d-polyfill': false, // Ignore path2d-polyfill for browser compatibility
+      "path2d-polyfill": false, // Ignore path2d-polyfill for browser compatibility
     };
 
     // Force browser-safe builds and stub node-only modules
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      canvas: require('path').resolve(__dirname, 'src/shims/canvas-shim.js'),
-      'pdfjs-dist/build/pdf': 'pdfjs-dist/legacy/build/pdf',
-      'pdfjs-dist': 'pdfjs-dist/legacy/build/pdf',
+      canvas: require("path").resolve(__dirname, "src/shims/canvas-shim.js"),
+      "pdfjs-dist/build/pdf": "pdfjs-dist/legacy/build/pdf",
+      "pdfjs-dist": "pdfjs-dist/legacy/build/pdf",
     };
     return config;
   },
@@ -40,19 +54,19 @@ const nextConfig: NextConfig = {
     return [
       {
         // Apply these headers to all routes
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
+            key: "X-XSS-Protection",
+            value: "1; mode=block",
           },
         ],
       },
@@ -61,4 +75,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-
