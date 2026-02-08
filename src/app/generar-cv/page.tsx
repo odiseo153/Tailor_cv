@@ -31,7 +31,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CVHandler, ProgressCallback, AIModelConfig } from "../Handler/CVHandler";
+import {
+  CVHandler,
+  ProgressCallback,
+  AIModelConfig,
+} from "../Handler/CVHandler";
 import { Message } from "../utils/Message";
 import {
   Select,
@@ -51,9 +55,27 @@ import {
   CVAnalysisState,
 } from "../types/cv-analysis";
 import { processUploadedCV, validateCVContent } from "../utils/file-processing";
-import AnalysisResults from "../components/CVAnalysis/AnalysisResults";
-import ThinkingAnimation from "../components/ThinkingAnimation";
+// import AnalysisResults from "../components/CVAnalysis/AnalysisResults";
+// import ThinkingAnimation from "../components/ThinkingAnimation";
 import { generatePdf } from "../components/Edit_html/htmlToPdf";
+import dynamic from "next/dynamic";
+
+const AnalysisResults = dynamic(
+  () => import("../components/CVAnalysis/AnalysisResults"),
+  {
+    loading: () => (
+      <div className="h-96 w-full animate-pulse bg-gray-100 rounded-xl" />
+    ),
+    ssr: false,
+  },
+);
+
+const ThinkingAnimation = dynamic(
+  () => import("../components/ThinkingAnimation"),
+  {
+    ssr: false,
+  },
+);
 
 // Accordion Component
 const AccordionItem = ({
@@ -108,7 +130,7 @@ export default function GenerarCV() {
   const [informacion, setInformacion] = useState("");
   const [data, setData] = useState<{ html: string } | null>(null);
   const [ofertaType, setOfertaType] = useState<"pdf" | "image" | "text">(
-    "text"
+    "text",
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -133,7 +155,7 @@ export default function GenerarCV() {
     setOpenSections((prev) =>
       prev.includes(section)
         ? prev.filter((s) => s !== section)
-        : [...prev, section]
+        : [...prev, section],
     );
   };
 
@@ -172,9 +194,14 @@ export default function GenerarCV() {
 
   const getModelConfig = (): AIModelConfig | undefined => {
     if (!selectedModel || selectedModel === "auto") return undefined;
-    const model = aiModels.find((m) => `${m.provider}:${m.id}` === selectedModel);
+    const model = aiModels.find(
+      (m) => `${m.provider}:${m.id}` === selectedModel,
+    );
     if (!model) return undefined;
-    return { provider: model.provider as "groq" | "openrouter", modelId: model.id };
+    return {
+      provider: model.provider as "groq" | "openrouter",
+      modelId: model.id,
+    };
   };
 
   // Debounce & Auto-update
@@ -245,7 +272,7 @@ export default function GenerarCV() {
         analysisFormData.industry,
         progressCallback,
         locale,
-        getModelConfig()
+        getModelConfig(),
       );
 
       setAnalysisState((prev) => ({
@@ -282,7 +309,7 @@ export default function GenerarCV() {
       ) {
         if (!isSilentUpdate)
           Message.errorMessage(
-            t("cv_generator.job_offer.validation_error.text_empty")
+            t("cv_generator.job_offer.validation_error.text_empty"),
           );
         setIsLoading(false);
         setIsUpdating(false);
@@ -291,7 +318,7 @@ export default function GenerarCV() {
       if (ofertaType !== "text" && typeof ofertaLaboral === "string") {
         if (!isSilentUpdate)
           Message.errorMessage(
-            t("cv_generator.job_offer.validation_error.file_missing")
+            t("cv_generator.job_offer.validation_error.file_missing"),
           );
         setIsLoading(false);
         setIsUpdating(false);
@@ -331,7 +358,7 @@ export default function GenerarCV() {
         templateIdToUse,
         progressCallback,
         locale,
-        getModelConfig()
+        getModelConfig(),
       );
 
       setData(responseHtml);
@@ -342,7 +369,7 @@ export default function GenerarCV() {
       if (!isSilentUpdate)
         Message.errorMessage(
           t("cv_generator.messages.error") +
-            (error.message || "Error desconocido")
+            (error.message || "Error desconocido"),
         );
     } finally {
       setIsLoading(false);
@@ -353,7 +380,7 @@ export default function GenerarCV() {
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     setFile: (file: File | null) => void,
-    setPreview?: (preview: string | null) => void
+    setPreview?: (preview: string | null) => void,
   ) => {
     const file = e.target.files?.[0] || null;
     setFile(file);
@@ -419,27 +446,40 @@ export default function GenerarCV() {
               className="w-[30%] min-w-[320px] max-w-[450px] bg-white border-r flex flex-col shadow-xl z-20"
             >
               <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <AccordionItem
+                <AccordionItem
                   title={t("cv_generator.ai_model.label") || "AI Model"}
                   icon={Sparkles}
                   isOpen={openSections.includes("model")}
                   onToggle={() => toggleSection("model")}
                 >
-                  <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <Select
+                    value={selectedModel}
+                    onValueChange={setSelectedModel}
+                  >
                     <SelectTrigger className="bg-gray-50 border-gray-200 p-5">
-                      <SelectValue placeholder={t("cv_generator.ai_model.placeholder") || "Auto (with fallback)"} />
+                      <SelectValue
+                        placeholder={
+                          t("cv_generator.ai_model.placeholder") ||
+                          "Auto (with fallback)"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
                       <SelectItem value="auto">Auto (fallback)</SelectItem>
                       {aiModels.map((m) => (
-                        <SelectItem key={`${m.provider}:${m.id}`} value={`${m.provider}:${m.id}`}>
-                          <span className="capitalize">[{m.provider}]</span> {m.name}
+                        <SelectItem
+                          key={`${m.provider}:${m.id}`}
+                          value={`${m.provider}:${m.id}`}
+                        >
+                          <span className="capitalize">[{m.provider}]</span>{" "}
+                          {m.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-gray-500 mt-2">
-                    {t("cv_generator.ai_model.description") || "Select a model or use auto-fallback if one fails."}
+                    {t("cv_generator.ai_model.description") ||
+                      "Select a model or use auto-fallback if one fails."}
                   </p>
                 </AccordionItem>
 
@@ -491,7 +531,7 @@ export default function GenerarCV() {
                         value={ofertaLaboral as string}
                         onChange={(e) => setOfertaLaboral(e.target.value)}
                         placeholder={t(
-                          "cv_generator.job_offer.text_placeholder"
+                          "cv_generator.job_offer.text_placeholder",
                         )}
                         className="h-32 bg-gray-50 min-h-[120px]"
                       />

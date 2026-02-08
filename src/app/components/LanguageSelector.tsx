@@ -20,7 +20,11 @@ const languageNames = {
   zh: { name: "中文", flag: "🇨🇳" },
 };
 
-export default function LanguageSelector({ className }: { className?: string }) {
+export default function LanguageSelector({
+  className,
+}: {
+  className?: string;
+}) {
   const { locale, changeLocale, t } = useI18n();
   const [mounted, setMounted] = useState(false);
 
@@ -42,10 +46,12 @@ export default function LanguageSelector({ className }: { className?: string }) 
             variant="outline"
             size="sm"
             className="flex items-center gap-2 px-3"
+            aria-label={t("languageSelector.label") || "Select Language"}
           >
             <Globe className="h-4 w-4" />
             <span className="hidden md:inline-block">
-              {languageNames[locale as keyof typeof languageNames]?.flag || "🌐"}{" "}
+              {languageNames[locale as keyof typeof languageNames]?.flag ||
+                "🌐"}{" "}
               {t("languageSelector.label")}
             </span>
           </Button>
@@ -57,7 +63,7 @@ export default function LanguageSelector({ className }: { className?: string }) 
               onClick={() => changeLocale(code)}
               className={cn(
                 "flex items-center gap-2 cursor-pointer",
-                locale === code && "font-bold bg-primary/10"
+                locale === code && "font-bold bg-primary/10",
               )}
             >
               <span className="mr-1">{flag}</span>
@@ -71,4 +77,4 @@ export default function LanguageSelector({ className }: { className?: string }) 
       <GoogleTranslate />
     </div>
   );
-} 
+}
