@@ -2,10 +2,11 @@
 
 
 # dependencies
-/node_modules
+/node_modules 
 .taskmaster
-.roo
-.cursor
+/.roo/
+/.cursor/
+/.claude/
 /.pnp
 .pnp.*
 .yarn/*
