@@ -233,6 +233,8 @@
     "ai_model": {
       "label": "AI Model",
       "placeholder": "Auto (with fallback)",
+      "search_placeholder": "Search model...",
+      "no_results": "No model matches",
       "description": "Select a model or use auto-fallback if one fails."
     },
     "career": {

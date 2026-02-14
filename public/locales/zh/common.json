@@ -227,6 +227,8 @@
     "ai_model": {
       "label": "AI 模型",
       "placeholder": "自动（带备用）",
+      "search_placeholder": "搜索模型...",
+      "no_results": "没有匹配的模型",
       "description": "选择模型或使用自动备用（如果失败）。"
     },
     "career": {

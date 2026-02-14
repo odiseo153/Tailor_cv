@@ -38,12 +38,10 @@ import type {
 } from "../Handler/CVHandler";
 import { Message } from "../utils/Message";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useAppContext, useStore } from "../context/AppContext";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
@@ -139,6 +137,8 @@ export default function GenerarCV() {
   // AI Model selection
   const [aiModels, setAiModels] = useState<AIModel[]>([]);
   const [selectedModel, setSelectedModel] = useState<string>("");
+  const [modelSearchOpen, setModelSearchOpen] = useState(false);
+  const [modelSearchQuery, setModelSearchQuery] = useState("");
 
   // Layout & UI states
   const [zoom, setZoom] = useState(0.8);
@@ -460,31 +460,115 @@ export default function GenerarCV() {
                   isOpen={openSections.includes("model")}
                   onToggle={() => toggleSection("model")}
                 >
-                  <Select
-                    value={selectedModel}
-                    onValueChange={setSelectedModel}
+                  <Popover
+                    open={modelSearchOpen}
+                    onOpenChange={(open) => {
+                      setModelSearchOpen(open);
+                      if (!open) setModelSearchQuery("");
+                    }}
                   >
-                    <SelectTrigger className="bg-gray-50 border-gray-200 p-5">
-                      <SelectValue
-                        placeholder={
-                          t("cv_generator.ai_model.placeholder") ||
-                          "Auto (with fallback)"
-                        }
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="flex  w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-gray-50 px-3 py-5 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring border-gray-200 [&>span]:line-clamp-1"
+                      >
+                        <span className={!selectedModel ? "text-muted-foreground" : ""}>
+                          {!selectedModel
+                            ? t("cv_generator.ai_model.placeholder") ||
+                              "Auto (with fallback)"
+                            : selectedModel === "auto"
+                              ? "Auto (fallback)"
+                              : (() => {
+                                  const m = aiModels.find(
+                                    (x) => `${x.provider}:${x.id}` === selectedModel
+                                  );
+                                  return m ? (
+                                    <>
+                                      <span className="capitalize">[{m.provider}]</span>{" "}
+                                      {m.name}
+                                    </>
+                                  ) : (
+                                    selectedModel
+                                  );
+                                })()}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[var(--radix-popover-trigger-width)] p-0"
+                      align="start"
+                    >
+                      <Input
+                        placeholder={t("cv_generator.ai_model.search_placeholder") || "Buscar modelo..."}
+                        value={modelSearchQuery}
+                        onChange={(e) => setModelSearchQuery(e.target.value)}
+                        className="border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        autoFocus
                       />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-60">
-                      <SelectItem value="auto">Auto (fallback)</SelectItem>
-                      {aiModels.map((m) => (
-                        <SelectItem
-                          key={`${m.provider}:${m.id}`}
-                          value={`${m.provider}:${m.id}`}
-                        >
-                          <span className="capitalize">[{m.provider}]</span>{" "}
-                          {m.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                      <div className="max-h-60 overflow-auto p-1">
+                        {(modelSearchQuery === "" ||
+                          "auto (fallback)".includes(modelSearchQuery.toLowerCase())) && (
+                          <button
+                            type="button"
+                            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[highlight]:bg-accent data-[highlight]:text-accent-foreground"
+                            onClick={() => {
+                              setSelectedModel("auto");
+                              setModelSearchOpen(false);
+                            }}
+                          >
+                            Auto (fallback)
+                            {selectedModel === "auto" && (
+                              <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                                <Check className="h-4 w-4" />
+                              </span>
+                            )}
+                          </button>
+                        )}
+                        {aiModels
+                          .filter(
+                            (m) =>
+                              modelSearchQuery === "" ||
+                              `${m.provider} ${m.id} ${m.name}`
+                                .toLowerCase()
+                                .includes(modelSearchQuery.toLowerCase())
+                          )
+                          .map((m) => {
+                            const value = `${m.provider}:${m.id}`;
+                            return (
+                              <button
+                                key={value}
+                                type="button"
+                                className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+                                onClick={() => {
+                                  setSelectedModel(value);
+                                  setModelSearchOpen(false);
+                                }}
+                              >
+                                <span className="capitalize">[{m.provider}]</span>{" "}
+                                {m.name}
+                                {selectedModel === value && (
+                                  <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+                                    <Check className="h-4 w-4" />
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        {modelSearchQuery &&
+                          aiModels.filter((m) =>
+                            `${m.provider} ${m.id} ${m.name}`
+                              .toLowerCase()
+                              .includes(modelSearchQuery.toLowerCase())
+                          ).length === 0 &&
+                          !"auto (fallback)".includes(modelSearchQuery.toLowerCase()) && (
+                            <p className="py-4 text-center text-sm text-muted-foreground">
+                              {t("cv_generator.ai_model.no_results") || "Ningún modelo coincide"}
+                            </p>
+                          )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                   <p className="text-xs text-gray-500 mt-2">
                     {t("cv_generator.ai_model.description") ||
                       "Select a model or use auto-fallback if one fails."}

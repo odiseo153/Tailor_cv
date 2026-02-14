@@ -232,6 +232,8 @@
     "ai_model": {
       "label": "Modelo de IA",
       "placeholder": "Auto (con respaldo)",
+      "search_placeholder": "Buscar modelo...",
+      "no_results": "Ningún modelo coincide",
       "description": "Selecciona un modelo o usa auto-respaldo si uno falla."
     },
     "career": {
