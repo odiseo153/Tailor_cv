@@ -73,8 +73,7 @@ export default function LanguageSelector({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Google Translate */}
-      <GoogleTranslate />
+     
     </div>
   );
 }

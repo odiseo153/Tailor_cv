@@ -88,18 +88,5 @@ export class UserHandler implements BaseHandler<User> {
             return null;
         }
     }
-
-    async getUserProfile(id: string): Promise<User | null> {
-        try {
-            const user = await prisma.user.findUnique({
-                where: { id }
-            });
-
-            return user;
-        } catch (error) {
-            console.error("Error fetching user profile:", error);
-            return null;
-        }
-    }
 }
 

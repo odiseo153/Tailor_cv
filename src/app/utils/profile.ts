@@ -74,6 +74,29 @@ export const fetchProfile = async (userId: string): Promise<User> => {
   }
 };
 
+export const uploadProfilePicture = async (userId: string, file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('userId', userId);
+
+  const response = await fetch('/api/profile/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok || !data.success) {
+    throw new Error(data.error || 'Error al subir la imagen');
+  }
+
+  if (!data.url) {
+    throw new Error('No se recibió la URL de la imagen');
+  }
+
+  return data.url;
+};
+
 export const updateProfile = async (profileData: ProfileUpdateRequest): Promise<User> => {
   try {
     const response = await fetch('/api/profile', {

@@ -1,5 +1,20 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { UserHandler } from '@/app/Handler/PrismaHandler/UserHandler';
+
+const UPLOAD_DIR = 'uploads/profile';
+
+async function deleteServerProfilePicture(profilePictureUrl: string | null): Promise<void> {
+  if (!profilePictureUrl || !profilePictureUrl.startsWith(`/${UPLOAD_DIR}/`)) return;
+  const filePath = path.join(process.cwd(), 'public', profilePictureUrl.replace(/^\//, ''));
+  try {
+    await fs.promises.access(filePath);
+    await fs.promises.unlink(filePath);
+  } catch {
+    // File may already be missing; ignore
+  }
+}
 
 interface ProfileUpdateRequest {
   id: string;
@@ -85,13 +100,23 @@ export async function PUT(request: Request): Promise<NextResponse<ProfileRespons
       }, { status: 400 });
     }
 
+    const existingUser = await userHandler.getById(requestData.id);
+    const newPicture = requestData.profilePicture ?? existingUser?.profilePicture ?? '';
+    if (
+      existingUser?.profilePicture &&
+      existingUser.profilePicture.startsWith(`/${UPLOAD_DIR}/`) &&
+      existingUser.profilePicture !== newPicture
+    ) {
+      await deleteServerProfilePicture(existingUser.profilePicture);
+    }
+
     const updateData = {
       id: requestData.id,
       name: requestData.name,
       email: requestData.email,
       phone: requestData.phone || '',
       location: requestData.location || '',
-      profilePicture: requestData.profilePicture || ''
+      profilePicture: newPicture
     };
 
     const result = await userHandler.update(requestData.id, updateData);

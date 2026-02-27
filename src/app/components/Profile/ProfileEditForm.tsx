@@ -10,7 +10,7 @@ import { CheckIcon, X, Loader2, User, Save } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { User as UserType, ProfileFormData, ProfileFormErrors, LoadingState } from '@/app/types/profile';
-import { validateProfileForm, createProfileFormData, createUpdateRequest, handleApiError } from '@/app/utils/profile';
+import { validateProfileForm, createProfileFormData, createUpdateRequest, handleApiError, uploadProfilePicture } from '@/app/utils/profile';
 import { cn } from "@/lib/utils";
 
 interface ProfileEditFormProps {
@@ -129,19 +129,38 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
   const [errors, setErrors] = useState<ProfileFormErrors>({});
   const [loadingState, setLoadingState] = useState<LoadingState>('idle');
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
+  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(user.profilePicture || user.image || null);
+  const [pendingProfilePictureFile, setPendingProfilePictureFile] = useState<File | null>(null);
+  const previewObjectUrlRef = useRef<string | null>(null);
+
   // Refs for form management
   const formRef = useRef<HTMLFormElement>(null);
   const hasChanges = useMemo(() => {
-    return JSON.stringify(formData) !== JSON.stringify(initialFormData);
-  }, [formData, initialFormData]);
+    const formChanged = JSON.stringify(formData) !== JSON.stringify(initialFormData);
+    return formChanged || pendingProfilePictureFile !== null;
+  }, [formData, initialFormData, pendingProfilePictureFile]);
 
   // Reset form data when user changes
   useEffect(() => {
     const newFormData = createProfileFormData(user);
     setFormData(newFormData);
     setErrors({});
+    setProfilePicturePreview(user.profilePicture || user.image || null);
+    setPendingProfilePictureFile(null);
+    if (previewObjectUrlRef.current) {
+      URL.revokeObjectURL(previewObjectUrlRef.current);
+      previewObjectUrlRef.current = null;
+    }
   }, [user]);
+
+  // Cleanup object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewObjectUrlRef.current) {
+        URL.revokeObjectURL(previewObjectUrlRef.current);
+      }
+    };
+  }, []);
 
   // Success state management
   useEffect(() => {
@@ -211,12 +230,16 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
     setSaveSuccess(false);
     
     try {
-      const updateRequest = createUpdateRequest(
-        user.id,
-        formData,
-        user.profilePicture || user.image
-      );
-      
+      let profilePictureUrl: string | undefined = user.profilePicture || user.image;
+      if (pendingProfilePictureFile) {
+        profilePictureUrl = await uploadProfilePicture(user.id, pendingProfilePictureFile);
+        setPendingProfilePictureFile(null);
+        if (previewObjectUrlRef.current) {
+          URL.revokeObjectURL(previewObjectUrlRef.current);
+          previewObjectUrlRef.current = null;
+        }
+      }
+      const updateRequest = createUpdateRequest(user.id, formData, profilePictureUrl);
       await onSave(updateRequest);
       
       setLoadingState('success');
@@ -234,7 +257,7 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
         general: handleApiError(error)
       });
     }
-  }, [validationResult, hasChanges, formData, user, onSave, onCancel]);
+  }, [validationResult, hasChanges, formData, user, pendingProfilePictureFile, onSave, onCancel]);
 
   // Optimized cancel handler
   const handleCancel = useCallback(() => {
@@ -242,8 +265,14 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
     setErrors({});
     setLoadingState('idle');
     setSaveSuccess(false);
+    setPendingProfilePictureFile(null);
+    setProfilePicturePreview(user.profilePicture || user.image || null);
+    if (previewObjectUrlRef.current) {
+      URL.revokeObjectURL(previewObjectUrlRef.current);
+      previewObjectUrlRef.current = null;
+    }
     onCancel();
-  }, [initialFormData, onCancel]);
+  }, [initialFormData, user, onCancel]);
 
   // Memoized form fields configuration
   const formFields = useMemo(() => [
@@ -287,6 +316,20 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
 
   const isLoading = loadingState === 'submitting';
   const isDisabled = isLoading || loadingState === 'success';
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (previewObjectUrlRef.current) {
+        URL.revokeObjectURL(previewObjectUrlRef.current);
+      }
+      const url = URL.createObjectURL(file);
+      previewObjectUrlRef.current = url;
+      setProfilePicturePreview(url);
+      setPendingProfilePictureFile(file);
+    }
+    e.target.value = '';
+  }, []);
 
   return (
     <Card className={cn(
@@ -364,17 +407,45 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
           
           {/* User Avatar Section */}
           <div className="flex flex-col md:flex-row gap-6">
-            <div className="flex-shrink-0 flex justify-center md:justify-start">
-              <Avatar className="h-24 w-24 border-2 border-primary/20 transition-all duration-300">
-                <AvatarImage 
-                  src={user.profilePicture || user.image || ""} 
-                  alt={user.name} 
-                  loading="lazy"
-                />
-                <AvatarFallback className="text-lg bg-primary/10 text-primary">
-                  {user.name?.charAt(0)?.toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
+            <div className="flex-shrink-0 flex flex-col items-center md:items-start gap-2">
+              <div className="relative group">
+                <Avatar className="h-24 w-24 border-2 border-primary/20 transition-all duration-300 shadow-sm">
+                  <AvatarImage
+                    src={profilePicturePreview || ""}
+                    alt={user.name}
+                    loading="lazy"
+                  />
+                  <AvatarFallback className="text-lg bg-primary/10 text-primary">
+                    {user.name?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <label
+                  htmlFor="profile-picture-upload"
+                  className="absolute bottom-0 right-0 cursor-pointer bg-primary text-white rounded-full p-1 shadow transition group-hover:bg-primary/90 border-2 border-white"
+                  title="Change profile picture"
+                  tabIndex={0}
+                  onKeyPress={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      (document.getElementById('profile-picture-upload') as HTMLInputElement | null)?.click();
+                    }
+                  }}
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-1.5A2.5 2.5 0 1115.5 9.5L5 20H2v-3l10.5-10.5z"/>
+                  </svg>
+                  <input
+                    id="profile-picture-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    aria-label="Upload profile picture"
+                  />
+                </label>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                JPG, PNG, max 2MB
+              </span>
             </div>
             
             {/* Form Fields */}
