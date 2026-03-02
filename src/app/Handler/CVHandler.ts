@@ -17,7 +17,7 @@ export interface ProgressCallback {
 }
 
 export interface AIModelConfig {
-  provider: "groq" | "openrouter";
+  provider: "groq" | "openrouter" | "deepseek" | "openai" | "gemini";
   modelId: string;
 }
 

@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
-  CVHandler as CVHandlerType,
   ProgressCallback,
   AIModelConfig,
 } from "../Handler/CVHandler";
@@ -120,6 +119,175 @@ const AccordionItem = ({
 
 type AIModel = { provider: string; id: string; name: string };
 
+// ─── Provider config & icons ────────────────────────────────────────────────
+const PROVIDERS_CONFIG = [
+  { id: "deepseek", name: "DeepSeek", color: "#4D6BFE", bg: "#EEF2FF" },
+  { id: "openai", name: "OpenAI", color: "#10A37F", bg: "#F0FDF4" },
+  { id: "gemini", name: "Gemini", color: "#1A73E8", bg: "#EFF6FF" },
+  { id: "groq", name: "Groq", color: "#F55036", bg: "#FFF1F2" },
+  {
+    id: "openrouter",
+    name: "OpenRouter",
+    color: "#6467F2",
+    bg: "#F5F3FF",
+  },
+] as const;
+
+type ProviderId = (typeof PROVIDERS_CONFIG)[number]["id"];
+
+const DeepSeekIcon = ({ size = 20 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="24" height="24" rx="6" fill="#4D6BFE" />
+    <path
+      d="M6 12C6 8.69 8.69 6 12 6C13.59 6 15.04 6.63 16.12 7.66"
+      stroke="white"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+    <path
+      d="M18 12C18 15.31 15.31 18 12 18C10.41 18 8.96 17.37 7.88 16.34"
+      stroke="white"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+    />
+    <circle cx="12" cy="12" r="2.2" fill="white" />
+  </svg>
+);
+
+const OpenAIIcon = ({ size = 20 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="24" height="24" rx="6" fill="#10A37F" />
+    <path
+      d="M20.032 9.404a5.537 5.537 0 0 0-.475-4.533 5.594 5.594 0 0 0-6.015-2.677A5.603 5.603 0 0 0 9.361 3.86a5.537 5.537 0 0 0-3.695 2.679 5.594 5.594 0 0 0 .686 6.556A5.537 5.537 0 0 0 6.82 17.63a5.594 5.594 0 0 0 6.018 2.676A5.537 5.537 0 0 0 17.01 21.5a5.594 5.594 0 0 0 5.335-3.883 5.537 5.537 0 0 0 3.695-2.679 5.594 5.594 0 0 0-.686-6.556l-.322.022ZM13.02 20.14a4.14 4.14 0 0 1-2.658-.96l.13-.075 4.416-2.549a.718.718 0 0 0 .362-.63v-6.225l1.866 1.079a.066.066 0 0 1 .036.048v5.158a4.156 4.156 0 0 1-4.152 4.154ZM3.96 16.91a4.14 4.14 0 0 1-.494-2.784l.13.078 4.42 2.553a.718.718 0 0 0 .72 0l5.397-3.116v2.156a.074.074 0 0 1-.03.057l-4.468 2.58A4.156 4.156 0 0 1 3.96 16.91ZM2.88 8.04a4.14 4.14 0 0 1 2.185-1.823V11.3a.718.718 0 0 0 .36.624l5.376 3.102-1.867 1.079a.07.07 0 0 1-.065 0l-4.465-2.577A4.156 4.156 0 0 1 2.88 8.04Zm15.338 3.565-5.377-3.106 1.866-1.078a.07.07 0 0 1 .066 0l4.464 2.578a4.154 4.154 0 0 1-.625 7.493v-5.26a.718.718 0 0 0-.394-.627Zm1.858-2.793-.13-.079-4.412-2.57a.718.718 0 0 0-.726 0L9.43 9.28V7.123a.07.07 0 0 1 .027-.057l4.464-2.577a4.154 4.154 0 0 1 6.155 4.303v.013Zm-11.684 3.82-1.866-1.079a.066.066 0 0 1-.036-.048V6.347a4.154 4.154 0 0 1 6.812-3.187l-.131.075L8.657 5.784a.718.718 0 0 0-.363.63l-.002 6.218Zm1.015-2.186 2.402-1.388 2.403 1.385v2.77L11.81 14.6 9.408 13.21V10.446Z"
+      fill="white"
+    />
+  </svg>
+);
+
+const GeminiIcon = ({ size = 20 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="24" height="24" rx="6" fill="#1A73E8" />
+    <defs>
+      <linearGradient
+        id="gem-g"
+        x1="12"
+        y1="3"
+        x2="12"
+        y2="21"
+        gradientUnits="userSpaceOnUse"
+      >
+        <stop stopColor="#AECBFA" />
+        <stop offset="1" stopColor="#E8F0FE" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M12 3C12 3 13.8 9 19 12C13.8 15 12 21 12 21C12 21 10.2 15 5 12C10.2 9 12 3 12 3Z"
+      fill="url(#gem-g)"
+    />
+  </svg>
+);
+
+const GroqIcon = ({ size = 20 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="24" height="24" rx="6" fill="#F55036" />
+    <path
+      d="M15.5 9.5C15.5 7.57 13.93 6 12 6C10.07 6 8.5 7.57 8.5 9.5V12C8.5 13.93 10.07 15.5 12 15.5H15.5V12.5H12.5C11.67 12.5 11 11.83 11 11C11 10.17 11.67 9.5 12.5 9.5H15.5V9.5Z"
+      fill="white"
+    />
+    <path d="M15.5 12.5V15.5H16.5C17.05 15.5 17.5 15.05 17.5 14.5V13.5C17.5 12.95 17.05 12.5 16.5 12.5H15.5Z" fill="white" />
+  </svg>
+);
+
+const OpenRouterIcon = ({ size = 20 }: { size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect width="24" height="24" rx="6" fill="#6467F2" />
+    <path
+      d="M5 8H13M13 8L10.5 5.5M13 8L10.5 10.5"
+      stroke="white"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M19 16H11M11 16L13.5 13.5M11 16L13.5 18.5"
+      stroke="white"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx="5" cy="16" r="1.5" fill="white" />
+    <circle cx="19" cy="8" r="1.5" fill="white" />
+  </svg>
+);
+
+function ProviderIcon({
+  provider,
+  size = 20,
+}: {
+  provider: string;
+  size?: number;
+}) {
+  switch (provider) {
+    case "deepseek":
+      return <DeepSeekIcon size={size} />;
+    case "openai":
+      return <OpenAIIcon size={size} />;
+    case "gemini":
+      return <GeminiIcon size={size} />;
+    case "groq":
+      return <GroqIcon size={size} />;
+    case "openrouter":
+      return <OpenRouterIcon size={size} />;
+    default: {
+      const cfg = PROVIDERS_CONFIG.find((p) => p.id === provider);
+      return (
+        <span
+          style={{
+            width: size,
+            height: size,
+            background: cfg?.bg ?? "#F3F4F6",
+            color: cfg?.color ?? "#6B7280",
+            fontSize: size * 0.35,
+          }}
+          className="inline-flex items-center justify-center rounded font-bold shrink-0"
+        >
+          {provider.slice(0, 2).toUpperCase()}
+        </span>
+      );
+    }
+  }
+}
+
 export default function GenerarCV() {
   // CV Generation states
   const [ofertaLaboral, setOfertaLaboral] = useState<string | File>("");
@@ -139,6 +307,9 @@ export default function GenerarCV() {
   const [selectedModel, setSelectedModel] = useState<string>("");
   const [modelSearchOpen, setModelSearchOpen] = useState(false);
   const [modelSearchQuery, setModelSearchQuery] = useState("");
+  const [browsingProvider, setBrowsingProvider] = useState<ProviderId | null>(
+    null,
+  );
 
   // Layout & UI states
   const [zoom, setZoom] = useState(0.8);
@@ -199,7 +370,7 @@ export default function GenerarCV() {
     );
     if (!model) return undefined;
     return {
-      provider: model.provider as "groq" | "openrouter",
+      provider: model.provider as AIModelConfig["provider"],
       modelId: model.id,
     };
   };
@@ -464,114 +635,312 @@ export default function GenerarCV() {
                     open={modelSearchOpen}
                     onOpenChange={(open) => {
                       setModelSearchOpen(open);
-                      if (!open) setModelSearchQuery("");
+                      if (!open) {
+                        setModelSearchQuery("");
+                        setBrowsingProvider(null);
+                      }
                     }}
                   >
                     <PopoverTrigger asChild>
                       <button
                         type="button"
-                        className="flex  w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-gray-50 px-3 py-5 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring border-gray-200 [&>span]:line-clamp-1"
+                        className="flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-md border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
                       >
-                        <span className={!selectedModel ? "text-muted-foreground" : ""}>
-                          {!selectedModel
-                            ? t("cv_generator.ai_model.placeholder") ||
-                              "Auto (with fallback)"
-                            : selectedModel === "auto"
-                              ? "Auto (fallback)"
-                              : (() => {
-                                  const m = aiModels.find(
-                                    (x) => `${x.provider}:${x.id}` === selectedModel
-                                  );
-                                  return m ? (
-                                    <>
-                                      <span className="capitalize">[{m.provider}]</span>{" "}
-                                      {m.name}
-                                    </>
-                                  ) : (
-                                    selectedModel
-                                  );
-                                })()}
+                        <span className="flex items-center gap-2 min-w-0">
+                          {selectedModel && selectedModel !== "auto" ? (
+                            (() => {
+                              const m = aiModels.find(
+                                (x) =>
+                                  `${x.provider}:${x.id}` === selectedModel,
+                              );
+                              return m ? (
+                                <>
+                                  <ProviderIcon
+                                    provider={m.provider}
+                                    size={18}
+                                  />
+                                  <span className="truncate">{m.name}</span>
+                                  <span className="text-xs text-gray-400 shrink-0 capitalize">
+                                    {m.provider}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground">
+                                  {selectedModel}
+                                </span>
+                              );
+                            })()
+                          ) : selectedModel === "auto" ? (
+                            <span className="text-gray-700">
+                              Auto (fallback)
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">
+                              {t("cv_generator.ai_model.placeholder") ||
+                                "Select AI Model"}
+                            </span>
+                          )}
                         </span>
-                        <ChevronDown className="h-4 w-4 opacity-50" />
+                        <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
                       </button>
                     </PopoverTrigger>
+
                     <PopoverContent
-                      className="w-[var(--radix-popover-trigger-width)] p-0"
+                      className="w-[var(--radix-popover-trigger-width)] p-0 overflow-hidden"
                       align="start"
                     >
-                      <Input
-                        placeholder={t("cv_generator.ai_model.search_placeholder") || "Buscar modelo..."}
-                        value={modelSearchQuery}
-                        onChange={(e) => setModelSearchQuery(e.target.value)}
-                        className="border-0 border-b rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                        autoFocus
-                      />
-                      <div className="max-h-60 overflow-auto p-1">
-                        {(modelSearchQuery === "" ||
-                          "auto (fallback)".includes(modelSearchQuery.toLowerCase())) && (
+                      {/* Search */}
+                      <div className="border-b">
+                        <Input
+                          placeholder={
+                            t("cv_generator.ai_model.search_placeholder") ||
+                            "Search all models..."
+                          }
+                          value={modelSearchQuery}
+                          onChange={(e) => {
+                            setModelSearchQuery(e.target.value);
+                            if (e.target.value) setBrowsingProvider(null);
+                          }}
+                          className="border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                          autoFocus
+                        />
+                      </div>
+
+                      {/* Search results view */}
+                      {modelSearchQuery ? (
+                        <div className="max-h-64 overflow-auto">
+                          {(
+                            "auto (fallback)".includes(
+                              modelSearchQuery.toLowerCase(),
+                            )
+                              ? [{ isAuto: true }]
+                              : []
+                          ).map(() => (
+                            <button
+                              key="auto"
+                              type="button"
+                              className="relative flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent"
+                              onClick={() => {
+                                setSelectedModel("auto");
+                                setModelSearchOpen(false);
+                              }}
+                            >
+                              <span className="flex-1 text-left">
+                                Auto (fallback)
+                              </span>
+                              {selectedModel === "auto" && (
+                                <Check className="h-3.5 w-3.5 shrink-0" />
+                              )}
+                            </button>
+                          ))}
+
+                          {aiModels
+                            .filter((m) =>
+                              `${m.provider} ${m.id} ${m.name}`
+                                .toLowerCase()
+                                .includes(modelSearchQuery.toLowerCase()),
+                            )
+                            .map((m) => {
+                              const value = `${m.provider}:${m.id}`;
+                              return (
+                                <button
+                                  key={value}
+                                  type="button"
+                                  className="relative flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent"
+                                  onClick={() => {
+                                    setSelectedModel(value);
+                                    setModelSearchOpen(false);
+                                    setModelSearchQuery("");
+                                  }}
+                                >
+                                  <ProviderIcon
+                                    provider={m.provider}
+                                    size={16}
+                                  />
+                                  <span className="flex-1 text-left truncate">
+                                    {m.name}
+                                  </span>
+                                  <span className="text-xs text-gray-400 capitalize shrink-0">
+                                    {m.provider}
+                                  </span>
+                                  {selectedModel === value && (
+                                    <Check className="h-3.5 w-3.5 shrink-0" />
+                                  )}
+                                </button>
+                              );
+                            })}
+
+                          {aiModels.filter((m) =>
+                            `${m.provider} ${m.id} ${m.name}`
+                              .toLowerCase()
+                              .includes(modelSearchQuery.toLowerCase()),
+                          ).length === 0 &&
+                            !"auto (fallback)".includes(
+                              modelSearchQuery.toLowerCase(),
+                            ) && (
+                              <p className="py-6 text-center text-sm text-muted-foreground">
+                                {t("cv_generator.ai_model.no_results") ||
+                                  "No models found"}
+                              </p>
+                            )}
+                        </div>
+                      ) : browsingProvider ? (
+                        /* Provider models list */
+                        <>
                           <button
                             type="button"
-                            className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[highlight]:bg-accent data-[highlight]:text-accent-foreground"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 border-b"
+                            onClick={() => setBrowsingProvider(null)}
+                          >
+                            <ChevronDown className="h-3 w-3 rotate-90" />
+                            <ProviderIcon
+                              provider={browsingProvider}
+                              size={14}
+                            />
+                            <span className="capitalize font-medium">
+                              {PROVIDERS_CONFIG.find(
+                                (p) => p.id === browsingProvider,
+                              )?.name ?? browsingProvider}
+                            </span>
+                            <span className="ml-auto text-gray-400">
+                              {
+                                aiModels.filter(
+                                  (m) => m.provider === browsingProvider,
+                                ).length
+                              }{" "}
+                              models
+                            </span>
+                          </button>
+                          <div className="max-h-64 overflow-auto">
+                            {/* Auto option at top */}
+                            {browsingProvider === null && (
+                              <button
+                                type="button"
+                                className="relative flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent"
+                                onClick={() => {
+                                  setSelectedModel("auto");
+                                  setModelSearchOpen(false);
+                                  setBrowsingProvider(null);
+                                }}
+                              >
+                                <span className="flex-1 text-left">
+                                  Auto (fallback)
+                                </span>
+                                {selectedModel === "auto" && (
+                                  <Check className="h-3.5 w-3.5 shrink-0" />
+                                )}
+                              </button>
+                            )}
+                            {aiModels
+                              .filter(
+                                (m) => m.provider === browsingProvider,
+                              )
+                              .map((m) => {
+                                const value = `${m.provider}:${m.id}`;
+                                return (
+                                  <button
+                                    key={value}
+                                    type="button"
+                                    className="relative flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-accent"
+                                    onClick={() => {
+                                      setSelectedModel(value);
+                                      setModelSearchOpen(false);
+                                      setBrowsingProvider(null);
+                                    }}
+                                  >
+                                    <span className="flex-1 text-left truncate">
+                                      {m.name}
+                                    </span>
+                                    {selectedModel === value && (
+                                      <Check className="h-3.5 w-3.5 shrink-0" />
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            {aiModels.filter(
+                              (m) => m.provider === browsingProvider,
+                            ).length === 0 && (
+                              <p className="py-6 text-center text-sm text-muted-foreground">
+                                No models available
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        /* Provider grid view */
+                        <div className="p-2">
+                          {/* Auto option */}
+                          <button
+                            type="button"
+                            className="relative flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent mb-1 border border-transparent hover:border-gray-100"
                             onClick={() => {
                               setSelectedModel("auto");
                               setModelSearchOpen(false);
                             }}
                           >
-                            Auto (fallback)
+                            <span className="inline-flex h-[20px] w-[20px] items-center justify-center rounded bg-gray-100 text-[9px] font-bold text-gray-500 shrink-0">
+                              ✦
+                            </span>
+                            <span className="flex-1 text-left">
+                              Auto (fallback)
+                            </span>
                             {selectedModel === "auto" && (
-                              <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-                                <Check className="h-4 w-4" />
-                              </span>
+                              <Check className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                             )}
                           </button>
-                        )}
-                        {aiModels
-                          .filter(
-                            (m) =>
-                              modelSearchQuery === "" ||
-                              `${m.provider} ${m.id} ${m.name}`
-                                .toLowerCase()
-                                .includes(modelSearchQuery.toLowerCase())
-                          )
-                          .map((m) => {
-                            const value = `${m.provider}:${m.id}`;
-                            return (
-                              <button
-                                key={value}
-                                type="button"
-                                className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
-                                onClick={() => {
-                                  setSelectedModel(value);
-                                  setModelSearchOpen(false);
-                                }}
-                              >
-                                <span className="capitalize">[{m.provider}]</span>{" "}
-                                {m.name}
-                                {selectedModel === value && (
-                                  <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
-                                    <Check className="h-4 w-4" />
-                                  </span>
-                                )}
-                              </button>
-                            );
-                          })}
-                        {modelSearchQuery &&
-                          aiModels.filter((m) =>
-                            `${m.provider} ${m.id} ${m.name}`
-                              .toLowerCase()
-                              .includes(modelSearchQuery.toLowerCase())
-                          ).length === 0 &&
-                          !"auto (fallback)".includes(modelSearchQuery.toLowerCase()) && (
-                            <p className="py-4 text-center text-sm text-muted-foreground">
-                              {t("cv_generator.ai_model.no_results") || "Ningún modelo coincide"}
-                            </p>
-                          )}
-                      </div>
+
+                          <p className="text-[10px] text-gray-400 px-2 pb-1 uppercase tracking-wider font-medium">
+                            Providers
+                          </p>
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {PROVIDERS_CONFIG.map((p) => {
+                              const count = aiModels.filter(
+                                (m) => m.provider === p.id,
+                              ).length;
+                              const isSelected = selectedModel.startsWith(
+                                `${p.id}:`,
+                              );
+                              return (
+                                <button
+                                  key={p.id}
+                                  type="button"
+                                  onClick={() =>
+                                    setBrowsingProvider(p.id as ProviderId)
+                                  }
+                                  style={
+                                    isSelected
+                                      ? { borderColor: p.color }
+                                      : undefined
+                                  }
+                                  className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors text-left ${
+                                    isSelected
+                                      ? "bg-gray-50"
+                                      : "border-gray-200"
+                                  }`}
+                                >
+                                  <ProviderIcon provider={p.id} size={22} />
+                                  <div className="min-w-0">
+                                    <p className="font-medium text-gray-800 text-xs leading-tight">
+                                      {p.name}
+                                    </p>
+                                    <p className="text-[10px] text-gray-400">
+                                      {count > 0
+                                        ? `${count} models`
+                                        : "Loading..."}
+                                    </p>
+                                  </div>
+                                  <ChevronDown className="ml-auto h-3 w-3 -rotate-90 text-gray-400 shrink-0" />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </PopoverContent>
                   </Popover>
                   <p className="text-xs text-gray-500 mt-2">
                     {t("cv_generator.ai_model.description") ||
-                      "Select a model or use auto-fallback if one fails."}
+                      "Select a provider and model, or use auto-fallback."}
                   </p>
                 </AccordionItem>
 

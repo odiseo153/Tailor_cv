@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     }
 
     // Obtener los datos del usuario
-    const user = await user_handler.getUserProfile(userId);
+    const user = await user_handler.getById(userId);
 
     if (!user) {
       return NextResponse.json({

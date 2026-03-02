@@ -5,12 +5,27 @@ const API_CONFIG = {
   OPENROUTER: {
     key: process.env.NEXT_PUBLIC_API_OPENROUTER ?? "",
     url: "https://openrouter.ai/api/v1",
-    model: "openai/gpt-4.1-mini",
+    defaultModel: "openai/gpt-4.1-mini",
   },
   GROQ: {
     key: process.env.NEXT_PUBLIC_GROQ_API_KEY ?? "",
     url: "https://api.groq.com/openai/v1",
-    model: "llama-3.3-70b-versatile",
+    defaultModel: "llama-3.3-70b-versatile",
+  },
+  DEEPSEEK: {
+    key: process.env.NEXT_PUBLIC_API_URL_DEESEEK ?? "",
+    url: "https://api.deepseek.com/v1",
+    defaultModel: "deepseek-chat",
+  },
+  OPENAI: {
+    key: process.env.OPENAI_API_KEY ?? "",
+    url: "https://api.openai.com/v1",
+    defaultModel: "gpt-4o-mini",
+  },
+  GEMINI: {
+    key: process.env.NEXT_PUBLIC_API_URL_GEMINIS ?? "",
+    url: "https://generativelanguage.googleapis.com/v1beta/openai/",
+    defaultModel: "gemini-1.5-flash",
   },
 };
 
@@ -29,9 +44,9 @@ export async function POST(request: NextRequest) {
           max_tokens: 4000,
         });
         if (response.choices?.[0]?.message?.content) {
-          return NextResponse.json({ 
+          return NextResponse.json({
             content: response.choices[0].message.content,
-            provider: name 
+            provider: name,
           });
         }
       } catch (error) {
@@ -39,34 +54,77 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ error: "All AI providers failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "All AI providers failed" },
+      { status: 500 },
+    );
   } catch (error) {
     console.error("AI API error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
 function buildProviderOrder(provider?: string, modelId?: string) {
-  const openrouterClient = new OpenAI({
-    apiKey: API_CONFIG.OPENROUTER.key,
-    baseURL: API_CONFIG.OPENROUTER.url,
-  });
+  const clients = {
+    openrouter: new OpenAI({
+      apiKey: API_CONFIG.OPENROUTER.key,
+      baseURL: API_CONFIG.OPENROUTER.url,
+    }),
+    groq: new OpenAI({
+      apiKey: API_CONFIG.GROQ.key,
+      baseURL: API_CONFIG.GROQ.url,
+    }),
+    deepseek: new OpenAI({
+      apiKey: API_CONFIG.DEEPSEEK.key,
+      baseURL: API_CONFIG.DEEPSEEK.url,
+    }),
+    openai: new OpenAI({
+      apiKey: API_CONFIG.OPENAI.key,
+      baseURL: API_CONFIG.OPENAI.url,
+    }),
+    gemini: new OpenAI({
+      apiKey: API_CONFIG.GEMINI.key,
+      baseURL: API_CONFIG.GEMINI.url,
+    }),
+  };
 
-  const groqClient = new OpenAI({
-    apiKey: API_CONFIG.GROQ.key,
-    baseURL: API_CONFIG.GROQ.url,
-  });
-
-  const all = [
-    { name: "openrouter", model: API_CONFIG.OPENROUTER.model, client: openrouterClient },
-    { name: "groq", model: API_CONFIG.GROQ.model, client: groqClient },
+  const defaults = [
+    {
+      name: "openrouter",
+      model: API_CONFIG.OPENROUTER.defaultModel,
+      client: clients.openrouter,
+    },
+    {
+      name: "groq",
+      model: API_CONFIG.GROQ.defaultModel,
+      client: clients.groq,
+    },
+    {
+      name: "deepseek",
+      model: API_CONFIG.DEEPSEEK.defaultModel,
+      client: clients.deepseek,
+    },
+    {
+      name: "gemini",
+      model: API_CONFIG.GEMINI.defaultModel,
+      client: clients.gemini,
+    },
   ];
 
   if (provider && modelId) {
-    const selected = provider === "openrouter"
-      ? { name: "openrouter", model: modelId, client: openrouterClient }
-      : { name: "groq", model: modelId, client: groqClient };
-    return [selected, ...all.filter((p) => p.name !== provider)];
+    const providerKey = provider as keyof typeof clients;
+    if (clients[providerKey]) {
+      const selected = {
+        name: provider,
+        model: modelId,
+        client: clients[providerKey],
+      };
+      return [selected, ...defaults.filter((p) => p.name !== provider)];
+    }
   }
-  return all;
+
+  return defaults;
 }

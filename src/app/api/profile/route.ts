@@ -46,7 +46,7 @@ export async function GET(request: Request): Promise<NextResponse<ProfileRespons
       }, { status: 400 });
     }
 
-    const result = await userHandler.getUserProfile(userId);
+    const result = await userHandler.getById(userId);
 
     if (!result) {
       return NextResponse.json({
