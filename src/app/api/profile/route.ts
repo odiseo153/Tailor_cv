@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import { UserHandler } from '@/app/Handler/PrismaHandler/UserHandler';
+import { prisma } from '@/lib/utils';
 
 const UPLOAD_DIR = 'uploads/profile';
 
@@ -100,7 +101,10 @@ export async function PUT(request: Request): Promise<NextResponse<ProfileRespons
       }, { status: 400 });
     }
 
-    const existingUser = await userHandler.getById(requestData.id);
+    const existingUser = await prisma.user.findUnique({
+      where: { id: requestData.id },
+      select: { profilePicture: true },
+    });
     const newPicture = requestData.profilePicture ?? existingUser?.profilePicture ?? '';
     if (
       existingUser?.profilePicture &&

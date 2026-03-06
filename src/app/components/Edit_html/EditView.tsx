@@ -1,7 +1,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Node } from "@tiptap/core";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Extensión personalizada para soportar clases de Tailwind
 const TailwindNode = Node.create({
@@ -38,6 +38,10 @@ const TailwindNode = Node.create({
 export const Editor = ({ html }: { html: string }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
+  // Use a ref so event handlers always see the latest selectedNode
+  // without needing to re-register listeners on every state change
+  const selectedNodeRef = useRef(selectedNode);
+  selectedNodeRef.current = selectedNode;
 
   const editor = useEditor({
     content: html,
@@ -46,9 +50,6 @@ export const Editor = ({ html }: { html: string }) => {
       attributes: {
         class: "prose max-w-none focus:outline-none p-4",
       },
-    },
-    onUpdate: ({ editor }) => {
-      console.log("Contenido actualizado:", editor.getHTML());
     },
   });
 
@@ -62,7 +63,7 @@ export const Editor = ({ html }: { html: string }) => {
 
   // Iniciar arrastre
   const handleMouseDown = (e: any) => {
-    if (selectedNode) {
+    if (selectedNodeRef.current) {
       setIsDragging(true);
     }
   };
@@ -72,6 +73,7 @@ export const Editor = ({ html }: { html: string }) => {
     setIsDragging(false);
   };
 
+  // Register listeners once when the editor mounts, not on every selectedNode change
   useEffect(() => {
     if (!editor) return;
 
@@ -89,7 +91,7 @@ export const Editor = ({ html }: { html: string }) => {
         editorElement.removeEventListener("mouseup", handleMouseUp);
       }
     };
-  }, [editor, selectedNode]);
+  }, [editor]);
 
   return (
     <div className="relative border rounded-lg shadow-lg p-4 bg-white">

@@ -29,6 +29,30 @@ const API_CONFIG = {
   },
 };
 
+// Module-level singletons — created once, reused across all requests
+const clients = {
+  openrouter: new OpenAI({
+    apiKey: API_CONFIG.OPENROUTER.key,
+    baseURL: API_CONFIG.OPENROUTER.url,
+  }),
+  groq: new OpenAI({
+    apiKey: API_CONFIG.GROQ.key,
+    baseURL: API_CONFIG.GROQ.url,
+  }),
+  deepseek: new OpenAI({
+    apiKey: API_CONFIG.DEEPSEEK.key,
+    baseURL: API_CONFIG.DEEPSEEK.url,
+  }),
+  openai: new OpenAI({
+    apiKey: API_CONFIG.OPENAI.key,
+    baseURL: API_CONFIG.OPENAI.url,
+  }),
+  gemini: new OpenAI({
+    apiKey: API_CONFIG.GEMINI.key,
+    baseURL: API_CONFIG.GEMINI.url,
+  }),
+};
+
 export async function POST(request: NextRequest) {
   try {
     const { messages, provider, modelId } = await request.json();
@@ -68,29 +92,6 @@ export async function POST(request: NextRequest) {
 }
 
 function buildProviderOrder(provider?: string, modelId?: string) {
-  const clients = {
-    openrouter: new OpenAI({
-      apiKey: API_CONFIG.OPENROUTER.key,
-      baseURL: API_CONFIG.OPENROUTER.url,
-    }),
-    groq: new OpenAI({
-      apiKey: API_CONFIG.GROQ.key,
-      baseURL: API_CONFIG.GROQ.url,
-    }),
-    deepseek: new OpenAI({
-      apiKey: API_CONFIG.DEEPSEEK.key,
-      baseURL: API_CONFIG.DEEPSEEK.url,
-    }),
-    openai: new OpenAI({
-      apiKey: API_CONFIG.OPENAI.key,
-      baseURL: API_CONFIG.OPENAI.url,
-    }),
-    gemini: new OpenAI({
-      apiKey: API_CONFIG.GEMINI.key,
-      baseURL: API_CONFIG.GEMINI.url,
-    }),
-  };
-
   const defaults = [
     {
       name: "openrouter",

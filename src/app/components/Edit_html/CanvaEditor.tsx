@@ -16,11 +16,16 @@ export default function CanvaEditor({ html, onSave }: CanvaEditorProps) {
   const [editor, setEditor] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
+  // Keep onSave in a ref so the editor command always calls the latest version
+  // without requiring the editor to be re-initialized when the prop changes
+  const onSaveRef = useRef(onSave)
+  onSaveRef.current = onSave
 
   // Cargar GrapesJS de forma optimizada
   useEffect(() => {
     let mounted = true
     let progressInterval: NodeJS.Timeout
+    let gEditor: any = null
 
     async function initEditor() {
       try {
@@ -32,11 +37,11 @@ export default function CanvaEditor({ html, onSave }: CanvaEditorProps) {
         // Cargar el editor core
         const grapesjs = (await import('grapesjs')).default
         setLoadingProgress(40)
-        
+
         if (!mounted || !editorRef.current) return
-        
+
         // Configuración mínima inicial
-        const gEditor = grapesjs.init({
+        gEditor = grapesjs.init({
           container: editorRef.current,
           height: '700px',
           width: '100%',
@@ -44,7 +49,7 @@ export default function CanvaEditor({ html, onSave }: CanvaEditorProps) {
           storageManager: false,
           panels: { defaults: [] }
         })
-        
+
         // Cargar el HTML
         gEditor.setComponents(html)
         setLoadingProgress(60)
@@ -53,12 +58,12 @@ export default function CanvaEditor({ html, onSave }: CanvaEditorProps) {
         const basicBlocks = await import('grapesjs-blocks-basic')
       //  gEditor.Plugins.add(basicBlocks.default)
         setLoadingProgress(80)
-        
+
         if (!mounted) return
-        
+
         // Configurar los paneles de edición
         setupEditor(gEditor)
-        
+
         // Guardar referencia
         setEditor(gEditor)
         setLoadingProgress(100)
@@ -76,20 +81,20 @@ export default function CanvaEditor({ html, onSave }: CanvaEditorProps) {
 
     initEditor()
 
-    // Limpiar al desmontar
+    // Limpiar al desmontar — use local gEditor to avoid stale state closure
     return () => {
       mounted = false
       clearInterval(progressInterval)
-      if (editor) editor.destroy()
+      if (gEditor) gEditor.destroy()
     }
-  }, [html, onSave])
+  }, [html])
 
   // Configurar el editor después de la carga inicial
   const setupEditor = (editor: any) => {
-    // Comando para guardar
+    // Comando para guardar — uses ref so it always calls the latest onSave prop
     editor.Commands.add('save-template', {
       run: (editor: any) => {
-        if (onSave) onSave(editor.getHtml(), editor.getCss())
+        if (onSaveRef.current) onSaveRef.current(editor.getHtml(), editor.getCss())
         Message.successMessage('Cambios guardados')
       }
     })
