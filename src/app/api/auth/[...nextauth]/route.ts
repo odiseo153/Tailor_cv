@@ -126,14 +126,18 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile, email, credentials }) {
       // Solo procesamos si es login con Google o LinkedIn
       if (account?.provider === 'google' || account?.provider === 'linkedin') {
+        if (!user.email) {
+          console.error(`OAuth signIn: no email returned from ${account.provider}`);
+          return '/auth/error?error=OAuthSignin';
+        }
         try {
           // Verificar si el usuario existe
-          let dbUser = await prisma.user.findUnique({ 
-            where: { email: user.email! } 
+          let dbUser = await prisma.user.findUnique({
+            where: { email: user.email }
           });
 
           // Si no existe, creamos un nuevo usuario
-          if (!dbUser && user.email) {
+          if (!dbUser) {
             dbUser = await prisma.user.create({
               data: {
                 id: user.id,
@@ -143,27 +147,27 @@ export const authOptions: NextAuthOptions = {
                 profilePicture: user.image || null,
                 // Crear preferencias de CV predeterminadas
                 cvPreferences: {
-              create: {
-                template: 'modern',
-                primaryColor: '#2563eb',
-                secondaryColor: '#3b82f6',
-                fontFamily: 'Arial',
-                fontSize: 'medium',
-                spacing: 1,
-                showPhoto: true,
-                showContact: true,
-                showSocial: true,
-                pageSize: 'a4',
-            }
+                  create: {
+                    template: 'modern',
+                    primaryColor: '#2563eb',
+                    secondaryColor: '#3b82f6',
+                    fontFamily: 'Arial',
+                    fontSize: 'medium',
+                    spacing: 1,
+                    showPhoto: true,
+                    showContact: true,
+                    showSocial: true,
+                    pageSize: 'a4',
+                  }
                 }
               }
             });
           }
-          
-          return !!dbUser;
+
+          return true;
         } catch (error) {
-          console.error('Error al verificar/crear usuario:', error);
-          return false;
+          console.error(`Error al verificar/crear usuario (${account.provider}):`, error);
+          return '/auth/error?error=OAuthCreateAccount';
         }
       }
 

@@ -107,16 +107,14 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
 
   const handleSocialLogin = async (provider: string) => {
     try {
-      await signIn(provider, { 
-        callbackUrl: isModal ? undefined : callbackUrl,
-        redirect: !isModal
-      });
-      
-      if (isModal && onSuccess) {
-        onSuccess();
-      }
+      setIsLoading(true);
+      setErrorMessage("");
+      await signIn(provider, { callbackUrl });
     } catch (error) {
       console.error(`Error al iniciar sesión con ${provider}:`, error);
+      setErrorMessage(t("auth.errors.oauth_error"));
+    } finally {
+      setIsLoading(false);
     }
   };
 

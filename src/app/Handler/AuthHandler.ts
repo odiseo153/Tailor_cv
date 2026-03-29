@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/utils";
 import bcrypt from 'bcryptjs';
 import { RateLimiter } from "limiter";
-
-const prisma = new PrismaClient();
 
 // Limitador de intentos para prevenir ataques de fuerza bruta
 // Permite 5 intentos cada 15 minutos por dirección IP
@@ -148,7 +146,7 @@ class AuthHandler {
             // Verificar contraseña
            
             const passwordMatch = await bcrypt.compare(password, user.password);
-            if (!passwordMatch && password != user.password) {
+            if (!passwordMatch) {
                 return { success: false, error: "Credenciales inválidas" };
             }
 

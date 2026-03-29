@@ -593,9 +593,9 @@ export default function GenerarCV() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
       {/* Top Navigation */}
-      <div className="bg-white border-b shadow-sm z-50 px-4 py-2">
+      <div className="bg-white border-b shadow-sm z-50 px-4 py-2 flex-shrink-0">
         <Tabs
           value={activeTab}
           onValueChange={(value) => setActiveTab(value as CVAnalysisTab)}
@@ -1200,6 +1200,7 @@ export default function GenerarCV() {
 
       {/* CV Analysis Tab - Restored */}
       {activeTab === "analyze" && (
+        <div className="flex-1 overflow-auto">
         <div className="container mx-auto max-w-7xl py-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <motion.form
@@ -1333,6 +1334,7 @@ export default function GenerarCV() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       )}
     </div>

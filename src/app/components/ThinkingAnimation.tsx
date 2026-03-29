@@ -77,121 +77,109 @@ export default function ThinkingAnimation({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 space-y-6">
-      {/* Contenedor principal con partículas de fondo */}
-      <div className="relative">
-        {/* Partículas flotantes de fondo */}
-        <div className="absolute inset-0 -m-8">
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              variants={particleVariants}
-              animate="animate"
-              className="absolute"
-              style={{
-                left: `${20 + (i * 15)}%`,
-                top: `${10 + (i % 3) * 20}%`,
-              }}
-            >
-              {i % 3 === 0 ? (
-                <Sparkles className="w-4 h-4 text-blue-400 opacity-60" />
-              ) : i % 3 === 1 ? (
-                <Zap className="w-3 h-3 text-purple-400 opacity-60" />
-              ) : (
-                <div className="w-2 h-2 bg-indigo-400 rounded-full opacity-60" />
-              )}
-            </motion.div>
-          ))}
-        </div>
+    <div className="flex flex-col items-center justify-center py-12 space-y-10">
 
-        {/* Cerebro principal */}
+      {/* Icon + orbital rings */}
+      <div className="relative flex items-center justify-center w-32 h-32">
+        {/* Pulsing glow */}
+        <motion.div
+          animate={{ scale: [1, 1.6, 1], opacity: [0.15, 0, 0.15] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeOut" }}
+          className="absolute inset-0 rounded-full bg-gradient-to-tr from-violet-500 to-indigo-500"
+        />
+        <motion.div
+          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0, 0.2] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeOut", delay: 0.8 }}
+          className="absolute inset-0 rounded-full bg-gradient-to-tr from-violet-500 to-indigo-500"
+        />
+
+        {/* Orbital ring */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 rounded-full border border-violet-400/30"
+          style={{ borderTopColor: "rgba(139,92,246,0.7)" }}
+        />
+        <motion.div
+          animate={{ rotate: -360 }}
+          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-2 rounded-full border border-indigo-400/20"
+          style={{ borderRightColor: "rgba(99,102,241,0.6)" }}
+        />
+
+        {/* Floating sparkles */}
+        {[...Array(4)].map((_, i) => (
+          <motion.div
+            key={i}
+            variants={particleVariants}
+            animate="animate"
+            transition={{ delay: i * 0.4 }}
+            className="absolute"
+            style={{
+              top: `${[0, 85, 10, 75][i]}%`,
+              left: `${[45, 45, 0, 85][i]}%`,
+            }}
+          >
+            {i % 2 === 0
+              ? <Sparkles className="w-3 h-3 text-violet-400" />
+              : <Zap className="w-2.5 h-2.5 text-indigo-400" />
+            }
+          </motion.div>
+        ))}
+
+        {/* Central icon */}
         <motion.div
           variants={brainVariants}
           animate="animate"
-          className="relative z-10"
+          className="relative z-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 p-4 shadow-lg shadow-violet-500/25"
         >
-          <div className="relative">
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full blur-xl opacity-30 scale-150"></div>
-            
-            {/* Cerebro */}
-            <div className="relative bg-gradient-to-br from-blue-500 to-purple-600 rounded-full p-6 shadow-2xl">
-              <Brain className="w-12 h-12 text-white" />
-            </div>
-          </div>
+          <Brain className="w-10 h-10 text-white drop-shadow" />
         </motion.div>
+      </div>
 
-        {/* Puntos de pensamiento */}
-        <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {[0, 1, 2].map((i) => (
-            <motion.div
+      {/* Text block */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="flex flex-col items-center gap-4"
+      >
+        <h3 className="text-xl font-semibold tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+          {displayMessage}
+        </h3>
+
+        {/* Thinking dots */}
+        <div className="flex items-center gap-1.5">
+          {[0, 1, 2, 3].map((i) => (
+            <motion.span
               key={i}
               variants={dotVariants}
               animate="animate"
               custom={i}
-              className="w-3 h-3 bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"
+              className="block w-1.5 h-1.5 rounded-full bg-gradient-to-r from-violet-400 to-indigo-500"
             />
           ))}
         </div>
-      </div>
 
-      {/* Mensaje de pensamiento */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="text-center space-y-3"
-      >
-        <h3 className="text-xl font-semibold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          {displayMessage}
-        </h3>
-        
-        {/* Barra de progreso si se proporciona */}
+        {/* Progress bar */}
         {progress > 0 && (
-          <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-56 h-1.5 rounded-full  overflow-hidden">
             <motion.div
               variants={progressVariants}
               animate="animate"
-              className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"
+              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-indigo-500"
             />
           </div>
         )}
-        
-        {/* Texto animado de "thinking" */}
+
         <motion.p
-          animate={{
-            opacity: [0.5, 1, 0.5],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="text-gray-500 text-sm"
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="text-sm text-gray-400"
         >
           {t('thinking.processing')}
         </motion.p>
       </motion.div>
-
-      {/* Ondas de energía */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              scale: [1, 2, 1],
-              opacity: [0.3, 0, 0.3],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              delay: i * 1,
-              ease: "easeOut"
-            }}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-blue-400 rounded-full"
-          />
-        ))}
-      </div>
     </div>
   );
 }
