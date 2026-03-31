@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 
+// Vercel: allow up to 60s on Hobby, 300s on Pro. Set to max safe value.
+export const maxDuration = 60;
+
 const API_CONFIG = {
   OPENROUTER: {
     key: process.env.OPENROUTER_API_KEY ?? "",
