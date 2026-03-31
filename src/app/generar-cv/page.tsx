@@ -19,6 +19,7 @@ import {
   Minimize2,
   Save,
   RotateCcw,
+  Loader2,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -300,6 +301,7 @@ export default function GenerarCV() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
 
   // AI Model selection
@@ -574,6 +576,7 @@ export default function GenerarCV() {
 
   const handleDownloadPdf = async () => {
     if (!data?.html) return;
+    setIsDownloadingPdf(true);
     try {
       const result = await generatePdf(data.html);
       if (result && result.blob) {
@@ -589,6 +592,8 @@ export default function GenerarCV() {
     } catch (e) {
       console.error(e);
       Message.errorMessage("Error downloading PDF");
+    } finally {
+      setIsDownloadingPdf(false);
     }
   };
 
@@ -1139,12 +1144,20 @@ export default function GenerarCV() {
                 )}
                 <Button
                   onClick={handleDownloadPdf}
-                  disabled={!data?.html}
+                  disabled={!data?.html || isDownloadingPdf}
                   variant="default"
                   size="sm"
                   className="gap-2 bg-gray-900 text-white hover:bg-gray-800"
                 >
-                  <Download size={16} /> Download PDF
+                  {isDownloadingPdf ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" /> Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download size={16} /> Download PDF
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
