@@ -23,7 +23,7 @@ export interface AIModelConfig {
 
 const API_CONFIG = {
   GEMINI: {
-    key: process.env.NEXT_PUBLIC_API_URL_GEMINIS ?? "",
+    key: process.env.GEMINI_API_KEY ?? "",
     model: "gemini-flash-latest",
   },
 };

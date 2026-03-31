@@ -14,7 +14,7 @@ export async function GET() {
   try {
     const res = await fetch(DEEPSEEK_MODELS_URL, {
       headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_URL_DEESEEK}`,
+        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
       },
     });
     if (res.ok) {
@@ -56,7 +56,7 @@ export async function GET() {
 
   // Gemini models
   try {
-    const apiKey = process.env.NEXT_PUBLIC_API_URL_GEMINIS;
+    const apiKey = process.env.GEMINI_API_KEY;
     const res = await fetch(`${GEMINI_MODELS_URL}?key=${apiKey}`);
     if (res.ok) {
       const data = await res.json();
@@ -83,7 +83,7 @@ export async function GET() {
 
   // Groq models
   try {
-    const groq = new Groq({ apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY });
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const groqModels = await groq.models.list();
     groqModels.data?.forEach((m: { id: string }) => {
       models.push({ provider: "groq", id: m.id, name: m.id });
@@ -96,7 +96,7 @@ export async function GET() {
   try {
     const res = await fetch(OPENROUTER_MODELS_URL, {
       headers: {
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_OPENROUTER}`,
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
       },
     });
     if (res.ok) {

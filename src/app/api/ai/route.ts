@@ -3,17 +3,17 @@ import { OpenAI } from "openai";
 
 const API_CONFIG = {
   OPENROUTER: {
-    key: process.env.NEXT_PUBLIC_API_OPENROUTER ?? "",
+    key: process.env.OPENROUTER_API_KEY ?? "",
     url: "https://openrouter.ai/api/v1",
     defaultModel: "openai/gpt-4.1-mini",
   },
   GROQ: {
-    key: process.env.NEXT_PUBLIC_GROQ_API_KEY ?? "",
+    key: process.env.GROQ_API_KEY ?? "",
     url: "https://api.groq.com/openai/v1",
     defaultModel: "llama-3.3-70b-versatile",
   },
   DEEPSEEK: {
-    key: process.env.NEXT_PUBLIC_API_URL_DEESEEK ?? "",
+    key: process.env.DEEPSEEK_API_KEY ?? "",
     url: "https://api.deepseek.com/v1",
     defaultModel: "deepseek-chat",
   },
@@ -23,7 +23,7 @@ const API_CONFIG = {
     defaultModel: "gpt-4o-mini",
   },
   GEMINI: {
-    key: process.env.NEXT_PUBLIC_API_URL_GEMINIS ?? "",
+    key: process.env.GEMINI_API_KEY ?? "",
     url: "https://generativelanguage.googleapis.com/v1beta/openai/",
     defaultModel: "gemini-1.5-flash",
   },
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
           model,
           messages,
           temperature: 0.7,
-          max_tokens: 4000,
+          max_completion_tokens: 4000,
         });
         if (response.choices?.[0]?.message?.content) {
           return NextResponse.json({

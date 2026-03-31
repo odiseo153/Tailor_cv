@@ -36,8 +36,8 @@ const authHandler = new AuthHandler();
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.NEXT_PUBLIC_API_GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.NEXT_PUBLIC_API_GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       profile(profile) {
         return {
           id: profile.sub,
@@ -50,8 +50,8 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     LinkedInProvider({
-      clientId: process.env.NEXT_PUBLIC_API_LINKEDIN_CLIENT_ID!,
-      clientSecret: process.env.NEXT_PUBLIC_API_LINKEDIN_CLIENT_SECRET!,
+      clientId: process.env.LINKEDIN_CLIENT_ID!,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
       profile(profile) {
         return {
           id: profile.id,
@@ -272,7 +272,7 @@ export const authOptions: NextAuthOptions = {
     }
   },
   // Habilitar CSRF Protection
-  secret: process.env.NEXT_PUBLIC_API_NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
   // Optimización de seguridad
   useSecureCookies: process.env.NODE_ENV === "production",

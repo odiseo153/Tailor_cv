@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import Stripe from 'stripe';
 
 const prisma = new PrismaClient();
-const stripe = new Stripe(process.env.NEXT_PUBLIC_API_STRIPE_SECRET_KEY, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2025-04-30.basil',
 });
 
