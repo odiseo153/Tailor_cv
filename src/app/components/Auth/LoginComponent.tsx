@@ -119,7 +119,7 @@ export default function LoginComponent({ isModal = false, onSuccess }: LoginComp
   };
 
   return (
-    <div className={isModal ? "" : "max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg"}>
+    <div className={isModal ? "" : "max-w-md mx-auto p-6 rounded-lg shadow-lg"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         {errorMessage && (
           <Alert variant="destructive" className="text-sm">

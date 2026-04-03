@@ -32,9 +32,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         
-        <CardContent>
           <LoginComponent />
-        </CardContent>
       </Card>
     </div>
   );

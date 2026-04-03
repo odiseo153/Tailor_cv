@@ -35,9 +35,7 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         
-        <CardContent>
           <RegisterComponent />
-        </CardContent>
       </Card>
     </div>
   );
