@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 60; // Configura el límite de timeout en Vercel a 60 segundos
+
 import {
   searchJobs,
   pingEverJobsServer,
