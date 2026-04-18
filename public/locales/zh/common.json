@@ -11,6 +11,7 @@
     "how_it_works": "工作原理",
     "why_tailorcv": "为什么选择TailorCV？",
     "generate_cv": "生成简历",
+    "job_search": "找工作",
     "contact": "联系我们",
     "close_menu": "关闭菜单",
     "open_menu": "打开菜单",
@@ -286,7 +287,8 @@
     "quick_actions": {
       "title": "快速操作",
       "generate_cv": "生成简历",
-      "billing": "账单和订阅"
+      "billing": "账单和订阅",
+      "job_search": "找工作"
     },
     "personal_info": {
       "title": "个人信息",
@@ -524,5 +526,56 @@
     "translating_to": "正在翻译为",
     "translation_complete": "翻译完成",
     "auto_translation": "自动翻译已激活"
+  },
+  "job_search": {
+    "hero": {
+      "badge": "Ever Jobs 集成",
+      "title": "在 TailorCV 内快速寻找合适的职位",
+      "description": "通过 TailorCV 的安全服务器代理查询精选招聘来源，看到合适的职位后直接打开原始职位页面。",
+      "curated_sources_value": "9 个来源",
+      "curated_sources_label": "MVP 精选来源",
+      "secure_proxy_value": "服务器代理",
+      "secure_proxy_label": "密钥不会暴露给客户端"
+    },
+    "form": {
+      "title": "搜索职位",
+      "description": "使用清晰的关键词、可选地点和可信来源，让结果更准确、更快。",
+      "search_term_label": "搜索关键词",
+      "search_term_placeholder": "Frontend developer, software engineer, designer...",
+      "location_label": "地点",
+      "location_placeholder": "Remote, Madrid, Santo Domingo...",
+      "remote_label": "仅限远程",
+      "remote_hint": "优先查看明确支持远程的职位。",
+      "results_label": "每次搜索结果数",
+      "results_placeholder": "选择数量",
+      "sources_label": "来源",
+      "sources_hint": "选择 TailorCV 要查询的招聘来源。",
+      "submit": "找工作"
+    },
+    "states": {
+      "idle_title": "准备开始",
+      "idle_description": "从职位或技能关键词开始，TailorCV 会在可信来源中为你查找。",
+      "loading": "正在搜索职位...",
+      "empty_title": "没有找到结果",
+      "empty": "没有找到符合这些筛选条件的职位。",
+      "error_title": "搜索暂时不可用",
+      "error": "当前无法获取职位信息。",
+      "server_unavailable_title": "职位服务器不可用",
+      "server_unavailable": "职位服务当前不可用，请稍后再试。",
+      "load_more_error_title": "无法加载更多职位"
+    },
+    "validation": {
+      "search_term": "请输入至少 2 个字符后再搜索。",
+      "sites": "请至少选择一个来源。"
+    },
+    "results": {
+      "summary": "找到 {count} 个职位",
+      "page_summary": "第 {currentPage} 页 / 共 {totalPages} 页",
+      "load_more": "加载更多",
+      "loading_more": "正在加载",
+      "view_offer": "查看职位",
+      "company_fallback": "未提供公司名称",
+      "remote_badge": "远程"
+    }
   }
 } 

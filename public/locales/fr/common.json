@@ -11,6 +11,7 @@
     "how_it_works": "Comment ça marche",
     "why_tailorcv": "Pourquoi TailorCV ?",
     "generate_cv": "Générer un CV",
+    "job_search": "Trouver un emploi",
     "contact": "Contactez-nous",
     "close_menu": "Fermer le menu",
     "open_menu": "Ouvrir le menu",
@@ -291,7 +292,8 @@
     "quick_actions": {
       "title": "Actions Rapides",
       "generate_cv": "Générer un CV",
-      "billing": "Facturation et Abonnement"
+      "billing": "Facturation et Abonnement",
+      "job_search": "Trouver un emploi"
     },
     "personal_info": {
       "title": "Informations Personnelles",
@@ -529,5 +531,56 @@
     "translating_to": "Traduction vers",
     "translation_complete": "Traduction terminée",
     "auto_translation": "Traduction automatique active"
+  },
+  "job_search": {
+    "hero": {
+      "badge": "Intégration Ever Jobs",
+      "title": "Trouvez des opportunités pertinentes sans quitter TailorCV",
+      "description": "Recherchez sur des sources d'emploi sélectionnées via le proxy sécurisé de TailorCV et ouvrez l'offre originale quand elle vous convient.",
+      "curated_sources_value": "9 sources",
+      "curated_sources_label": "Sources sélectionnées pour ce MVP",
+      "secure_proxy_value": "Proxy sécurisé",
+      "secure_proxy_label": "Les secrets restent sur le serveur"
+    },
+    "form": {
+      "title": "Rechercher des offres",
+      "description": "Utilisez une requête ciblée, un lieu optionnel et des sources fiables pour garder les résultats utiles et rapides.",
+      "search_term_label": "Recherche",
+      "search_term_placeholder": "Frontend developer, software engineer, designer...",
+      "location_label": "Lieu",
+      "location_placeholder": "Remote, Madrid, Santo Domingo...",
+      "remote_label": "Remote uniquement",
+      "remote_hint": "Prioriser les postes explicitement compatibles avec le travail à distance.",
+      "results_label": "Résultats par recherche",
+      "results_placeholder": "Choisir une quantité",
+      "sources_label": "Sources",
+      "sources_hint": "Choisissez les sources que TailorCV doit interroger.",
+      "submit": "Trouver des offres"
+    },
+    "states": {
+      "idle_title": "Prêt à rechercher",
+      "idle_description": "Commencez par un rôle ou une compétence et TailorCV interrogera des sources fiables.",
+      "loading": "Recherche des offres...",
+      "empty_title": "Aucun résultat",
+      "empty": "Nous n'avons trouvé aucune offre avec ces filtres.",
+      "error_title": "Recherche indisponible",
+      "error": "Impossible de récupérer les offres pour le moment.",
+      "server_unavailable_title": "Serveur d'offres indisponible",
+      "server_unavailable": "Le service d'offres est actuellement indisponible. Réessayez dans un instant.",
+      "load_more_error_title": "Impossible de charger plus d'offres"
+    },
+    "validation": {
+      "search_term": "Saisissez au moins 2 caractères pour rechercher des offres.",
+      "sites": "Sélectionnez au moins une source avant de lancer la recherche."
+    },
+    "results": {
+      "summary": "{count} offres trouvées",
+      "page_summary": "Page {currentPage} sur {totalPages}",
+      "load_more": "Charger plus",
+      "loading_more": "Chargement",
+      "view_offer": "Voir l'offre",
+      "company_fallback": "Entreprise non précisée",
+      "remote_badge": "Remote"
+    }
   }
 } 

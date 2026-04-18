@@ -11,6 +11,7 @@
     "how_it_works": "Cómo Funciona",
     "why_tailorcv": "¿Por qué TailorCV?",
     "generate_cv": "Generar CV",
+    "job_search": "Buscar trabajo",
     "contact": "Contáctanos",
     "close_menu": "Cerrar menú",
     "open_menu": "Abrir menú",
@@ -291,7 +292,8 @@
     "quick_actions": {
       "title": "Acciones Rápidas",
       "generate_cv": "Generar CV",
-      "billing": "Facturación y Suscripción"
+      "billing": "Facturación y Suscripción",
+      "job_search": "Buscar trabajo"
     },
     "personal_info": {
       "title": "Información Personal",
@@ -529,5 +531,56 @@
     "translating_to": "Traduciendo a",
     "translation_complete": "Traducción completada",
     "auto_translation": "Traducción automática activa"
+  },
+  "job_search": {
+    "hero": {
+      "badge": "Integración Ever Jobs",
+      "title": "Encuentra oportunidades relevantes sin salir de TailorCV",
+      "description": "Busca vacantes en fuentes curadas a través del proxy seguro de TailorCV y abre la oferta original cuando encuentres un buen encaje.",
+      "curated_sources_value": "9 fuentes",
+      "curated_sources_label": "Fuentes curadas para este MVP",
+      "secure_proxy_value": "Proxy seguro",
+      "secure_proxy_label": "Los secretos se quedan en el servidor"
+    },
+    "form": {
+      "title": "Buscar vacantes",
+      "description": "Usa una búsqueda precisa, una ubicación opcional y fuentes confiables para mantener los resultados útiles y rápidos.",
+      "search_term_label": "Término de búsqueda",
+      "search_term_placeholder": "Frontend developer, software engineer, designer...",
+      "location_label": "Ubicación",
+      "location_placeholder": "Remote, Madrid, Santo Domingo...",
+      "remote_label": "Solo remoto",
+      "remote_hint": "Prioriza vacantes que indiquen trabajo remoto de forma explícita.",
+      "results_label": "Resultados por búsqueda",
+      "results_placeholder": "Selecciona una cantidad",
+      "sources_label": "Fuentes",
+      "sources_hint": "Elige las fuentes de empleo que quieres consultar desde TailorCV.",
+      "submit": "Buscar trabajo"
+    },
+    "states": {
+      "idle_title": "Listo para buscar",
+      "idle_description": "Empieza con un rol o habilidad y TailorCV consultará fuentes de empleo confiables.",
+      "loading": "Buscando vacantes...",
+      "empty_title": "Sin resultados",
+      "empty": "No encontramos vacantes con esos filtros.",
+      "error_title": "Búsqueda no disponible",
+      "error": "No fue posible consultar las vacantes en este momento.",
+      "server_unavailable_title": "Servidor de vacantes no disponible",
+      "server_unavailable": "El servicio de vacantes no está disponible en este momento. Inténtalo de nuevo en unos minutos.",
+      "load_more_error_title": "No se pudieron cargar más vacantes"
+    },
+    "validation": {
+      "search_term": "Escribe al menos 2 caracteres para buscar vacantes.",
+      "sites": "Selecciona al menos una fuente antes de buscar."
+    },
+    "results": {
+      "summary": "{count} vacantes encontradas",
+      "page_summary": "Página {currentPage} de {totalPages}",
+      "load_more": "Cargar más",
+      "loading_more": "Cargando más",
+      "view_offer": "Ver oferta",
+      "company_fallback": "Empresa no especificada",
+      "remote_badge": "Remoto"
+    }
   }
 } 

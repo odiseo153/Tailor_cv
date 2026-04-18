@@ -1,7 +1,6 @@
 "use client"
 
 import EducationInfo from "./EducationInfoOptimized";
-//import CVPreference from "./Preference";
 import PersonalInfo from "./PersonalInfoOptimized";
 import Skills from "./SkillsOptimized";
 import SocialLinks from "./SocialLinksOptimized";

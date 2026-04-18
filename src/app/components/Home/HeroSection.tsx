@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { motion } from "framer-motion";
-import { nameApp } from "@/app/utils/NameApp";
 import CVPreview from "./CVPreview";
 import { useI18n } from "@/app/context/I18nContext";
-import { useEffect } from "react";
 
 export default function HeroSection() {
   const { t } = useI18n();

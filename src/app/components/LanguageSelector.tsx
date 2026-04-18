@@ -1,8 +1,9 @@
 "use client";
 
-import { useI18n } from "../context/I18nContext";
 import { useEffect, useState } from "react";
 import { Globe } from "lucide-react";
+
+import { useI18n } from "../context/I18nContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,14 +12,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import GoogleTranslate from "./GoogleTranslate";
 
-const languageNames = {
-  en: { name: "English", flag: "🇺🇸" },
-  es: { name: "Español", flag: "🇪🇸" },
-  fr: { name: "Français", flag: "🇫🇷" },
-  zh: { name: "中文", flag: "🇨🇳" },
-};
+const languageFlags = {
+  en: "\u{1F1FA}\u{1F1F8}",
+  es: "\u{1F1EA}\u{1F1F8}",
+  fr: "\u{1F1EB}\u{1F1F7}",
+  zh: "\u{1F1E8}\u{1F1F3}",
+} as const;
 
 export default function LanguageSelector({
   className,
@@ -28,7 +28,6 @@ export default function LanguageSelector({
   const { locale, changeLocale, t } = useI18n();
   const [mounted, setMounted] = useState(false);
 
-  // Evitar problemas de hidratación
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -37,27 +36,30 @@ export default function LanguageSelector({
     return null;
   }
 
+  const activeFlag =
+    languageFlags[locale as keyof typeof languageFlags] ?? "\u{1F310}";
+
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {/* Selector de idiomas nativo */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
             size="sm"
             className="flex items-center gap-2 px-3"
-            aria-label={t("languageSelector.label") || "Select Language"}
+            aria-label={t("languageSelector.label") || "Select language"}
           >
             <Globe className="h-4 w-4" />
+            <span className="text-base leading-none" aria-hidden="true">
+              {activeFlag}
+            </span>
             <span className="hidden md:inline-block">
-              {languageNames[locale as keyof typeof languageNames]?.flag ||
-                "🌐"}{" "}
-              {t("languageSelector.label")}
+              {t(`languageSelector.${locale}`)}
             </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {Object.entries(languageNames).map(([code, { name, flag }]) => (
+          {Object.entries(languageFlags).map(([code, flag]) => (
             <DropdownMenuItem
               key={code}
               onClick={() => changeLocale(code)}
@@ -66,14 +68,14 @@ export default function LanguageSelector({
                 locale === code && "font-bold bg-primary/10",
               )}
             >
-              <span className="mr-1">{flag}</span>
+              <span className="text-base leading-none" aria-hidden="true">
+                {flag}
+              </span>
               {t(`languageSelector.${code}`)}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-
-     
     </div>
   );
 }

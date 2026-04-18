@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import RegisterComponent from '@/app/components/Auth/RegisterComponent';
-import { Session } from '@/app/api/auth/[...nextauth]/route';
 import { Loading } from '@/app/components/Loading';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';

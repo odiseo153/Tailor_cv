@@ -11,6 +11,7 @@
     "how_it_works": "How It Works",
     "why_tailorcv": "Why TailorCV?",
     "generate_cv": "Generate Resume",
+    "job_search": "Find Jobs",
     "contact": "Contact Us",
     "close_menu": "Close menu",
     "open_menu": "Open menu",
@@ -292,7 +293,8 @@
     "quick_actions": {
       "title": "Quick Actions",
       "generate_cv": "Generate Resume",
-      "billing": "Billing and Subscription"
+      "billing": "Billing and Subscription",
+      "job_search": "Find Jobs"
     },
     "personal_info": {
       "title": "Personal Information",
@@ -530,5 +532,56 @@
     "translating_to": "Translating to",
     "translation_complete": "Translation complete",
     "auto_translation": "Auto-translation active"
+  },
+  "job_search": {
+    "hero": {
+      "badge": "Ever Jobs integration",
+      "title": "Find relevant opportunities without leaving TailorCV",
+      "description": "Search curated job sources through a secure TailorCV proxy and jump straight to the original job posting when something fits.",
+      "curated_sources_value": "9 sources",
+      "curated_sources_label": "Curated sources for the MVP",
+      "secure_proxy_value": "Server proxy",
+      "secure_proxy_label": "Secrets stay on the server"
+    },
+    "form": {
+      "title": "Search jobs",
+      "description": "Use a focused query, optional location, and trusted sources to keep results useful and fast.",
+      "search_term_label": "Search term",
+      "search_term_placeholder": "Frontend developer, software engineer, designer...",
+      "location_label": "Location",
+      "location_placeholder": "Remote, Madrid, Santo Domingo...",
+      "remote_label": "Remote only",
+      "remote_hint": "Prioritize roles that explicitly support remote work.",
+      "results_label": "Results per search",
+      "results_placeholder": "Select amount",
+      "sources_label": "Sources",
+      "sources_hint": "Pick the job sources you want TailorCV to query.",
+      "submit": "Search jobs"
+    },
+    "states": {
+      "idle_title": "Ready to search",
+      "idle_description": "Start with a role or skill and TailorCV will look across trusted sources.",
+      "loading": "Searching jobs...",
+      "empty_title": "No matches found",
+      "empty": "We couldn't find vacancies with those filters.",
+      "error_title": "Search unavailable",
+      "error": "We couldn't fetch job openings right now.",
+      "server_unavailable_title": "Job server unavailable",
+      "server_unavailable": "The job search service is currently unavailable. Please try again in a moment.",
+      "load_more_error_title": "Couldn't load more jobs"
+    },
+    "validation": {
+      "search_term": "Enter at least 2 characters to search for jobs.",
+      "sites": "Select at least one source before searching."
+    },
+    "results": {
+      "summary": "{count} jobs found",
+      "page_summary": "Page {currentPage} of {totalPages}",
+      "load_more": "Load more",
+      "loading_more": "Loading more",
+      "view_offer": "View offer",
+      "company_fallback": "Company not specified",
+      "remote_badge": "Remote"
+    }
   }
 } 

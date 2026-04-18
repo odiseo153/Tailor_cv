@@ -17,10 +17,11 @@
 
 # testing
 /coverage
-
+ 
 # next.js
 /.next/
 /out/
+/.agents/
 
 # production
 /build

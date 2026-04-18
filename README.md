@@ -71,6 +71,18 @@ Mantén tu información profesional organizada y lista para usar.
 
 ---
 
+### 💼 **Buscar Trabajo**
+
+Explora vacantes relevantes desde una nueva sección pública integrada en TailorCV.
+
+- Búsqueda por término, ubicación y filtro remoto
+- Selección de fuentes curadas y seguras
+- Proxy interno en Next.js para proteger secretos y centralizar validación
+- Resultados con paginación incremental y acceso directo a la oferta original
+- Estados claros de carga, vacío y error
+
+---
+
 ### 🎨 **Galería de Plantillas**
 
 Explora y selecciona entre múltiples diseños profesionales de CV.
@@ -207,7 +219,25 @@ STRIPE_WEBHOOK_SECRET="whsec_..."
 # IA Providers
 GROQ_API_KEY="gsk_..."
 OPENROUTER_API_KEY="sk-or-..."
+
+# Ever Jobs
+EVER_JOBS_API_URL="https://jobs-api.example.com"
+EVER_JOBS_API_KEY=""
+EVER_JOBS_DEFAULT_COUNTRY="USA"
+EVER_JOBS_DEFAULT_PAGE_SIZE="10"
+EVER_JOBS_TIMEOUT_MS="45000"
+EVER_JOBS_ALLOWED_SITES="google,indeed,remoteok,remotive,arbeitnow,weworkremotely,jobicy,himalayas,themuse"
 ```
+
+### Integración Ever Jobs
+
+La sección `Buscar trabajo` consume únicamente el endpoint interno `POST /api/job-search`.
+
+- El navegador nunca llama directamente al backend externo de empleos
+- `EVER_JOBS_API_URL` y `EVER_JOBS_API_KEY` viven solo en variables de entorno del servidor
+- TailorCV valida y sanea el input antes de reenviarlo al backend externo
+- Solo se permiten fuentes incluidas en `EVER_JOBS_ALLOWED_SITES`
+- La respuesta hacia el cliente se reduce a un modelo frontend estable y seguro
 
 ---
 

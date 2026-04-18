@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { CreditCard, FileText } from 'lucide-react'
+import { BriefcaseBusiness, CreditCard, FileText } from 'lucide-react'
 import Link from 'next/link'
 import { useSession } from "next-auth/react"
 import { Session } from "@/app/api/auth/[...nextauth]/route"
@@ -56,6 +56,13 @@ export default function Profile() {
                   <Link href="/profile/billing">
                     <CreditCard className="mr-3 h-5 w-5 text-primary" />
                     {t('profile.quick_actions.billing')}
+                  </Link>
+                </Button>
+
+                <Button asChild variant="outline" className="w-full justify-start hover:bg-gray-100 transition-colors">
+                  <Link href="/buscar-trabajo">
+                    <BriefcaseBusiness className="mr-3 h-5 w-5 text-primary" />
+                    {t('profile.quick_actions.job_search')}
                   </Link>
                 </Button>
 

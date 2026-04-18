@@ -53,8 +53,6 @@ import {
   CVAnalysisState,
 } from "../types/cv-analysis";
 import { processUploadedCV, validateCVContent } from "../utils/file-processing";
-// import AnalysisResults from "../components/CVAnalysis/AnalysisResults";
-// import ThinkingAnimation from "../components/ThinkingAnimation";
 import { generatePdf } from "../components/Edit_html/htmlToPdf";
 import dynamic from "next/dynamic";
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X, User, LogOut, Home, Settings, FileText, Info, Mail, ChevronDown } from "lucide-react"
+import { Menu, X, User, LogOut, Home, Settings, FileText, Info, Mail, ChevronDown, BriefcaseBusiness } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from 'next/navigation'
 import { nameApp } from "@/app/utils/NameApp"
@@ -77,6 +77,12 @@ export default function Header() {
       href: "/generar-cv",
       icon: <FileText className="h-4 w-4 mr-2" />,
       showWhen: "authenticated"
+    },
+    {
+      label: t("header.job_search"),
+      href: "/buscar-trabajo",
+      icon: <BriefcaseBusiness className="h-4 w-4 mr-2" />,
+      showWhen: "always"
     },
     {
       label: t("header.contact"),

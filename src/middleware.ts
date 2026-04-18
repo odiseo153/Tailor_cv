@@ -13,6 +13,7 @@ const publicRoutes = [
   '/auth/error',
   '/pricing',
   '/generar-cv',
+  '/buscar-trabajo',
   '/api',
   '/_next',
   '/images',
