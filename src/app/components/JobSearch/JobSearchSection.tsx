@@ -46,10 +46,10 @@ async function parseResponse(response: Response, t: (key: string) => string) {
   const payload = await response.json().catch(() => null);
 
   if (!response.ok) {
-    const message =
-      payload?.errorCode === "JOB_SEARCH_UNAVAILABLE"
-        ? t("job_search.states.error")
-        : t("job_search.states.error");
+    // Show the real server error first, with the i18n label as context
+    const serverMsg = payload?.error as string | undefined;
+    const label = t("job_search.states.error");
+    const message = serverMsg ? `${label}: ${serverMsg}` : label;
 
     throw new Error(message);
   }
@@ -198,11 +198,9 @@ export default function JobSearchSection({
         const payload = await response.json().catch(() => null);
 
         if (!response.ok || payload?.available !== true) {
-          throw new Error(
-            payload?.errorCode === "JOB_SERVER_UNAVAILABLE"
-              ? t("job_search.states.server_unavailable")
-              : t("job_search.states.server_unavailable"),
-          );
+          const serverMsg = payload?.error as string | undefined;
+          const label = t("job_search.states.server_unavailable");
+          throw new Error(serverMsg ? `${label}: ${serverMsg}` : label);
         }
 
         if (!cancelled) {

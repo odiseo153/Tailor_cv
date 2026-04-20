@@ -45,18 +45,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     if (error instanceof EverJobsClientError) {
-      console.error("Job search upstream error:", error.message);
+      const msg = error.message || "Job search upstream error";
+      console.error("Job search upstream error:", msg);
 
       return NextResponse.json(
-        { errorCode: "JOB_SEARCH_UNAVAILABLE" },
+        { errorCode: "JOB_SEARCH_UNAVAILABLE", error: msg },
         { status: error.status === 504 ? 504 : 502 },
       );
     }
 
-    console.error("Job search API error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Job search API error:", msg);
 
     return NextResponse.json(
-      { errorCode: "JOB_SEARCH_UNAVAILABLE" },
+      { errorCode: "JOB_SEARCH_UNAVAILABLE", error: msg },
       { status: 500 },
     );
   }
@@ -69,24 +71,20 @@ export async function GET() {
     return NextResponse.json({ available: true });
   } catch (error) {
     if (error instanceof EverJobsClientError) {
-      console.error("Job search ping error:", error.message);
+      const msg = error.message || "Job search server unavailable";
+      console.error("Job search ping error:", msg);
 
       return NextResponse.json(
-        {
-          available: false,
-          errorCode: "JOB_SERVER_UNAVAILABLE",
-        },
+        { available: false, errorCode: "JOB_SERVER_UNAVAILABLE", error: msg },
         { status: error.status === 504 ? 504 : 502 },
       );
     }
 
-    console.error("Job search ping API error:", error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Job search ping API error:", msg);
 
     return NextResponse.json(
-      {
-        available: false,
-        errorCode: "JOB_SERVER_UNAVAILABLE",
-      },
+      { available: false, errorCode: "JOB_SERVER_UNAVAILABLE", error: msg },
       { status: 500 },
     );
   }
