@@ -51,7 +51,7 @@ const EverJobsJobSchema = z.object({
 
 export const EverJobsSearchResponseSchema = z.object({
   count: z.number().int().nonnegative(),
-  total_pages: z.number().int().positive().nullable().optional(),
+  total_pages: z.number().int().nonnegative().nullable().optional(),
   current_page: z.number().int().positive().nullable().optional(),
   page_size: z.number().int().positive().nullable().optional(),
   jobs: z.array(EverJobsJobSchema),
