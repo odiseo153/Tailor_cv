@@ -581,9 +581,9 @@ export default function GenerarCV() {
 
     const fallbackRoot = editDoc.body;
     const sourceNode =
-      contentRoot && contentRoot instanceof HTMLElement
-        ? contentRoot
-        : fallbackRoot && fallbackRoot instanceof HTMLElement
+      contentRoot && contentRoot.nodeType === Node.ELEMENT_NODE
+        ? (contentRoot as Element)
+        : fallbackRoot && fallbackRoot.nodeType === Node.ELEMENT_NODE
           ? fallbackRoot
           : null;
 
