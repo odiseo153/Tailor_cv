@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, Suspense, lazy, useRef } from "react";
-import { generatePdf } from "./htmlToPdf";
+import { useState, Suspense, lazy, useRef, useEffect } from "react";
+import { generatePdfViaBrowser } from "@/lib/puppeteer-pdf/client";
 import { generateWord } from "./htmlToWord";
 import { optimizeHtmlForExport, validateHtmlForExport } from "./ExportManager";
 import { Download, Loader2, AlertCircle } from "lucide-react";
@@ -37,6 +37,99 @@ const CanvasEditor = dynamic(() => import("./CustomCanvas/CanvasEditor"), {
   ),
 });
 
+const A4_PAGE_WIDTH = "210mm";
+const A4_PAGE_HEIGHT = "297mm";
+
+function addPreviewPageStyles(html: string, pageIndex: number) {
+  const pageStyle = `
+    <style>
+      @page {
+        size: ${A4_PAGE_WIDTH} ${A4_PAGE_HEIGHT};
+        margin: 0;
+      }
+
+      html {
+        width: ${A4_PAGE_WIDTH};
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+      }
+
+      body {
+        width: ${A4_PAGE_WIDTH};
+        min-height: ${A4_PAGE_HEIGHT};
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+      }
+
+      .tailor-cv-page-content {
+        width: ${A4_PAGE_WIDTH};
+        min-height: ${A4_PAGE_HEIGHT};
+        padding: 10mm;
+        box-sizing: border-box;
+        overflow-wrap: break-word;
+        transform: translateY(calc(-${A4_PAGE_HEIGHT} * ${pageIndex}));
+        transform-origin: top left;
+      }
+
+      :where(body:not([style]) .tailor-cv-page-content) {
+        color: #111827;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 10.5pt;
+        line-height: 1.42;
+      }
+
+      :where(h1, h2, h3, p, ul, ol) {
+        margin-top: 0;
+      }
+
+      :where(h1) {
+        font-size: 18pt;
+        line-height: 1.1;
+        margin-bottom: 4mm;
+      }
+
+      :where(h2) {
+        border-bottom: 1px solid #d1d5db;
+        font-size: 13pt;
+        margin: 6mm 0 3mm;
+        padding-bottom: 1.5mm;
+      }
+
+      :where(h3) {
+        font-size: 11pt;
+        margin: 4mm 0 1mm;
+      }
+
+      :where(p) {
+        margin-bottom: 2mm;
+      }
+
+      :where(ul, ol) {
+        padding-left: 5mm;
+        margin-bottom: 3mm;
+      }
+
+      :where(li) {
+        margin-bottom: 1.5mm;
+      }
+    </style>
+  `;
+
+  const htmlWithStyles = /<\/head>/i.test(html)
+    ? html.replace(/<\/head>/i, `${pageStyle}</head>`)
+    : `<!DOCTYPE html><html><head>${pageStyle}</head><body>${html}</body></html>`;
+
+  if (/<body[^>]*>/i.test(htmlWithStyles)) {
+    return htmlWithStyles
+      .replace(/<body([^>]*)>/i, "<body$1><div class=\"tailor-cv-page-content\">")
+      .replace(/<\/body>/i, "</div></body>");
+  }
+
+  return htmlWithStyles;
+}
+
 interface HtmlEditorProps {
   initialHtml: string;
 }
@@ -47,6 +140,7 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   const [downloadType, setDownloadType] = useState("pdf");
   const [css, setCss] = useState("");
   const [loadCanvaEditor, setLoadCanvaEditor] = useState(false);
+  const [previewPageCount, setPreviewPageCount] = useState(1);
 
   const handleHtmlChange = (newHtml: string) => setHtml(newHtml);
 
@@ -64,6 +158,27 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
   };
 
   const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setPreviewPageCount(1);
+  }, [html, css]);
+
+  const updatePreviewPageCount = (iframe: HTMLIFrameElement) => {
+    const documentNode = iframe.contentDocument;
+
+    if (!documentNode) return;
+
+    const contentHeight = Math.max(
+      documentNode.documentElement.scrollHeight,
+      documentNode.body?.scrollHeight ?? 0,
+    );
+    const pageHeight =
+      iframe.clientHeight || documentNode.documentElement.clientHeight;
+
+    if (!contentHeight || !pageHeight) return;
+
+    setPreviewPageCount(Math.max(1, Math.ceil(contentHeight / pageHeight)));
+  };
 
   const [validationIssues, setValidationIssues] = useState<string[]>([]);
   const [showAdvancedExport, setShowAdvancedExport] = useState(false);
@@ -99,17 +214,15 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
       const optimizedHtml = optimizeHtmlForExport(fullHtml);
 
       if (downloadType === "pdf") {
-        const result = await generatePdf(optimizedHtml);
-        if (result && result.blob) {
-          const url = window.URL.createObjectURL(result.blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "cv.pdf";
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        }
+        const pdfBlob = await generatePdfViaBrowser(optimizedHtml);
+        const url = window.URL.createObjectURL(pdfBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "cv.pdf";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
       } else if (downloadType === "word") {
         await generateWord(optimizedHtml, {
           filename: "cv.docx",
@@ -230,20 +343,42 @@ export default function HtmlEditor({ initialHtml }: HtmlEditorProps) {
             <TabsContent value="preview" className="h-full">
               <div
                 ref={previewRef}
-                className="h-full w-full rounded-lg overflow-hidden border border-gray-200 shadow-inner bg-white"
+                className="h-full w-full rounded-lg overflow-auto border border-gray-200 shadow-inner bg-gray-100"
               >
-                <iframe
-                  srcDoc={`
+                <div className="flex flex-col items-center gap-8 p-6">
+                  {Array.from({ length: previewPageCount }).map(
+                    (_, pageIndex) => (
+                      <div key={pageIndex} className="bg-white shadow-xl">
+                        <iframe
+                          srcDoc={addPreviewPageStyles(
+                            `
                     <html>
                       <head>
                         <style>${css}</style>
                       </head>
                       <body>${html}</body>
                     </html>
-                  `}
-                  className="w-full h-[850px]"
-                  title="Vista previa del HTML"
-                />
+                  `,
+                            pageIndex,
+                          )}
+                          className="bg-white"
+                          onLoad={(event) => {
+                            if (pageIndex === 0) {
+                              updatePreviewPageCount(event.currentTarget);
+                            }
+                          }}
+                          scrolling="no"
+                          style={{
+                            width: A4_PAGE_WIDTH,
+                            height: A4_PAGE_HEIGHT,
+                            border: "none",
+                          }}
+                          title={`Vista previa del HTML - Pagina ${pageIndex + 1}`}
+                        />
+                      </div>
+                    ),
+                  )}
+                </div>
               </div>
             </TabsContent>
           </Tabs>

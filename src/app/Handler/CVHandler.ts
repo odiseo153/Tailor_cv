@@ -46,13 +46,28 @@ async function callAIWithFallback(
     }),
   });
 
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || "AI request failed");
+  const responseText = await res.text();
+  let payload: { content?: string; error?: string } | null = null;
+
+  try {
+    payload = responseText ? JSON.parse(responseText) : null;
+  } catch {
+    payload = null;
   }
 
-  const data = await res.json();
-  return data.content;
+  if (!res.ok) {
+    throw new Error(
+      payload?.error ||
+        responseText ||
+        `AI request failed with status ${res.status}`
+    );
+  }
+
+  if (!payload?.content) {
+    throw new Error("AI response did not include generated content");
+  }
+
+  return payload.content;
 }
 
 export class CVHandler {

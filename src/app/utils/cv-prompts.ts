@@ -47,6 +47,9 @@ export function buildGenerateCVSystemPrompt(params: {
     ### 🎯 Output Requirements
     - Produce **clean, semantic, valid HTML5**, ready for PDF or Word export.
     - Design must be **responsive**, minimalist, and elegant, using ${cssFramework}.
+    - Include all required visual styles inside the returned HTML with a <style> block or inline style attributes.
+    - Do not rely on external CSS, Tailwind utility classes, browser defaults, or app-level styles.
+    - Any class name used in the HTML must have a matching CSS rule in the returned <style> block.
     - Typography: **10-12pt** for body text, **14-16pt** for headings.
     - Margins: **10mm** on all sides.
     - Emphasize skills, experiences, and achievements that **best match the job offer**.
@@ -75,6 +78,7 @@ export function buildGenerateCVSystemPrompt(params: {
     ### ⚙️ Formatting Rules
     - Output **only HTML code** (no Markdown, explanations, or comments).
     - Use inline or embedded ${cssFramework} styling; avoid external dependencies.
+    - The HTML must render correctly inside a standalone iframe and in headless Chrome PDF export.
     - Ensure the design looks professional, clean, and export-friendly.
     - The result must feel **human-written**, with natural phrasing and contextual emphasis.
     
@@ -127,6 +131,8 @@ export function buildGenerateCVUserPrompt(params: {
     ### Guidelines:
     - Tailor the CV to highlight **skills, experiences, and achievements** matching the job offer.
     - Ensure a **responsive, printable layout** that looks great on screen and in PDF.
+    - Include a complete embedded <style> block for spacing, typography, section dividers, and layout.
+    - Do not output class-only markup unless every class is defined in the embedded CSS.
     - ${infoAdicional
       ? `Include this additional information where relevant: ${infoAdicional}.`
       : "No additional information."

@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { generatePdf } from './htmlToPdf';
+import { generatePdfViaBrowser } from '@/lib/puppeteer-pdf/client';
 import { generateWord } from './htmlToWord';
 
 export interface ExportOptions {
@@ -69,11 +69,7 @@ export const useExportManager = () => {
         message: 'Generating PDF document...'
       });
 
-      const result = await generatePdf(html);
-      
-      if (!result) {
-        throw new Error('PDF generation returned no result');
-      }
+      const result = await generatePdfViaBrowser(html);
 
       updateProgress({
         status: 'complete',
@@ -83,9 +79,8 @@ export const useExportManager = () => {
 
       return {
         success: true,
-        blob: result.blob,
+        blob: result,
         filename: options?.filename || 'cv.pdf',
-        pageCount: result.pageCount
       };
 
     } catch (error) {
@@ -336,6 +331,13 @@ export const validateHtmlForExport = (html: string): { valid: boolean; issues: s
   
   if (html.length > 1000000) { // 1MB limit
     issues.push('HTML content is too large (>1MB)');
+  }
+
+  const inlineImageMatches = html.match(/data:image\/[^;]+;base64,[^"'\s)]+/g) || [];
+  const inlineImageBytes = inlineImageMatches.reduce((total, match) => total + match.length, 0);
+
+  if (inlineImageMatches.length > 0 && inlineImageBytes > 2_000_000) {
+    issues.push('HTML contains large inline images that may produce oversized PDFs');
   }
   
   // Check for problematic elements
