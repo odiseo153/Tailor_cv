@@ -1,282 +1,252 @@
-# 📄 **TailorCV** - Generador de CVs Inteligente con IA
+# Tailor CV
 
-**TailorCV** es una aplicación completa que utiliza inteligencia artificial para generar y analizar currículums adaptados automáticamente a cada oferta laboral, optimizando el proceso de postulación.
+Tailor CV es una plataforma web para crear, optimizar y exportar curriculums con ayuda de IA, tomando como contexto una oferta laboral real y tu perfil profesional.
 
-![TailorCV Home](images/home.png)
+![Home Tailor CV](images/home.png)
 
----
+## Que es Tailor CV
 
-## 🚀 **Características Principales**
+El objetivo de Tailor CV es reducir el tiempo entre "encontrar una vacante" y "postular con un CV adaptado".
 
-### 🎯 **Generador de CV con IA**
+La aplicacion combina:
+- Perfil profesional persistente (datos personales, experiencia, educacion, skills y redes).
+- Generacion de CV asistida por IA con seleccion de modelo/proveedor.
+- Analisis de CV con recomendaciones accionables.
+- Sistema de suscripciones y metodos de pago con Stripe.
+- Busqueda de empleo integrada mediante backend seguro (`/api/job-search`).
 
-Crea currículums personalizados en segundos utilizando múltiples modelos de IA.
+## Que puedes hacer en Tailor CV
 
-![Generador CV](images/generador_cv_resultado.png)
+### 1. Generar un CV personalizado con IA
 
-**Funcionalidades:**
-- **Múltiples formatos de entrada** para ofertas laborales:
-  - 📄 PDF
-  - 🖼️ Imagen
-  - ✍️ Texto
-- **Selección de modelo IA** - Elige entre varios proveedores (Groq, OpenRouter) con fallback automático
-- **Plantillas personalizadas** - Sube tu propia plantilla en PDF o usa las prediseñadas
-- **Campo de carrera/profesión** - Personaliza según tu área profesional
-- **Información adicional** - Añade datos extra para enriquecer el CV
-- **Vista previa en tiempo real** con controles de zoom (20% - 200%)
-- **Modo pantalla completa** para mejor visualización
-- **Descarga directa en PDF**
-- **Integración con perfil de usuario** - Usa automáticamente tus datos guardados
+En `/generar-cv` puedes:
+- Cargar la oferta laboral como texto, PDF o imagen.
+- Elegir proveedor/modelo de IA (OpenRouter, Groq, DeepSeek, OpenAI, Gemini).
+- Adjuntar una plantilla PDF personalizada.
+- Anadir contexto adicional (carrera, informacion extra).
+- Ver vista previa multipagina A4.
+- Editar manualmente el contenido generado antes de exportar.
+- Exportar a PDF desde el backend (`/api/pdf-export`).
 
-![Vista Generando CV](images/vista_generador_cv_loading.png)
+![Resultado del generador](images/generador_cv_resultado.png)
+![Proceso de generacion](images/vista_generador_cv_loading.png)
 
----
+### 2. Analizar tu CV y recibir mejoras
 
-### 🔍 **Análisis de CV con IA**
+En la misma seccion (`/generar-cv`, pestana de analisis) puedes subir tu CV y obtener:
+- Puntuacion general.
+- Evaluacion de estructura y calidad.
+- Recomendaciones de mejora.
+- Sugerencias orientadas a puesto e industria.
 
-Obtén un análisis detallado de tu CV existente con puntuaciones y recomendaciones específicas.
+![Analisis de CV](images/analisis.png)
+![Resultados de analisis](images/analisis_result.png)
 
-![Análisis CV](images/analisis.png)
+### 3. Gestionar tu perfil profesional
 
-**El análisis incluye:**
+En `/profile` tienes un panel para:
+- Informacion personal.
+- Experiencia laboral.
+- Educacion.
+- Habilidades.
+- Redes sociales.
+- Preferencias de CV.
 
-| Categoría | Descripción |
-|-----------|-------------|
-| **Puntuación General** | Score global de tu CV (0-100) |
-| **Diseño Visual** | Evaluación del formato y presentación |
-| **Estructura** | Análisis de la organización del contenido |
-| **Calidad del Contenido** | Evaluación del texto y descripciones |
+Esta informacion alimenta la generacion automatica del CV.
 
-**Funcionalidades adicionales:**
-- **Optimización de Keywords** - Detecta palabras clave faltantes y recomienda nuevas
-- **Plan de Acción** - Pasos concretos para mejorar tu CV
-- **Ejemplos de Mejora** - Muestras de cómo mejorar secciones específicas
-- **Recursos Útiles** - Enlaces a herramientas y guías complementarias
-- **Formatos soportados**: PDF, DOC, DOCX, TXT
+### 4. Buscar vacantes desde Tailor CV
 
-![Resultados Análisis](images/analisis_result.png)
+En `/buscar-trabajo` puedes:
+- Buscar por termino y ubicacion.
+- Filtrar por sitios permitidos.
+- Paginar resultados.
+- Ir al enlace original de cada vacante.
 
----
+El cliente nunca expone la API externa: la busqueda pasa por `/api/job-search` con validacion y saneamiento.
 
-### 👤 **Gestión de Perfil**
+![Buscar trabajo](images/buscar_trabajo.png)
 
-Mantén tu información profesional organizada y lista para usar.
+### 5. Planes, suscripciones y facturacion
 
-- **Información Personal** - Datos de contacto y presentación
-- **Educación** - Historial académico completo
-- **Experiencia Laboral** - Empleos anteriores con descripciones
-- **Habilidades** - Skills técnicas y blandas
-- **Redes Sociales** - LinkedIn, GitHub, Portfolio, etc.
-- **Perfil Profesional** - Resumen ejecutivo personalizable
+Con Stripe integrado puedes:
+- Consultar planes (`/api/stripe/plans`).
+- Crear checkout de suscripcion (`/api/stripe/create-checkout-session`).
+- Gestionar suscripcion (`/api/stripe/subscriptions`).
+- Gestionar metodos de pago (`/api/stripe/payment-methods`).
+- Procesar eventos webhook (`/api/stripe/webhook`).
 
----
+## Arquitectura funcional
 
-### 💼 **Buscar Trabajo**
+- Frontend: Next.js App Router + React + TypeScript + Tailwind.
+- Backend: Route Handlers en `src/app/api/*`.
+- Auth: NextAuth (credenciales + Google + LinkedIn).
+- Base de datos: PostgreSQL con Prisma ORM.
+- IA: enrutador con fallback entre multiples proveedores (`/api/ai`).
+- Emails: Resend (`/api/email`).
+- Archivos/plantillas: manejo en `public/templates` via `/api/templates`.
 
-Explora vacantes relevantes desde una nueva sección pública integrada en TailorCV.
+## Stack tecnico
 
-- Búsqueda por término, ubicación y filtro remoto
-- Selección de fuentes curadas y seguras
-- Proxy interno en Next.js para proteger secretos y centralizar validación
-- Resultados con paginación incremental y acceso directo a la oferta original
-- Estados claros de carga, vacío y error
+- `next@15.3.8`
+- `react@18`
+- `typescript@5`
+- `prisma@6`
+- `next-auth@4`
+- `stripe@18` + `@stripe/react-stripe-js`
+- `zod`
+- `zustand`
+- `framer-motion`
+- `i18next` (ES, EN, FR, ZH)
 
----
+## Estructura principal del proyecto
 
-### 🎨 **Galería de Plantillas**
-
-Explora y selecciona entre múltiples diseños profesionales de CV.
-
-- Vista previa de plantillas
-- Selección rápida para generación
-- Diseños modernos y profesionales
-
----
-
-### 🌍 **Soporte Multi-idioma**
-
-La aplicación está disponible en varios idiomas:
-
-| Idioma | Código |
-|--------|--------|
-| 🇪🇸 Español | `es` |
-| 🇺🇸 English | `en` |
-| 🇫🇷 Français | `fr` |
-| 🇨🇳 中文 | `zh` |
-
----
-
-## 🛠️ **Tecnologías Utilizadas**
-
-| Categoría | Tecnologías |
-|-----------|-------------|
-| **Frontend** | Next.js 14, React, TypeScript, Tailwind CSS |
-| **UI Components** | Shadcn/UI, Radix UI, Framer Motion |
-| **Backend** | Next.js API Routes, Prisma ORM |
-| **Base de Datos** | PostgreSQL |
-| **Autenticación** | NextAuth.js |
-| **IA** | Groq, OpenRouter (DeepSeek, Gemini, etc.) |
-| **Pagos** | Stripe |
-| **PDF** | PDF.js, html-to-pdf |
-
----
-
-## 💳 **Sistema de Suscripciones con Stripe**
-
-La aplicación incluye un sistema completo de suscripciones.
-
-### Planes Disponibles
-
-| Plan | Características |
-|------|-----------------|
-| **Básico** | Funciones esenciales |
-| **Profesional** | Más generaciones y análisis |
-| **Premium** | Acceso ilimitado + features exclusivos |
-
-### Características del Sistema
-
-- ✅ Checkout seguro con Stripe
-- ✅ Webhooks para eventos (renovaciones, cancelaciones)
-- ✅ Panel de gestión de suscripción
-- ✅ Gestión de métodos de pago
-- ✅ Historial de facturación
-
-### Configuración
-
-1. Crea una cuenta en [Stripe](https://stripe.com)
-2. Obtén tus claves API desde el [Dashboard de Stripe](https://dashboard.stripe.com/apikeys)
-3. Configura las variables de entorno en tu archivo `.env`:
-
-```env
-STRIPE_SECRET_KEY=sk_test_tu_clave_secreta
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_tu_clave_publica
-STRIPE_WEBHOOK_SECRET=whsec_tu_secreto_de_webhook
+```text
+src/
+  app/
+    api/                  # Route Handlers (IA, Stripe, auth, perfil, jobs, etc.)
+    generar-cv/           # Generador + analisis de CV
+    buscar-trabajo/       # Buscador de vacantes
+    profile/              # Panel de perfil
+    components/           # UI de dominio
+  lib/
+    ever-jobs/            # Cliente, schemas y mappers de busqueda laboral
+    puppeteer-pdf/        # Exportacion PDF del HTML generado
+  stores/                 # Estado global (Zustand)
+prisma/
+  schema.prisma
+  migrations/
+public/
+  locales/
+  templates/
+images/                   # Capturas para documentacion
 ```
 
-4. Para el Webhook de Stripe (desarrollo local):
-   ```bash
-   npm install -g stripe-cli
-   stripe listen --forward-to localhost:3000/api/stripe/webhook
-   ```
+## Instalacion y ejecucion local
 
-5. Ejecuta las migraciones:
-   ```bash
-   npx prisma migrate dev
-   npx ts-node prisma/seed-subscriptions.ts
-   ```
-
----
-
-## 🔧 **Instalación y Configuración**
-
-### Requisitos Previos
+### Requisitos
 
 - Node.js 18+
 - PostgreSQL
-- Cuenta en Stripe (para pagos)
-- API Keys de proveedores de IA (Groq, OpenRouter)
+- Cuenta Stripe (si usaras pagos)
+- Al menos una API key de proveedor IA
 
-### Pasos de Instalación
+### Pasos
 
 ```bash
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/tailor-cv.git
-
-# Instalar dependencias
+# 1) Instalar dependencias
 npm install
-# o con bun
-bun install
 
-# Configurar variables de entorno
+# 2) Configurar variables
 cp .env.example .env
-# Editar .env con tus credenciales
 
-# Ejecutar migraciones
+# 3) Migrar base de datos
 npx prisma migrate dev
 
-# Sembrar datos iniciales
-npx prisma db seed
+# 4) (Opcional) seed de datos
+npm run seed
+node prisma/seed-subscriptions.js
 
-# Iniciar en desarrollo
+# 5) Ejecutar en desarrollo
 npm run dev
 ```
 
-### Variables de Entorno Requeridas
+## Variables de entorno
+
+### Base de datos y auth
 
 ```env
-# Base de datos
 DATABASE_URL="postgresql://..."
+NEXTAUTH_SECRET="..."
+APP_URL="http://localhost:3000"
+```
 
-# NextAuth
-NEXTAUTH_SECRET="tu-secreto"
-NEXTAUTH_URL="http://localhost:3000"
+### OAuth (social login)
 
-# Stripe
+```env
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+LINKEDIN_CLIENT_ID="..."
+LINKEDIN_CLIENT_SECRET="..."
+```
+
+### Proveedores IA
+
+```env
+OPENROUTER_API_KEY="..."
+GROQ_API_KEY="..."
+DEEPSEEK_API_KEY="..."
+OPENAI_API_KEY="..."
+GEMINI_API_KEY="..."
+```
+
+### Stripe
+
+```env
 STRIPE_SECRET_KEY="sk_..."
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_..."
 STRIPE_WEBHOOK_SECRET="whsec_..."
+NEXT_PUBLIC_API_STRIPE_PUBLIC_KEY="pk_..."
+```
 
-# IA Providers
-GROQ_API_KEY="gsk_..."
-OPENROUTER_API_KEY="sk-or-..."
+### Jobs + email + PDF
 
-# Ever Jobs
-EVER_JOBS_API_URL="https://jobs-api.example.com"
-EVER_JOBS_API_KEY=""
+```env
+EVER_JOBS_API_URL="https://..."
+EVER_JOBS_API_KEY="..."
 EVER_JOBS_DEFAULT_COUNTRY="USA"
 EVER_JOBS_DEFAULT_PAGE_SIZE="10"
 EVER_JOBS_TIMEOUT_MS="45000"
 EVER_JOBS_ALLOWED_SITES="google,indeed,remoteok,remotive,arbeitnow,weworkremotely,jobicy,himalayas,themuse"
+RESEND_API_KEY="re_..."
+CHROME_PATH="" # opcional, para exportacion PDF en servidores especificos
 ```
 
-### Integración Ever Jobs
+## Scripts disponibles
 
-La sección `Buscar trabajo` consume únicamente el endpoint interno `POST /api/job-search`.
+```bash
+npm run dev      # Desarrollo
+npm run build    # Prisma generate + build de Next
+npm run start    # Produccion
+npm run lint     # Lint
+npm run seed     # Seed base
+```
 
-- El navegador nunca llama directamente al backend externo de empleos
-- `EVER_JOBS_API_URL` y `EVER_JOBS_API_KEY` viven solo en variables de entorno del servidor
-- TailorCV valida y sanea el input antes de reenviarlo al backend externo
-- Solo se permiten fuentes incluidas en `EVER_JOBS_ALLOWED_SITES`
-- La respuesta hacia el cliente se reduce a un modelo frontend estable y seguro
+## Endpoints clave
 
----
+- `POST /api/ai`: generacion y fallback de IA.
+- `GET /api/ai-models`: listado dinamico de modelos por proveedor.
+- `POST /api/job-search`: busqueda de empleo segura via backend.
+- `GET|POST|DELETE /api/templates`: gestion de plantillas PDF.
+- `POST /api/pdf-export`: exportacion de HTML a PDF.
+- `POST /api/email`: envio de feedback por correo.
+- `GET /api/stripe/plans`: planes disponibles.
+- `POST /api/stripe/create-checkout-session`: checkout de suscripcion.
+- `GET|PATCH|DELETE /api/stripe/subscriptions`: gestion de suscripcion.
+- `GET|POST|DELETE /api/stripe/payment-methods`: gestion de tarjetas.
 
-## 📌 **Próximas Funcionalidades**
+## Modelo de datos (Prisma)
 
-- [ ] Mejoras en el análisis semántico de ofertas
-- [ ] Editor visual de CV en tiempo real
-- [ ] Integración con plataformas de empleo (LinkedIn, Indeed)
-- [ ] Exportación a múltiples formatos (Word, PNG)
-- [ ] Versiones históricas de CVs
-- [ ] Compartir CV con link público
+Entidades principales:
+- `User`
+- `WorkExperience`
+- `Education`
+- `Skill`
+- `SocialLink`
+- `CvPreferences`
+- `Subscription`
+- `PaymentMethod`
+- `SubscriptionPlan`
 
----
+Relacion central: `User` conecta perfil, preferencias de CV y facturacion.
 
-## 🤝 **Contribuir**
+## Estado actual del proyecto
 
-Las contribuciones son bienvenidas. Por favor:
+Tailor CV ya funciona como producto completo para:
+- Crear CVs orientados a vacantes.
+- Analizar CVs existentes.
+- Gestionar perfil profesional.
+- Buscar ofertas laborales.
+- Monetizar con suscripciones.
 
-1. Fork el repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
----
-
-## 📄 **Licencia**
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
----
-
-## 📢 **Feedback**
-
-¿Tienes ideas o sugerencias? ¡Tu feedback es importante!
-
-- Abre un [Issue](https://github.com/tu-usuario/tailor-cv/issues)
-- Contacta por email: tu-email@ejemplo.com
-
----
-
-**Desarrollado con ❤️ usando Next.js y IA**
+Si quieres, el siguiente paso puede ser separar este README en:
+- README para usuarios finales.
+- README tecnico para desarrolladores.
