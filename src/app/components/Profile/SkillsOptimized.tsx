@@ -412,10 +412,9 @@ SkillItem.displayName = 'SkillItem';
 // Main Skills component with comprehensive optimizations
 const Skills = memo<SkillProps>(({ className }) => {
   const { t } = useI18n();
-  const { data: session, status, update } = useSession() as {
+  const { data: session, status } = useSession() as {
     data: Session | null;
     status: string;
-    update: (data: Partial<Session["user"]>) => Promise<Session | null>;
   };
 
   // State management
@@ -429,9 +428,17 @@ const Skills = memo<SkillProps>(({ className }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [errors, setErrors] = useState<SkillErrors>({});
+  const lastFetchedUserIdRef = useRef<string | null>(null);
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
+  const focusFirstInvalidField = useCallback(() => {
+    requestAnimationFrame(() => {
+      const firstInvalid = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
 
   // Memoized initial form data
   const initialFormData = useMemo(() => ({
@@ -463,10 +470,12 @@ const Skills = memo<SkillProps>(({ className }) => {
 
   // Effects
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      getSkillsData();
-    }
-  }, [status, session, getSkillsData]);
+    const userId = session?.user?.id;
+    if (status !== "authenticated" || !userId) return;
+    if (lastFetchedUserIdRef.current === userId) return;
+    lastFetchedUserIdRef.current = userId;
+    getSkillsData();
+  }, [status, session?.user?.id, getSkillsData]);
 
   // Form validation
   const validateForm = useCallback((data: SkillFormData): boolean => {
@@ -539,6 +548,7 @@ const Skills = memo<SkillProps>(({ className }) => {
   // CRUD operations
   const addSkill = useCallback(async () => {
     if (!validateForm(formData) || !session?.user?.id) {
+      focusFirstInvalidField();
       return;
     }
 
@@ -579,10 +589,11 @@ const Skills = memo<SkillProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, session?.user?.id, validateForm, initialFormData, t]);
+  }, [formData, session?.user?.id, validateForm, initialFormData, t, focusFirstInvalidField]);
 
   const updateSkill = useCallback(async (id: string) => {
     if (!validateForm(formData)) {
+      focusFirstInvalidField();
       return;
     }
 
@@ -619,7 +630,7 @@ const Skills = memo<SkillProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, validateForm, t]);
+  }, [formData, validateForm, t, focusFirstInvalidField]);
 
   const deleteSkill = useCallback(async (id: string) => {
     if (!confirm(t('profile.skills.confirm_delete'))) {

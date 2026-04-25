@@ -408,10 +408,9 @@ EducationItem.displayName = 'EducationItem';
 
 // Main EducationInfo component with comprehensive optimizations
 const EducationInfo = memo<EducationInfoProps>(({ className }) => {
-  const { data: session, status, update } = useSession() as {
+  const { data: session, status } = useSession() as {
     data: Session | null;
     status: string;
-    update: (data: Partial<Session["user"]>) => Promise<Session | null>;
   };
 
   // State management
@@ -427,9 +426,17 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [errors, setErrors] = useState<EducationErrors>({});
+  const lastFetchedUserIdRef = useRef<string | null>(null);
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
+  const focusFirstInvalidField = useCallback(() => {
+    requestAnimationFrame(() => {
+      const firstInvalid = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
 
   // Memoized initial form data
   const initialFormData = useMemo(() => ({
@@ -463,10 +470,12 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
 
   // Effects
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      getEducationData();
-    }
-  }, [status, session, getEducationData]);
+    const userId = session?.user?.id;
+    if (status !== "authenticated" || !userId) return;
+    if (lastFetchedUserIdRef.current === userId) return;
+    lastFetchedUserIdRef.current = userId;
+    getEducationData();
+  }, [status, session?.user?.id, getEducationData]);
 
   // Form validation
   const validateForm = useCallback((data: EducationFormData): boolean => {
@@ -550,6 +559,7 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
   // CRUD operations
   const addEducation = useCallback(async () => {
     if (!validateForm(formData) || !session?.user?.id) {
+      focusFirstInvalidField();
       return;
     }
 
@@ -590,10 +600,11 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, session?.user?.id, validateForm, initialFormData]);
+  }, [formData, session?.user?.id, validateForm, initialFormData, focusFirstInvalidField]);
 
   const updateEducation = useCallback(async (id: string) => {
     if (!validateForm(formData)) {
+      focusFirstInvalidField();
       return;
     }
 
@@ -635,7 +646,7 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, validateForm, session?.user?.id]);
+  }, [formData, validateForm, session?.user?.id, focusFirstInvalidField]);
 
   const deleteEducation = useCallback(async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar esta información educativa?")) {

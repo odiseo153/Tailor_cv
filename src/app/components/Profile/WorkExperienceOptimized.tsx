@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Pencil, Plus, Trash2, X, CheckIcon, Loader2, CalendarIcon, Briefcase, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
+import { Pencil, Plus, Trash2, X, CheckIcon, Loader2, CalendarIcon, Briefcase, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Message } from "@/app/utils/Message";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -398,15 +398,11 @@ const ExperienceItem = memo<{
                         onClick={onToggleExpand}
                         className="h-8 w-8"
                       >
-                        {isExpanded ? (
-                          <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        )}
+                        {isExpanded ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{isExpanded ? "Contraer" : "Expandir"}</p>
+                      <p>{isExpanded ? "Ocultar detalle" : "Ver detalle"}</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -415,6 +411,18 @@ const ExperienceItem = memo<{
           </div>
         </div>
         
+        {!isEditing && experience.description && (
+          <div className="mt-3">
+            <p className="text-sm text-muted-foreground whitespace-pre-line">
+              {isExpanded
+                ? experience.description
+                : experience.description.length > 140
+                  ? `${experience.description.slice(0, 140)}...`
+                  : experience.description}
+            </p>
+          </div>
+        )}
+
         {/* Expandable Content */}
         <AnimatePresence>
           {isEditing ? (
@@ -462,18 +470,6 @@ const ExperienceItem = memo<{
                 />
               </div>
             </motion.div>
-          ) : isExpanded && experience.description ? (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="mt-4 pt-4 border-t"
-            >
-              <p className="text-sm text-muted-foreground whitespace-pre-line">
-                {experience.description}
-              </p>
-            </motion.div>
           ) : null}
         </AnimatePresence>
       </div>
@@ -485,7 +481,7 @@ ExperienceItem.displayName = 'WorkExperienceItem';
 
 // Main WorkExperienceInfo component with comprehensive optimizations
 const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   
   // State management
   const [experiences, setExperiences] = useState<WorkExperience[]>([]);
@@ -502,9 +498,17 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [errors, setErrors] = useState<WorkExperienceErrors>({});
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const lastFetchedUserIdRef = useRef<string | null>(null);
   
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
+  const focusFirstInvalidField = useCallback(() => {
+    requestAnimationFrame(() => {
+      const firstInvalid = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
 
   // Memoized initial form data
   const initialFormData = useMemo(() => ({
@@ -539,10 +543,12 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
 
   // Effects
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      getWorkData();
-    }
-  }, [status, session, getWorkData]);
+    const userId = session?.user?.id;
+    if (status !== "authenticated" || !userId) return;
+    if (lastFetchedUserIdRef.current === userId) return;
+    lastFetchedUserIdRef.current = userId;
+    getWorkData();
+  }, [status, session?.user?.id, getWorkData]);
 
   // Form validation
   const validateForm = useCallback((data: WorkExperienceFormData): boolean => {
@@ -626,6 +632,7 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
   // CRUD operations
   const addExperience = useCallback(async () => {
     if (!validateForm(formData) || !session?.user?.id) {
+      focusFirstInvalidField();
       return;
     }
 
@@ -666,10 +673,11 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, session?.user?.id, validateForm, initialFormData]);
+  }, [formData, session?.user?.id, validateForm, initialFormData, focusFirstInvalidField]);
 
   const updateExperience = useCallback(async (id: string) => {
     if (!validateForm(formData)) {
+      focusFirstInvalidField();
       return;
     }
 
@@ -706,7 +714,7 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, validateForm]);
+  }, [formData, validateForm, focusFirstInvalidField]);
 
   const deleteExperience = useCallback(async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar esta experiencia laboral?")) {

@@ -430,10 +430,9 @@ SocialLinkItem.displayName = 'SocialLinkItem';
 
 // Main SocialLinks component with comprehensive optimizations
 const SocialLinks = memo<SocialLinksProps>(({ className }) => {
-  const { data: session, status, update } = useSession() as {
+  const { data: session, status } = useSession() as {
     data: Session | null;
     status: string;
-    update: (data: Partial<Session["user"]>) => Promise<Session | null>;
   };
 
   // State management
@@ -447,9 +446,25 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [errors, setErrors] = useState<SocialLinkErrors>({});
+  const lastFetchedUserIdRef = useRef<string | null>(null);
 
   // Refs
   const formRef = useRef<HTMLFormElement>(null);
+  const focusFirstInvalidField = useCallback((preferPlatform = false) => {
+    requestAnimationFrame(() => {
+      if (preferPlatform) {
+        const platformTrigger = document.getElementById("add-platform");
+        if (platformTrigger) {
+          platformTrigger.focus();
+          platformTrigger.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+      }
+      const firstInvalid = document.querySelector<HTMLElement>('[aria-invalid="true"]');
+      firstInvalid?.focus();
+      firstInvalid?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }, []);
 
   // Memoized initial form data
   const initialFormData = useMemo(() => ({
@@ -481,10 +496,12 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
 
   // Effects
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      getSocialLinksData();
-    }
-  }, [status, session, getSocialLinksData]);
+    const userId = session?.user?.id;
+    if (status !== "authenticated" || !userId) return;
+    if (lastFetchedUserIdRef.current === userId) return;
+    lastFetchedUserIdRef.current = userId;
+    getSocialLinksData();
+  }, [status, session?.user?.id, getSocialLinksData]);
 
   // Form validation
   const validateForm = useCallback((data: SocialLinkFormData): boolean => {
@@ -590,6 +607,7 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
   // CRUD operations
   const addSocialLink = useCallback(async () => {
     if (!validateForm(formData) || !session?.user?.id) {
+      focusFirstInvalidField(!formData.platform);
       return;
     }
 
@@ -630,10 +648,11 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, session?.user?.id, validateForm, initialFormData]);
+  }, [formData, session?.user?.id, validateForm, initialFormData, focusFirstInvalidField]);
 
   const updateSocialLink = useCallback(async (id: string) => {
     if (!validateForm(formData)) {
+      focusFirstInvalidField(!formData.platform);
       return;
     }
 
@@ -675,7 +694,7 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
     } finally {
       setRefreshing(false);
     }
-  }, [formData, validateForm, session?.user?.id]);
+  }, [formData, validateForm, session?.user?.id, focusFirstInvalidField]);
 
   const deleteSocialLink = useCallback(async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar este enlace social?")) {
@@ -789,7 +808,7 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
                   onValueChange={handlePlatformChange} 
                   value={formData.platform || ""}
                 >
-                  <SelectTrigger className={errors.platform ? "border-destructive" : ""}>
+                  <SelectTrigger id="add-platform" className={errors.platform ? "border-destructive" : ""}>
                     <SelectValue placeholder="Selecciona una plataforma" />
                   </SelectTrigger>
                   <SelectContent>
