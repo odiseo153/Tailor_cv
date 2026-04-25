@@ -31,7 +31,7 @@
         "@radix-ui/react-tooltip": "^1.1.8",
         "@react-pdf-viewer/core": "^3.12.0",
         "@react-pdf-viewer/default-layout": "^3.12.0",
-        "@sparticuz/chromium": "^123.0.1",
+        "@sparticuz/chromium": "^147.0.2",
         "@stripe/react-stripe-js": "^3.7.0",
         "@stripe/stripe-js": "^7.3.0",
         "@tiptap/extension-color": "^2.26.1",
@@ -776,7 +776,7 @@
 
     "@selderee/plugin-htmlparser2": ["@selderee/plugin-htmlparser2@0.11.0", "", { "dependencies": { "domhandler": "^5.0.3", "selderee": "^0.11.0" } }, "sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ=="],
 
-    "@sparticuz/chromium": ["@sparticuz/chromium@123.0.1", "", { "dependencies": { "follow-redirects": "^1.15.6", "tar-fs": "^3.0.5" } }, "sha512-RPrA99xrddbXXZjhUH1WZkTCK3QDQ77t/0y+vULtiW1uAlWLBxorxGnNTuzBDk6eNolxOVFrXZ2aoAN+/eB5TA=="],
+    "@sparticuz/chromium": ["@sparticuz/chromium@147.0.2", "", { "dependencies": { "tar-fs": "^3.1.2" } }, "sha512-oqXyPAlGQuT9wdZAhcx4nmhehVgEsDc2adL/+FlX8qsLh/YyOgl9GQp8dPMDIBRmktxgA9c1QSNJIQUj2UeHhQ=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 

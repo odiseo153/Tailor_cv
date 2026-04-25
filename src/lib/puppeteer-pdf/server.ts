@@ -42,13 +42,18 @@ export async function findBrowserExecutable() {
 
 export async function renderPdfWithExternalBrowser(html: string) {
   const browserPath = await findBrowserExecutable();
+  if (process.env.VERCEL) {
+    chromium.setGraphicsMode = false;
+  }
+
   const launchArgs = process.env.VERCEL
     ? chromium.args
     : ["--no-sandbox", "--disable-setuid-sandbox"];
   const browser = await puppeteer.launch({
     executablePath: browserPath,
     args: launchArgs,
-    headless: true,
+    defaultViewport: process.env.VERCEL ? chromium.defaultViewport : undefined,
+    headless: process.env.VERCEL ? chromium.headless : true,
   });
 
   try {
