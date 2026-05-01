@@ -17,6 +17,13 @@ export async function PUT(request: NextRequest,{ params }: { params: Promise<{ i
     
     const resultado = await work_handler.update(id,jsonData);
 
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Work update failed', resultado },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({ resultado });
 
   } catch (error: any) {
@@ -35,6 +42,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     const resultado = await work_handler.delete(id);
 
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Work delete failed', resultado },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({ resultado });
   } catch (error: any) {
     console.error("Error processing request in /api/route:", error);
@@ -51,6 +65,13 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       }
   
       const resultado = await work_handler.get(id);
+
+      if (!resultado.success) {
+        return NextResponse.json(
+          { error: typeof resultado.data === 'string' ? resultado.data : 'Work fetch failed', resultado },
+          { status: 400 }
+        );
+      }
   
       return NextResponse.json({ resultado });
     } catch (error: any) {

@@ -17,6 +17,13 @@ export async function PUT(request: NextRequest,{ params }: { params: Promise<{ i
 
     const resultado = await social_handler.update(id,jsonData);
 
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Social link update failed', resultado },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({ resultado });
 
   } catch (error: any) {

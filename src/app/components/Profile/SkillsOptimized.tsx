@@ -573,6 +573,9 @@ const Skills = memo<SkillProps>(({ className }) => {
       }
       
       const data = await res.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || t('profile.skills.error_adding'));
+      }
       const newSkill = data.resultado.data;
       
       setSkills(prev => [...prev, newSkill]);
@@ -613,6 +616,9 @@ const Skills = memo<SkillProps>(({ className }) => {
       }
       
       const data = await res.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || t('profile.skills.error_updating'));
+      }
       const updatedSkill = data.resultado.data;
       
       setSkills(prev => prev.map(skill => 
@@ -644,8 +650,9 @@ const Skills = memo<SkillProps>(({ className }) => {
         method: "DELETE" 
       });
       
-      if (!res.ok) {
-        throw new Error(t('profile.skills.error_deleting'));
+      const data = await res.json();
+      if (!res.ok || !data?.resultado?.success) {
+        throw new Error(data?.error || data?.resultado?.data || t('profile.skills.error_deleting'));
       }
 
       setSkills(prev => prev.filter(skill => skill.id !== id));

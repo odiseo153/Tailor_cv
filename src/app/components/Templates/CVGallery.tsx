@@ -1,217 +1,189 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { ChevronDown, ChevronUp, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import CVModal from "./CVModal"
-import CVPreview from "./CVPreview"
-import { Message } from "@/app/utils/Message"
-import { useStore } from "@/app/context/AppContext"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
-interface CVTemplate {
-  id: number | string
-  name: string
-  pdfUrl: string
-  pngUrl?: string
-  author: string
-}
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+type CVTemplate = {
+  id: string;
+  name: string;
+  previewImage: string | null;
+  templateHtml: string;
+  isDefault: boolean;
+  isFavorite: boolean;
+  author: { name: string; profilePicture: string | null } | null;
+};
 
 export default function CVGallery() {
-  const [isExpanded, setIsExpanded] = useState(true)
-  const [selectedCV, setSelectedCV] = useState<CVTemplate | null>(null)
-  const [newTemplate, setNewTemplate] = useState<File | null>(null)
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
-  const [templates, setTemplates] = useState<CVTemplate[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { templateId, setTemplateId } = useStore()
-
-  const fetchTemplates = () => {
-    setIsLoading(true)
-    setError(null)
-    fetch("/api/templates")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`)
-        }
-        return res.json()
-      })
-      .then((data) => {
-        if (!data || !Array.isArray(data.pdfFiles)) {
-          throw new Error("Invalid API response structure")
-        }
-        setTemplates(
-          data.pdfFiles.map((file: any, index: number) => ({
-            id: file.id ?? index,
-            name: file.name || `Template ${index + 1}`,
-            pdfUrl: file.pdfUrl,
-            pngUrl: file.pngUrl,
-            author: file.author || "Odiseo",
-          }))
-        )
-      })
-      .catch((e) => {
-        console.error("Error fetching templates:", e)
-        setError(`Failed to load templates: ${e.message}`)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }
+  const [templates, setTemplates] = useState<CVTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [previewTemplate, setPreviewTemplate] = useState<CVTemplate | null>(null);
 
   useEffect(() => {
-    fetchTemplates()
-  }, [])
+    fetch("/api/templates")
+      .then((res) => res.json())
+      .then((payload) => setTemplates(payload.templates || []))
+      .finally(() => setIsLoading(false));
+  }, []);
 
-  const toggleExpand = () => setIsExpanded(!isExpanded)
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setNewTemplate(file)
-      const reader = new FileReader()
-      reader.onloadend = () => setPdfPreviewUrl(reader.result as string)
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const submitTemplate = async () => {
-    if (!newTemplate) return Message.errorMessage("Selecciona un archivo primero.")
-
-    const formData = new FormData()
-    formData.append("template", newTemplate)
-
+  const toggleFavorite = async (templateId: string, currentStatus: boolean) => {
+    setTemplates((prev) =>
+      prev.map((t) =>
+        t.id === templateId ? { ...t, isFavorite: !currentStatus } : t
+      )
+    );
     try {
-      const response = await fetch("/api/templates", { method: "POST", body: formData })
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || `Failed to upload: ${response.statusText}`)
-      }
-      const newTemplateData = await response.json()
-      Message.successMessage("Template subido con éxito")
-      setTemplates((prev) => [
-        ...prev,
-        {
-          id: newTemplateData.id,
-          name: newTemplateData.name || newTemplate.name,
-          pdfUrl: newTemplateData.pdfUrl,
-          pngUrl: newTemplateData.pngUrl,
-          author: newTemplateData.author || "Odiseo",
-        }
-      ])
-      setNewTemplate(null)
-      setPdfPreviewUrl(null)
-    } catch (e: any) {
-      console.error("Error uploading template:", e)
-      Message.errorMessage(`Error al subir el template: ${e.message}`)
-    }
-  }
-
-  const handleDeleteTemplate = async (templateToDelete: CVTemplate) => {
-    if (!confirm(`¿Estás seguro de eliminar la plantilla "${templateToDelete.name}"?`)) {
-      return;
-    }
-    
-    try {
-      const response = await fetch(`/api/templates?filename=${templateToDelete.name}`, { 
-        method: "DELETE" 
+      await fetch("/api/templates/favorites", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateId, favorite: !currentStatus }),
       });
-      
-      if (!response.ok) {
-        throw new Error(`Error al eliminar: ${response.statusText}`);
-      }
-      
-      // Si es el template seleccionado, borrarlo del almacenamiento
-      if (templateToDelete.id.toString() === templateId) {
-        setTemplateId('');
-      }
-      
-      // Si estaba seleccionado en el modal, cerrar el modal
-      if (selectedCV?.id === templateToDelete.id) {
-        setSelectedCV(null);
-      }
-      
-      // Eliminar de la lista local
-      setTemplates(templates.filter(t => t.id !== templateToDelete.id));
-      
-      Message.successMessage(`Plantilla "${templateToDelete.name}" eliminada`);
-    } catch (error: any) {
-      console.error("Error eliminando template:", error);
-      Message.errorMessage(`Error al eliminar: ${error.message}`);
+    } catch (error) {
+      // Revert on error
+      setTemplates((prev) =>
+        prev.map((t) =>
+          t.id === templateId ? { ...t, isFavorite: currentStatus } : t
+        )
+      );
     }
-  }
+  };
 
-  const handleSelectTemplate = (template: CVTemplate) => {
-    setSelectedCV(template)
+  if (isLoading) {
+    return (
+      <p className="py-8 text-center text-sm text-gray-500">
+        Cargando plantillas...
+      </p>
+    );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="w-full p-4 bg-gradient-to-b from-gray-50 to-white rounded-xl shadow-lg"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <button onClick={toggleExpand} className="flex items-center gap-2 text-xl font-bold text-gray-800">
-          {isExpanded ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-          Plantillas de CV <span className="text-gray-500">({templates.length})</span>
-        </button>
-      </div>
-
-      {isExpanded && (
-        <>
-          {isLoading && <p className="text-center text-gray-500 py-4">Cargando plantillas...</p>}
-          {error && <p className="text-center text-red-500 py-4">{error}</p>}
-
-          {!isLoading && !error && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              <Card className="flex flex-col items-center justify-between p-4 h-[280px] bg-white rounded-lg border border-dashed border-gray-300 hover:border-blue-500 transition-colors group">
-                <label htmlFor="upload-template" className="flex flex-col items-center justify-center text-center cursor-pointer flex-grow">
-                  <input
-                    id="upload-template"
-                    type="file"
-                    accept=".pdf"
-                    className="hidden"
-                    onChange={handleFileChange}
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {templates.map((template, index) => (
+        <motion.div
+          key={template.id}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.05 }}
+        >
+          <Card className="flex flex-col h-full overflow-hidden border-gray-200 transition-shadow hover:shadow-md cursor-pointer" onClick={() => setPreviewTemplate(template)}>
+            <CardContent className="flex flex-col h-full p-0">
+              <div className="relative h-72 shrink-0 overflow-hidden bg-gray-100 border-b border-gray-100 flex items-start justify-center">
+                {template.previewImage ? (
+                  <img
+                    src={template.previewImage}
+                    alt={template.name}
+                    className="h-full w-full object-cover"
                   />
-                  {pdfPreviewUrl ? (
-                    <img src={pdfPreviewUrl} alt="Preview Upload" className="mb-2 w-full h-32 object-contain rounded" />
-                  ) : (
-                    <div className="w-16 h-16 bg-gray-100 group-hover:bg-blue-100 rounded-full flex items-center justify-center mb-2 transition-colors">
-                      <Plus className="w-8 h-8 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                ) : (
+                  <iframe
+                    srcDoc={template.templateHtml}
+                    title={template.name}
+                    className="absolute top-0 border-0 bg-white"
+                    style={{
+                      width: "800px",
+                      height: "1130px",
+                      transform: "scale(0.45)",
+                      transformOrigin: "top center",
+                      pointerEvents: "none",
+                    }}
+                    sandbox="allow-same-origin allow-scripts"
+                  />
+                )}
+              </div>
+              <div className="flex flex-col flex-1 gap-3 p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900 line-clamp-1">{template.name}</p>
+                    <p className="text-sm text-gray-500">
+                      Disponible en el generador
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {template.isDefault && <Badge variant="secondary">Default</Badge>}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(template.id, template.isFavorite);
+                      }}
+                      className={`rounded-full p-2 transition-colors ${
+                        template.isFavorite
+                          ? "bg-red-50 text-red-500 hover:bg-red-100"
+                          : "bg-gray-50 text-gray-400 hover:bg-gray-100"
+                      }`}
+                      aria-label="Toggle favorite"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill={template.isFavorite ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        className="h-5 w-5"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-auto flex items-center h-8">
+                  {template.author && (
+                    <div className="flex items-center gap-2">
+                      {template.author.profilePicture ? (
+                        <img
+                          src={template.author.profilePicture}
+                          alt={template.author.name}
+                          className="h-6 w-6 rounded-full object-cover border border-gray-200"
+                        />
+                      ) : (
+                        <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold border border-blue-200">
+                          {template.author.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <span className="text-sm text-gray-600 font-medium line-clamp-1">
+                        {template.author.name}
+                      </span>
                     </div>
                   )}
-                  <p className="mt-1 text-sm text-gray-600 group-hover:text-blue-700 transition-colors break-words w-full px-2">
-                    {newTemplate?.name || "Subir PDF"}
-                  </p>
-                </label>
-                <Button
-                  onClick={submitTemplate}
-                  disabled={!newTemplate}
-                  size="sm"
-                  className="mt-2 w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-lg disabled:opacity-50"
-                >
-                  Subir
-                </Button>
-              </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))}
 
-              {templates.map((template) => (
-                <CVPreview
-                  key={template.id}
-                  template={template}
-                  onClick={() => handleSelectTemplate(template)}
-                  isSelected={selectedCV?.id === template.id}
-                  onDelete={() => handleDeleteTemplate(template)}
+      {/* Modal de Detalle */}
+      <Dialog open={!!previewTemplate} onOpenChange={(open) => !open && setPreviewTemplate(null)}>
+        <DialogContent className="max-w-[90vw] w-[90vw] h-[90vh] flex flex-col p-6">
+          <DialogHeader className="shrink-0">
+            <DialogTitle className="text-2xl">{previewTemplate?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 relative bg-gray-200 border border-gray-300 rounded-md overflow-y-auto flex justify-center p-4">
+            {previewTemplate?.previewImage ? (
+              <img
+                src={previewTemplate.previewImage}
+                alt={previewTemplate.name}
+                className="max-w-full h-auto object-contain bg-white shadow-sm"
+              />
+            ) : (
+              <div className="w-full max-w-[800px] min-h-[1130px] bg-white shadow-sm border border-gray-200">
+                <iframe
+                  srcDoc={previewTemplate?.templateHtml}
+                  title="Detalle"
+                  className="w-full h-full border-0"
+                  sandbox="allow-same-origin allow-scripts"
                 />
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
-      {selectedCV && <CVModal template={selectedCV} onClose={() => setSelectedCV(null)} />}
-    </motion.div>
-  )
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

@@ -55,6 +55,11 @@ import {
 import { processUploadedCV, validateCVContent } from "../utils/file-processing";
 import { generatePdfViaBrowser } from "@/lib/puppeteer-pdf/client";
 import dynamic from "next/dynamic";
+import { ModelSelector } from "./components/ModelSelector";
+import { TemplateSelector } from "./components/TemplateSelector";
+import { EditableJobData } from "./components/EditableJobData";
+
+type GenerationStep = "input" | "analyze" | "edit" | "preview";
 
 const AnalysisResults = dynamic(
   () => import("../components/CVAnalysis/AnalysisResults"),
@@ -293,6 +298,14 @@ const AccordionItem = ({
 };
 
 type AIModel = { provider: string; id: string; name: string };
+type JobOfferData = {
+  skills: string[];
+  requisitos: string[];
+  seniority: string;
+  keywords: string[];
+  jobTitle: string;
+  description: string;
+};
 
 // ─── Provider config & icons ────────────────────────────────────────────────
 const PROVIDERS_CONFIG = [
@@ -480,6 +493,17 @@ export default function GenerarCV() {
   const [isManualEditMode, setIsManualEditMode] = useState(false);
   const [isManualEditReady, setIsManualEditReady] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+
+  // Step-based generation states
+  const [currentStep, setCurrentStep] = useState<GenerationStep>("input");
+  const [jobOfferData, setJobOfferData] = useState<JobOfferData | null>(null);
+  const [isAnalyzingOffer, setIsAnalyzingOffer] = useState(false);
+  
+  // Editable job offer data
+  const [editableSkills, setEditableSkills] = useState<string>("");
+  const [editableRequisitos, setEditableRequisitos] = useState<string>("");
+  const [editableSeniority, setEditableSeniority] = useState<string>("");
+  const [editableKeywords, setEditableKeywords] = useState<string>("");
 
   // AI Model selection
   const [aiModels, setAiModels] = useState<AIModel[]>([]);
@@ -841,6 +865,155 @@ export default function GenerarCV() {
     } finally {
       setIsDownloadingPdf(false);
     }
+  };
+
+  const handleAnalyzeOffer = async () => {
+    if (
+      (ofertaType === "text" && typeof ofertaLaboral !== "string") ||
+      (typeof ofertaLaboral === "string" && !ofertaLaboral.trim())
+    ) {
+      Message.errorMessage(
+        t("cv_generator.job_offer.validation_error.text_empty"),
+      );
+      return;
+    }
+    if (ofertaType !== "text" && typeof ofertaLaboral === "string") {
+      Message.errorMessage(
+        t("cv_generator.job_offer.validation_error.file_missing"),
+      );
+      return;
+    }
+
+    setIsAnalyzingOffer(true);
+    setApiProgress(0);
+
+    try {
+      const progressCallback: ProgressCallback = {
+        onProgress: (progress) => setApiProgress(progress),
+      };
+
+      const { CVHandler } = await import("../Handler/CVHandler");
+      const cvHandler = new CVHandler();
+
+      const analyzedData = await cvHandler.extractJobOfferData(
+        ofertaLaboral,
+        ofertaType as "text" | "image" | "pdf",
+        progressCallback,
+        locale,
+        getModelConfig()
+      );
+
+      setJobOfferData(analyzedData);
+      setEditableSkills(analyzedData.skills.join(", "));
+      setEditableRequisitos(analyzedData.requisitos.join(", "));
+      setEditableSeniority(analyzedData.seniority);
+      setEditableKeywords(analyzedData.keywords.join(", "));
+      setCurrentStep("edit");
+      Message.successMessage("Job offer analyzed! Review and edit the extracted data.");
+    } catch (error: any) {
+      console.error("Error analyzing offer:", error);
+      Message.errorMessage(
+        "Failed to analyze job offer: " + (error.message || "Unknown error")
+      );
+    } finally {
+      setIsAnalyzingOffer(false);
+    }
+  };
+
+  const handleCreateCV = async (isSilentUpdate = false) => {
+    if (!isSilentUpdate) {
+      setIsLoading(true);
+      setData(null);
+      setApiProgress(0);
+    } else {
+      setIsUpdating(true);
+    }
+
+    try {
+      const progressCallback: ProgressCallback = {
+        onProgress: (progress) => setApiProgress(progress),
+      };
+
+      const templateIdToUse =
+        !plantillaCV && templateId ? templateId : undefined;
+      let userInfoString = informacion;
+
+      if (session) {
+        try {
+          const user = session.user;
+          const response = await fetch(`/api/apiHandler/user/${user.id}`);
+          if (response.ok) {
+            const { data } = await response.json();
+            userInfoString = informacion
+              ? `${informacion}\n${JSON.stringify(data)}`
+              : JSON.stringify(data);
+          }
+        } catch (error) {
+          console.error("User data fetch error:", error);
+        }
+      }
+
+      const { CVHandler } = await import("../Handler/CVHandler");
+      const cvHandler = new CVHandler();
+
+      const editableJobOfferData = {
+        skills: editableSkills.split(",").map(s => s.trim()).filter(Boolean),
+        requisitos: editableRequisitos.split(",").map(r => r.trim()).filter(Boolean),
+        seniority: editableSeniority,
+        keywords: editableKeywords.split(",").map(k => k.trim()).filter(Boolean),
+      };
+
+      const responseHtml = await cvHandler.crearCV(
+        ofertaLaboral,
+        ofertaType,
+        plantillaCV ?? template,
+        userInfoString,
+        carrera,
+        undefined,
+        templateIdToUse,
+        progressCallback,
+        locale,
+        getModelConfig(),
+        editableJobOfferData
+      );
+
+      setData(responseHtml);
+      setCurrentStep("preview");
+      if (!isSilentUpdate && session?.user?.id) {
+        const offerValue =
+          typeof ofertaLaboral === "string"
+            ? ofertaLaboral
+            : `[${ofertaLaboral.type}] ${ofertaLaboral.name}]`;
+
+        await fetch("/api/cv-histories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            htmlData: responseHtml.html,
+            offer: offerValue,
+            cvTemplateId: templateIdToUse ?? null,
+          }),
+        }).catch((historyError) => {
+          console.error("Error saving CV history:", historyError);
+        });
+      }
+      if (!isSilentUpdate)
+        Message.successMessage(t("cv_generator.messages.success"));
+    } catch (error: any) {
+      console.error("Error generating CV:", error);
+      if (!isSilentUpdate)
+        Message.errorMessage(
+          t("cv_generator.messages.error") +
+            (error.message || "Error desconocido"),
+        );
+    } finally {
+      setIsLoading(false);
+      setIsUpdating(false);
+    }
+  };
+
+  const goToStep = (step: GenerationStep) => {
+    setCurrentStep(step);
   };
 
   const handleSaveManualEdits = () => {
@@ -1334,9 +1507,23 @@ export default function GenerarCV() {
               {/* Actions */}
               <div className="p-4 border-t bg-white space-y-3">
                 <Button
-                  onClick={() => handleGenerate(false)}
-                  disabled={isLoading}
+                  onClick={() => handleAnalyzeOffer()}
+                  disabled={isAnalyzingOffer}
                   className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md transition-all active:scale-[0.98]"
+                >
+                  {isAnalyzingOffer ? (
+                    <LoaderSpin />
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" /> Analyze Job Offer
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => handleCreateCV(false)}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="w-full"
                 >
                   {isLoading ? (
                     <LoaderSpin />
@@ -1462,14 +1649,28 @@ export default function GenerarCV() {
 
             {/* Canvas Area */}
             <div className="flex-1 overflow-auto p-8 flex justify-center bg-gray-100 relative">
-              {isLoading ? (
+              {isLoading || isAnalyzingOffer ? (
                 <div className="flex flex-col items-center justify-center h-full">
                   <ThinkingAnimation
                     type="generate"
                     progress={apiProgress}
-                    message={t("thinking.generating_cv")}
+                    message={isAnalyzingOffer ? "Analyzing job offer..." : t("thinking.generating_cv")}
                   />
                 </div>
+              ) : currentStep === "edit" ? (
+                <EditableJobData
+                  editableSkills={editableSkills}
+                  editableRequisitos={editableRequisitos}
+                  editableSeniority={editableSeniority}
+                  editableKeywords={editableKeywords}
+                  onSkillsChange={setEditableSkills}
+                  onRequisitosChange={setEditableRequisitos}
+                  onSeniorityChange={setEditableSeniority}
+                  onKeywordsChange={setEditableKeywords}
+                  onBack={() => goToStep("input")}
+                  onCreateCV={() => handleCreateCV(false)}
+                  isLoading={isLoading}
+                />
               ) : data?.html ? (
                 <div
                   style={{

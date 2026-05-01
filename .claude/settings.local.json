@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(bun run build:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}

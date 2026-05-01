@@ -71,10 +71,11 @@
       "statsTagline": "Proven results",
       "statsTitle": "TailorCV in Numbers",
       "statsDescription": "Statistics that demonstrate our impact",
-      "stats": {
+"stats": {
         "users": "Active Users",
+        "rateValue": "85%",
         "rate": "Interview Rate",
-        "timeSaving": "Time Saving",
+        "timeSaving": "Time Saved",
         "support": "Support Available"
       },
       "ctaTitle": "Ready to boost your career?",
@@ -294,7 +295,8 @@
       "title": "Quick Actions",
       "generate_cv": "Generate Resume",
       "billing": "Billing and Subscription",
-      "job_search": "Find Jobs"
+      "job_search": "Find Jobs",
+      "cv_history": "CV History"
     },
     "personal_info": {
       "title": "Personal Information",

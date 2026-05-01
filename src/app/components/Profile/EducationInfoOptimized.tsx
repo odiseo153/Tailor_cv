@@ -584,6 +584,9 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
       }
       
       const data = await response.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al añadir información educativa");
+      }
       const newEducation = data.resultado.data;
       
       setEducationList(prev => [...prev, newEducation]);
@@ -629,6 +632,9 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
       }
       
       const data = await response.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al actualizar información educativa");
+      }
       const updatedEducation = data.resultado.data;
       
       setEducationList(prev => prev.map(edu => 
@@ -660,8 +666,9 @@ const EducationInfo = memo<EducationInfoProps>(({ className }) => {
         method: "DELETE"
       });
       
-      if (!response.ok) {
-        throw new Error("Error al eliminar información educativa");
+      const data = await response.json();
+      if (!response.ok || !data?.resultado?.success) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al eliminar información educativa");
       }
 
       setEducationList(prev => prev.filter(edu => edu.id !== id));

@@ -170,7 +170,7 @@ export default function About() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
               { value: "5,000+", label: t("home.about.stats.users") },
-              { value: "85%", label: t("home.about.stats.rate") },
+              { value: t("home.about.stats.rateValue") || "85%", label: t("home.about.stats.rate") },
               { value: "10x", label: t("home.about.stats.timeSaving") },
               { value: "24/7", label: t("home.about.stats.support") }
             ].map((stat, index) => (

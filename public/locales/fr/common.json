@@ -70,10 +70,11 @@
       "statsTagline": "Résultats prouvés",
       "statsTitle": "TailorCV en Chiffres",
       "statsDescription": "Statistiques qui démontrent notre impact",
-      "stats": {
+"stats": {
         "users": "Utilisateurs Actifs",
+        "rateValue": "85%",
         "rate": "Taux d'Entretiens",
-        "timeSaving": "Gain de Temps",
+        "timeSaving": "Temps Économisé",
         "support": "Support Disponible"
       },
       "ctaTitle": "Prêt à booster votre carrière?",

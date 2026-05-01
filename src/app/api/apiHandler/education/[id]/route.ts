@@ -23,6 +23,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     }
     
     const resultado = await education_handler.update(id, jsonData);
+
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Education update failed', resultado },
+        { status: 400 }
+      );
+    }
     
     return NextResponse.json({ resultado });
   } catch (error: any) {
@@ -39,6 +46,13 @@ export async function DELETE(request: NextRequest,{ params }: { params: Promise<
     const {id} =  await params;
     
     const resultado = await education_handler.delete(id);
+
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Education delete failed', resultado },
+        { status: 400 }
+      );
+    }
     
     return NextResponse.json({ resultado });
     

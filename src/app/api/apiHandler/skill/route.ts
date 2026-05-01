@@ -22,6 +22,13 @@ export async function POST(request: Request) {
 
     const resultado = await skill_handler.create(objectData);
 
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Skill creation failed', resultado },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({ resultado });
 
   } catch (error: any) {

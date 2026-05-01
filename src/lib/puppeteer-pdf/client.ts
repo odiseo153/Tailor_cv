@@ -97,14 +97,17 @@ async function optimizeHtmlImagesForPdf(html: string) {
   return documentNode.documentElement.outerHTML;
 }
 
-export async function generatePdfViaBrowser(html: string): Promise<Blob> {
+export async function generatePdfViaBrowser(
+  html: string,
+  templateId?: string,
+): Promise<Blob> {
   const optimizedHtml = await optimizeHtmlImagesForPdf(html);
   const response = await fetch("/api/pdf-export", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ html: optimizedHtml }),
+    body: JSON.stringify({ html: optimizedHtml, templateId }),
   });
 
   if (!response.ok) {

@@ -32,6 +32,13 @@ export async function POST(request: Request) {
       company, jobTitle, startDate, endDate: endDate || null, description, userId
     });
 
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Work creation failed', resultado },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({ resultado }, { status: 200 });
 
   } catch (error: any) {

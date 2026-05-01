@@ -65,10 +65,11 @@
       "statsTagline": "已证实的结果",
       "statsTitle": "TailorCV 数据统计",
       "statsDescription": "展示我们影响力的统计数据",
-      "stats": {
+"stats": {
         "users": "活跃用户",
+        "rateValue": "85%",
         "rate": "面试率",
-        "timeSaving": "时间节省",
+        "timeSaving": "节省时间",
         "support": "全天候支持"
       },
       "ctaTitle": "准备好提升您的职业生涯了吗？",

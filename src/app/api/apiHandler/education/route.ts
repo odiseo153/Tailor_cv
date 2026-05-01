@@ -28,6 +28,13 @@ export async function POST(request: Request) {
       endDate: parsedEndDate,
       userId
     });
+
+    if (!resultado.success) {
+      return NextResponse.json(
+        { error: typeof resultado.data === 'string' ? resultado.data : 'Education creation failed', resultado },
+        { status: 400 }
+      );
+    }
     
     return NextResponse.json({ resultado });
     

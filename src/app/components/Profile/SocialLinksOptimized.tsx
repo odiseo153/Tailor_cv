@@ -632,6 +632,9 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
       }
       
       const data = await response.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al añadir enlace social");
+      }
       const newLink = data.resultado.data;
       
       setSocialLinks(prev => [...prev, newLink]);
@@ -677,6 +680,9 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
       }
       
       const data = await response.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al actualizar enlace social");
+      }
       const updatedLink = data.resultado.data;
       
       setSocialLinks(prev => prev.map(link => 
@@ -708,8 +714,9 @@ const SocialLinks = memo<SocialLinksProps>(({ className }) => {
         method: "DELETE"
       });
       
-      if (!response.ok) {
-        throw new Error("Error al eliminar enlace social");
+      const data = await response.json();
+      if (!response.ok || !data?.resultado?.success) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al eliminar enlace social");
       }
 
       setSocialLinks(prev => prev.filter(link => link.id !== id));

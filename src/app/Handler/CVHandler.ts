@@ -34,7 +34,7 @@ const CSS_FRAMEWORK = "CSS";
 // Call AI via server-side API route (avoids CSP issues)
 async function callAIWithFallback(
   messages: { role: "system" | "user"; content: string }[],
-  config?: AIModelConfig
+  config?: AIModelConfig,
 ): Promise<string> {
   const res = await fetch("/api/ai", {
     method: "POST",
@@ -59,7 +59,7 @@ async function callAIWithFallback(
     throw new Error(
       payload?.error ||
         responseText ||
-        `AI request failed with status ${res.status}`
+        `AI request failed with status ${res.status}`,
     );
   }
 
@@ -90,7 +90,7 @@ export class CVHandler {
   async getInfoFromFile(
     file: File,
     fileType: "image" | "pdf",
-    progressCallback?: ProgressCallback
+    progressCallback?: ProgressCallback,
   ): Promise<any> {
     const model = genAI.getGenerativeModel({ model: API_CONFIG.GEMINI.model });
     const prompt = buildExtractCVInfoPrompt(fileType);
@@ -101,11 +101,17 @@ export class CVHandler {
       progressCallback?.onProgress?.(25);
 
       const filePart = {
-        inlineData: { data: fileData, mimeType: fileType === "pdf" ? "application/pdf" : "image/jpeg" },
+        inlineData: {
+          data: fileData,
+          mimeType: fileType === "pdf" ? "application/pdf" : "image/jpeg",
+        },
       };
 
-      const result = (await model.generateContent([prompt, filePart]));
-      const responseText = this.cleanGeneratedContent((await result.response).text(), "json");
+      const result = await model.generateContent([prompt, filePart]);
+      const responseText = this.cleanGeneratedContent(
+        (await result.response).text(),
+        "json",
+      );
       progressCallback?.onInfoProcessed?.();
       progressCallback?.onProgress?.(50);
 
@@ -126,7 +132,10 @@ export class CVHandler {
 
     try {
       const base64Data = await this.fileToBase64(file);
-      const parts = [{ text: prompt }, { inlineData: { mimeType: "application/pdf", data: base64Data } }];
+      const parts = [
+        { text: prompt },
+        { inlineData: { mimeType: "application/pdf", data: base64Data } },
+      ];
       const { response } = await model.generateContent(parts);
 
       return this.cleanGeneratedContent(response.text(), "html");
@@ -136,22 +145,34 @@ export class CVHandler {
     }
   }
 
-  async getPlantillaById(templateId: string, progressCallback?: ProgressCallback): Promise<string> {
+  async getPlantillaById(
+    templateId: string,
+    progressCallback?: ProgressCallback,
+  ): Promise<string> {
     try {
       const response = await fetch("/api/templates");
-      if (!response.ok) throw new Error(`Failed to fetch templates: ${response.statusText}`);
+      if (!response.ok)
+        throw new Error(`Failed to fetch templates: ${response.statusText}`);
 
-      const { pdfFiles } = await response.json();
-      const template = pdfFiles.find((t: any) => t.id.toString() === templateId);
-      if (!template) throw new Error(`Template with ID ${templateId} not found`);
+      const payload = await response.json();
+      const templates = payload.templates || [];
+      
+      if (templates.length === 0) {
+        throw new Error("No templates available");
+      }
 
-      const pdfResponse = await fetch(template.pdfUrl);
-      if (!pdfResponse.ok) throw new Error(`Failed to fetch PDF: ${pdfResponse.statusText}`);
+      const template = templates.find(
+        (t: any) => t.id.toString() === templateId,
+      );
+      if (!template)
+        throw new Error(`Template with ID ${templateId} not found`);
 
-      const pdfBlob = await pdfResponse.blob();
-      const pdfFile = new File([pdfBlob], template.name, { type: "application/pdf" });
+      const templateHtml = template.templateHtml;
+      if (!templateHtml) {
+        throw new Error(`Template ${templateId} has no HTML content`);
+      }
 
-      return this.getPlantillaFromPdf(pdfFile);
+      return templateHtml;
     } catch (error) {
       console.error("Error fetching template by ID:", error);
       throw error;
@@ -167,7 +188,7 @@ export class CVHandler {
     foto: string = "",
     progressCallback?: ProgressCallback,
     language: string = "en",
-    modelConfig?: AIModelConfig
+    modelConfig?: AIModelConfig,
   ): Promise<string> {
     const systemPrompt = buildGenerateCVSystemPrompt({
       cssFramework: CSS_FRAMEWORK,
@@ -193,7 +214,7 @@ export class CVHandler {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        modelConfig
+        modelConfig,
       );
       progressCallback?.onProgress?.(95);
       return this.cleanGeneratedContent(content, "html");
@@ -209,7 +230,7 @@ export class CVHandler {
     industry: string,
     progressCallback?: ProgressCallback,
     language: string = "en",
-    modelConfig?: AIModelConfig
+    modelConfig?: AIModelConfig,
   ): Promise<CVAnalysisResult> {
     const systemPrompt = buildAnalyzeCVSystemPrompt({
       language,
@@ -232,7 +253,7 @@ export class CVHandler {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
-        modelConfig
+        modelConfig,
       );
       progressCallback?.onProgress?.(75);
       const responseText = this.cleanGeneratedContent(rawResponse, "json");
@@ -248,8 +269,16 @@ export class CVHandler {
           return {
             overallScore: 50,
             overallExplanation: "Analysis incomplete - please try again.",
-            visual: { score: 50, explanation: "Analysis incomplete.", suggestions: [] },
-            structural: { score: 50, explanation: "Analysis incomplete.", suggestions: [] },
+            visual: {
+              score: 50,
+              explanation: "Analysis incomplete.",
+              suggestions: [],
+            },
+            structural: {
+              score: 50,
+              explanation: "Analysis incomplete.",
+              suggestions: [],
+            },
             content: {
               score: 50,
               explanation: "Analysis incomplete.",
@@ -274,6 +303,98 @@ export class CVHandler {
     }
   }
 
+  async extractJobOfferData(
+    ofertaData: string | File,
+    ofertaType: "text" | "image" | "pdf",
+    progressCallback?: ProgressCallback,
+    language: string = "en",
+    modelConfig?: AIModelConfig,
+  ): Promise<{
+    skills: string[];
+    requisitos: string[];
+    seniority: string;
+    keywords: string[];
+    jobTitle: string;
+    description: string;
+  }> {
+    progressCallback?.onProgress?.(5);
+
+    let ofertaTexto: string;
+    if (ofertaType === "text") {
+      ofertaTexto = ofertaData as string;
+      progressCallback?.onProgress?.(50);
+    } else {
+      const infoCV = await this.getInfoFromFile(
+        ofertaData as File,
+        ofertaType,
+        progressCallback,
+      );
+      ofertaTexto =
+        typeof ofertaData === "string" ? ofertaData : JSON.stringify(infoCV);
+      progressCallback?.onProgress?.(60);
+    }
+
+    const systemPrompt = `You are an expert HR analyst specialized in job offer analysis. Your task is to extract structured information from job offers to help tailor CVs.
+
+### Output Requirements
+Return ONLY a valid JSON object with this exact structure:
+
+{
+  "skills": ["list of specific technical skills required"],
+  "requisitos": ["list of requirements/qualifications"],
+  "seniority": "Entry|Mid|Senior|Lead|Principal|Manager or description",
+  "keywords": ["important keywords that should appear in the CV"],
+  "jobTitle": "the job title or position",
+  "description": "brief summary of the role"
+}
+
+### Guidelines:
+- Be specific with skills (e.g., "React", "TypeScript", "PostgreSQL", not just "programming")
+- Include both hard and soft skills
+- Extract seniority level from required experience
+- Keywords should be terms that ATS systems might search for
+- ${language === "es" ? "Return everything in Spanish" : "Return everything in English"}`;
+
+    const userPrompt = `Analyze this job offer and extract the structured information:
+
+${ofertaTexto}
+
+Return ONLY the JSON object.`;
+
+    try {
+      progressCallback?.onProgress?.(70);
+      const rawResponse = await callAIWithFallback(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        modelConfig,
+      );
+      progressCallback?.onProgress?.(90);
+
+      const responseText = this.cleanGeneratedContent(rawResponse, "json");
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch {
+        result = JSON.parse(jsonrepair(responseText));
+      }
+
+      progressCallback?.onProgress?.(100);
+      return {
+        skills: result.skills || [],
+        requisitos: result.requisitos || [],
+        seniority: result.seniority || "Mid",
+        keywords: result.keywords || [],
+        jobTitle: result.jobTitle || "",
+        description: result.description || "",
+      };
+    } catch (error) {
+      console.error("Error extracting job offer data:", error);
+      throw new Error(`Failed to analyze job offer: ${error}`);
+    }
+  }
+
   async crearCV(
     data: any,
     type: "text" | "image" | "pdf",
@@ -284,11 +405,20 @@ export class CVHandler {
     templateId?: string,
     progressCallback?: ProgressCallback,
     language: string = "en",
-    modelConfig?: AIModelConfig
+    modelConfig?: AIModelConfig,
+    jobOfferData?: {
+      skills: string[];
+      requisitos: string[];
+      seniority: string;
+      keywords: string[];
+    },
   ): Promise<{ html: string }> {
     progressCallback?.onProgress?.(5);
     try {
-      const infoCV = type === "text" ? data : await this.getInfoFromFile(data, type, progressCallback);
+      const infoCV =
+        type === "text"
+          ? data
+          : await this.getInfoFromFile(data, type, progressCallback);
       if (type === "text") {
         progressCallback?.onInfoProcessed?.();
         progressCallback?.onProgress?.(50);
@@ -298,7 +428,10 @@ export class CVHandler {
       if (plantilla && typeof plantilla !== "string") {
         plantillaHTML = await this.getPlantillaFromPdf(plantilla);
       } else if (templateId) {
-        plantillaHTML = await this.getPlantillaById(templateId, progressCallback);
+        plantillaHTML = await this.getPlantillaById(
+          templateId,
+          progressCallback,
+        );
       } else if (typeof plantilla === "string") {
         plantillaHTML = plantilla;
         progressCallback?.onTemplateProcessed?.();
@@ -309,16 +442,34 @@ export class CVHandler {
       }
 
       const ofertaTexto = type === "text" ? data : JSON.stringify(infoCV);
+
+      let additionalInfo = infoAdicional || "";
+      if (
+        jobOfferData &&
+        (jobOfferData.skills.length > 0 || jobOfferData.keywords.length > 0)
+      ) {
+        const formattedData = `
+Focus on these extracted requirements:
+- Skills to highlight: ${jobOfferData.skills.join(", ")}
+- Required qualifications: ${jobOfferData.requisitos.join(", ")}
+- Seniority level: ${jobOfferData.seniority}
+- Important keywords: ${jobOfferData.keywords.join(", ")}
+        `.trim();
+        additionalInfo = additionalInfo
+          ? `${additionalInfo}\n${formattedData}`
+          : formattedData;
+      }
+
       const cvHtml = await this.generarCVAdaptado(
         ofertaTexto,
         infoCV,
         plantillaHTML || "",
-        infoAdicional,
+        additionalInfo,
         carrera,
         foto,
         progressCallback,
         language,
-        modelConfig
+        modelConfig,
       );
 
       progressCallback?.onProgress?.(100);

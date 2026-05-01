@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL_LOCAL_MYSQL")
 }
 
@@ -25,13 +25,16 @@ model User {
   updatedAt        DateTime @updatedAt
   stripeCustomerId String?  @unique
 
-  workExperience WorkExperience[]
-  skills         Skill[]
-  education      Education[]
-  socialLinks    SocialLink[]
-  cvPreferences  CvPreferences?
-  subscription   Subscription?
-  paymentMethods PaymentMethod[]
+  workExperience    WorkExperience[]
+  skills            Skill[]
+  education         Education[]
+  socialLinks       SocialLink[]
+  cvPreferences     CvPreferences?
+  subscription      Subscription?
+  paymentMethods    PaymentMethod[]
+  cvHistories       cv_histories[]
+  favoriteTemplates UserFavoriteTemplate[]
+  cvTemplates       cv_templates[]
 }
 
 model WorkExperience {
@@ -137,4 +140,45 @@ model SubscriptionPlan {
   active        Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model cv_histories {
+  id             String        @id @default(uuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status         String        @default("pending")
+  html_data      String        @db.Text
+  offer          String        @db.Text
+  cv_template_id String?
+  cv_template    cv_templates? @relation(fields: [cv_template_id], references: [id], onDelete: SetNull)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
+}
+
+model cv_templates {
+  id            String                 @id @default(uuid())
+  name          String
+  preview_image String?                @db.Text
+  template_html String                 @db.Text
+  is_default    Boolean                @default(false)
+  createdAt     DateTime               @default(now())
+  authorId      String?
+  author        User?                  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  updatedAt     DateTime               @updatedAt
+  cvHistories   cv_histories[]
+  favorites     UserFavoriteTemplate[]
+}
+
+model UserFavoriteTemplate {
+  id         String       @id @default(uuid())
+  userId     String
+  templateId String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template   cv_templates @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+
+  @@unique([userId, templateId])
 }

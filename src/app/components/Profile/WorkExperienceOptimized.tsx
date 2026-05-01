@@ -657,6 +657,9 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
       }
       
       const data = await res.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al agregar experiencia");
+      }
       const newExperience = data.resultado.data;
       
       setExperiences(prev => [...prev, newExperience]);
@@ -697,6 +700,9 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
       }
       
       const data = await res.json();
+      if (!data?.resultado?.success || !data?.resultado?.data) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al actualizar experiencia");
+      }
       const updatedExperience = data.resultado.data;
       
       setExperiences(prev => prev.map(exp => 
@@ -728,8 +734,9 @@ const WorkExperienceInfo = memo<WorkExperienceProps>(({ className }) => {
         method: "DELETE" 
       });
       
-      if (!res.ok) {
-        throw new Error("Error al eliminar");
+      const data = await res.json();
+      if (!res.ok || !data?.resultado?.success) {
+        throw new Error(data?.error || data?.resultado?.data || "Error al eliminar");
       }
 
       setExperiences(prev => prev.filter(exp => exp.id !== id));

@@ -72,6 +72,7 @@
       "statsDescription": "Estadísticas que demuestran nuestro impacto",
       "stats": {
         "users": "Usuarios Activos",
+        "rateValue": "85%",
         "rate": "Tasa de Entrevistas",
         "timeSaving": "Ahorro de Tiempo",
         "support": "Soporte Disponible"
@@ -293,7 +294,8 @@
       "title": "Acciones Rápidas",
       "generate_cv": "Generar CV",
       "billing": "Facturación y Suscripción",
-      "job_search": "Buscar trabajo"
+      "job_search": "Buscar trabajo",
+      "cv_history": "Historial de CVs"
     },
     "personal_info": {
       "title": "Información Personal",
