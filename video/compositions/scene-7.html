@@ -1,0 +1,179 @@
+<div id="scene-7" class="scene-7" data-scene="7">
+  <div class="bg-particles" id="particles-container"></div>
+  <div class="logo-final">
+    <div class="logo-glow"></div>
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 40V8h8l8 24 8-24h8v32h-8V20l-8 20h-8l-8-20v20H8z" fill="url(#logo-grad-final)"/>
+      <defs>
+        <linearGradient id="logo-grad-final" x1="8" y1="8" x2="40" y2="40">
+          <stop stop-color="#00d4ff"/>
+          <stop offset="1" stop-color="#6366f1"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+  <h1 class="final-cta-text">Land better opportunities with AI</h1>
+  <div class="final-cta-btn">Get Started Free</div>
+  <div class="social-proof">
+    <span class="users-count">10,000+</span>
+    <span class="users-label">resumes optimized</span>
+  </div>
+</div>
+
+<style>
+.scene-7 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bg-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+@keyframes particle-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+}
+
+.particle-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #00d4ff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particle-float 8s linear infinite;
+}
+
+.logo-final {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.logo-final svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.6));
+}
+
+.logo-glow {
+  position: absolute;
+  inset: -30px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.4) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+.final-cta-text {
+  font-size: 52px;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: center;
+  max-width: 700px;
+  margin-top: 48px;
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+
+.final-cta-btn {
+  margin-top: 40px;
+  padding: 20px 48px;
+  background: linear-gradient(135deg, #00d4ff 0%, #6366f1 100%);
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.final-cta-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.4);
+}
+
+.social-proof {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.users-count {
+  font-size: 24px;
+  font-weight: 700;
+  color: #00d4ff;
+}
+
+.users-label {
+  font-size: 16px;
+  color: #52525b;
+}
+</style>
+
+<script>
+(function() {
+  const container = document.getElementById('particles-container');
+  for (let i = 0; i < 30; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'particle-dot';
+    dot.style.left = Math.random() * 100 + '%';
+    dot.style.top = Math.random() * 100 + 100 + '%';
+    dot.style.animationDelay = Math.random() * 8 + 's';
+    dot.style.animationDuration = (6 + Math.random() * 4) + 's';
+    dot.style.width = (2 + Math.random() * 4) + 'px';
+    dot.style.height = dot.style.width;
+    container.appendChild(dot);
+  }
+  
+  const tl = gsap.timeline({ paused: true });
+  
+  tl.from('.logo-final', {
+    scale: 0.3,
+    opacity: 0,
+    duration: 1,
+    ease: 'back.out(1.5)'
+  }, 0);
+  
+  tl.from('.final-cta-text', {
+    y: 40,
+    opacity: 0,
+    duration: 0.8,
+    ease: 'power3.out'
+  }, 1.2);
+  
+  tl.from('.final-cta-btn', {
+    scale: 0.8,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'back.out(1.5)'
+  }, 1.8);
+  
+  tl.from('.social-proof', {
+    y: 20,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 2.2);
+  
+  window.__timelines = window.__timelines || {};
+  window.__timelines['scene-7'] = tl;
+})();
+</script>

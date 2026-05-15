@@ -11,7 +11,6 @@ const publicRoutes = [
   '/auth/reset-password',
   '/auth/verify-email',
   '/auth/error',
-  '/pricing',
   '/generar-cv',
   '/buscar-trabajo',
   '/api',
@@ -85,12 +84,12 @@ export async function middleware(request: NextRequest) {
       'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
       'Content-Security-Policy': `
         default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval';
         style-src 'self' 'unsafe-inline';
-        img-src 'self' blob: data: https://*.stripe.com;
+        img-src 'self' blob: data:;
         font-src 'self';
-        connect-src 'self' https://api.stripe.com;
-        frame-src https://js.stripe.com https://hooks.stripe.com;
+        connect-src 'self';
+        frame-src 'self';
       `.replace(/\s+/g, ' ').trim(),
     };
 

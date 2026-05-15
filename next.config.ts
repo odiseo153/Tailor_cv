@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true, // If you're using strict mode
+  reactStrictMode: true,
   images: {
     // Enable optimization by default (remove unoptimized: true)
     remotePatterns: [

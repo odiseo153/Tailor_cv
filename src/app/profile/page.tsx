@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   BriefcaseBusiness,
-  CreditCard,
   FileClock,
   FileText,
 } from "lucide-react";
@@ -77,16 +76,6 @@ export default function Profile() {
                   <Link href="/generar-cv">
                     <FileText className="mr-3 h-5 w-5 text-primary" />
                     {t("profile.quick_actions.generate_cv")}
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full justify-start hover:bg-gray-100 transition-colors"
-                >
-                  <Link href="/profile/billing">
-                    <CreditCard className="mr-3 h-5 w-5 text-primary" />
-                    {t("profile.quick_actions.billing")}
                   </Link>
                 </Button>
                 <Button

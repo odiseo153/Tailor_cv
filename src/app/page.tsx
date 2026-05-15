@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import HeroSection from "./components/Home/HeroSection";
+import VideoPromoSection from "./components/Home/VideoPromoSection";
 
 // Lazy load non-critical sections below the fold
 const About = dynamic(() => import("./components/Home/About"));
@@ -15,6 +16,11 @@ export default function Home() {
         <section id="hero">
           <HeroSection />
         </section>
+        
+        <section id="video-promo">
+          <VideoPromoSection />
+        </section>
+        
         <section id="capabilities">
           <Capabilities />
         </section>

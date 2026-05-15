@@ -71,7 +71,7 @@
       "statsTagline": "Proven results",
       "statsTitle": "TailorCV in Numbers",
       "statsDescription": "Statistics that demonstrate our impact",
-"stats": {
+      "stats": {
         "users": "Active Users",
         "rateValue": "85%",
         "rate": "Interview Rate",
@@ -585,5 +585,60 @@
       "company_fallback": "Company not specified",
       "remote_badge": "Remote"
     }
+  },
+  "video": {
+    "title": "See TailorCV in Action",
+    "description": "Watch how TailorCV transforms your resume in minutes",
+    "scenes": {
+      "pain": {
+        "title": "Most resumes never get seen.",
+        "subtitle": "ATS systems filter out 70% of applications before a human sees them.",
+        "rejected": "Rejected",
+        "reviewTime": "Review Time",
+        "gatekeeper": "Gatekeeper"
+      },
+      "logo": {
+        "title": "TailorCV",
+        "subtitle": "AI-powered resume optimization",
+        "feature1": "ATS Optimized",
+        "feature2": "AI Writing",
+        "feature3": "Job Match"
+      },
+      "analysis": {
+        "title": "Job Analysis",
+        "subtitle": "AI analyzes requirements and finds the perfect match",
+        "match": "Match",
+        "compatibility": "Compatibility",
+        "high": "High"
+      },
+      "optimize": {
+        "title": "Resume Optimization",
+        "subtitle": "Transform your resume with AI-powered suggestions",
+        "original": "Built APIs",
+        "improved": "RESTful APIs serving 2M+ requests",
+        "atsScore": "ATS Score"
+      },
+      "templates": {
+        "title": "Templates & Export",
+        "subtitle": "Professional templates in PDF, DOCX, and HTML",
+        "modern": "Modern",
+        "minimal": "Minimal",
+        "professional": "Professional"
+      },
+      "interview": {
+        "title": "Interview Preparation",
+        "subtitle": "Practice with AI-generated interview questions",
+        "technical": "Technical",
+        "systemDesign": "System Design"
+      },
+      "cta": {
+        "title": "Land better opportunities with AI",
+        "button": "Get Started Free",
+        "usersCount": "10,000+ resumes optimized"
+      }
+    },
+    "feature1": "ATS Optimization",
+    "feature2": "AI-Powered",
+    "feature3": "Job Match"
   }
-} 
+}

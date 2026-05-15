@@ -1,0 +1,146 @@
+<div id="scene-2" class="scene-2" data-scene="2">
+  <div class="logo-container">
+    <div class="logo-glow"></div>
+    <div class="logo-mark">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 40V8h8l8 24 8-24h8v32h-8V20l-8 20h-8l-8-20v20H8z" fill="url(#logo-grad)"/>
+        <defs>
+          <linearGradient id="logo-grad" x1="8" y1="8" x2="40" y2="40">
+            <stop stop-color="#00d4ff"/>
+            <stop offset="1" stop-color="#6366f1"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+  </div>
+  <h1 class="scene-2-title">TailorCV</h1>
+  <p class="scene-2-subtitle">AI-powered resume optimization</p>
+  <div class="logo-chips">
+    <span class="chip">ATS Optimized</span>
+    <span class="chip">AI Writing</span>
+    <span class="chip">Job Match</span>
+  </div>
+</div>
+
+<style>
+.scene-2 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.logo-glow {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0, 212, 255, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(20px);
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.logo-mark {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-mark svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5));
+}
+
+.scene-2-title {
+  font-size: 80px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 48px;
+  letter-spacing: -3px;
+  background: linear-gradient(135deg, #ffffff 0%, #a1a1b0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.scene-2-subtitle {
+  font-size: 28px;
+  color: #00d4ff;
+  margin-top: 16px;
+  font-weight: 500;
+}
+
+.logo-chips {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.chip {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  font-size: 14px;
+  color: #a1a1b0;
+  letter-spacing: 0.5px;
+}
+</style>
+
+<script>
+(function() {
+  const scene = document.getElementById('scene-2');
+  const tl = gsap.timeline({ paused: true });
+  
+  tl.from('.logo-glow', {
+    scale: 0.5,
+    opacity: 0,
+    duration: 1,
+    ease: 'power2.out'
+  }, 0);
+  
+  tl.from('.logo-mark', {
+    scale: 0.3,
+    opacity: 0,
+    duration: 0.8,
+    ease: 'back.out(1.5)'
+  }, 0.3);
+  
+  tl.from('.scene-2-title', {
+    y: 30,
+    opacity: 0,
+    duration: 0.7,
+    ease: 'power3.out'
+  }, 1.2);
+  
+  tl.from('.scene-2-subtitle', {
+    y: 20,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'power2.out'
+  }, 1.5);
+  
+  tl.from('.chip', {
+    y: 15,
+    opacity: 0,
+    stagger: 0.1,
+    duration: 0.4,
+    ease: 'power2.out'
+  }, 1.8);
+  
+  window.__timelines = window.__timelines || {};
+  window.__timelines['scene-2'] = tl;
+})();
+</script>

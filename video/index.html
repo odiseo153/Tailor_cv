@@ -1,0 +1,909 @@
+<!doctype html>
+<html data-composition-id="tailorcv-promo" data-composition-variables='[{"id":"accentColor","type":"color","label":"Accent Color","default":"#00d4ff"}]'>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080">
+  <title>TailorCV - Cinematic Promo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap');
+    
+    :root {
+      --bg-deep: #050508;
+      --bg-primary: #0a0a0f;
+      --bg-card: #0f0f14;
+      --bg-card-hover: #15151d;
+      --fg-primary: #ffffff;
+      --fg-secondary: #a1a1b0;
+      --fg-muted: #52525b;
+      --accent-cyan: #00d4ff;
+      --accent-indigo: #6366f1;
+      --accent-purple: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: 'Geist', system-ui, -apple-system, sans-serif;
+      background: var(--bg-deep);
+      color: var(--fg-primary);
+    }
+    
+    .video-root {
+      width: 100%; height: 100%;
+      position: relative;
+      background: var(--bg-deep);
+      overflow: hidden;
+    }
+    
+    .ambient-glow {
+      position: absolute;
+      width: 120%; height: 120%;
+      top: -10%; left: -10%;
+      background: radial-gradient(ellipse at 50% 30%, rgba(0, 212, 255, 0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .scene {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 80px 120px;
+      opacity: 0;
+      z-index: 1;
+    }
+    
+    .scene.visible { opacity: 1; }
+    
+    /* Scene 1: Pain */
+    .pain-icon {
+      width: 100px; height: 100px;
+      border: 2px solid rgba(239, 68, 68, 0.4);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 40px rgba(239, 68, 68, 0.2);
+      margin-bottom: 48px;
+    }
+    .pain-icon::before {
+      content: '✕';
+      font-size: 48px;
+      color: var(--error);
+      font-weight: 300;
+    }
+    .scene-title {
+      font-size: 72px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      text-align: center;
+      max-width: 900px;
+      line-height: 1.05;
+    }
+    .scene-subtitle {
+      font-size: 22px;
+      color: var(--fg-muted);
+      margin-top: 20px;
+      text-align: center;
+    }
+    .pain-stats {
+      display: flex; gap: 80px;
+      margin-top: 64px;
+    }
+    .pain-stat-value {
+      font-size: 60px;
+      font-weight: 700;
+      color: var(--error);
+      letter-spacing: -2px;
+    }
+    .pain-stat-label {
+      font-size: 13px;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 8px;
+    }
+    
+    /* Scene 2: Logo Reveal */
+    .logo-glow {
+      position: absolute;
+      width: 220px; height: 220px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.25) 0%, transparent 70%);
+      border-radius: 50%;
+      filter: blur(25px);
+    }
+    .logo-mark {
+      width: 100px; height: 100px;
+      margin-bottom: 32px;
+    }
+    .logo-mark svg {
+      width: 100%; height: 100%;
+      filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.5));
+    }
+    .scene-title.gradient {
+      background: linear-gradient(135deg, var(--fg-primary) 0%, var(--fg-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .scene-subtitle.accent {
+      color: var(--accent-cyan);
+      font-weight: 500;
+    }
+    .feature-chips {
+      display: flex; gap: 14px;
+      margin-top: 36px;
+    }
+    .chip {
+      padding: 10px 20px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      font-size: 13px;
+      color: var(--fg-secondary);
+    }
+    
+    /* Scene 3: Job Analysis */
+    .analysis-panels {
+      display: flex; gap: 48px;
+      width: 100%;
+      justify-content: center;
+    }
+    .panel {
+      width: 280px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(20px);
+    }
+    .panel-title {
+      font-size: 11px;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+    .job-lines { display: flex; flex-direction: column; gap: 10px; }
+    .job-line {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+    }
+    .job-line:nth-child(2) { width: 70%; }
+    .job-line:nth-child(3) { width: 85%; }
+    .analyze-btn {
+      margin-top: 24px;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-indigo) 100%);
+      border-radius: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+    }
+    .ai-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .brain-icon {
+      width: 100px; height: 100px;
+      position: relative;
+    }
+    .brain-ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      border-radius: 50%;
+    }
+    .brain-ring:nth-child(1) { animation: ring-spin 3s linear infinite; }
+    .brain-ring:nth-child(2) { animation: ring-spin 3s linear infinite 1s; }
+    .brain-ring:nth-child(3) { animation: ring-spin 3s linear infinite 2s; }
+    .brain-core {
+      position: absolute;
+      inset: 25px;
+      background: rgba(0, 212, 255, 0.1);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brain-core svg {
+      width: 32px; height: 32px;
+      color: var(--accent-cyan);
+    }
+    @keyframes ring-spin {
+      0% { transform: rotate(0deg) scale(0.4); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: rotate(180deg) scale(1); opacity: 0; }
+    }
+    .ai-label {
+      margin-top: 20px;
+      font-size: 13px;
+      color: var(--accent-cyan);
+      font-weight: 500;
+    }
+    .score-display {
+      text-align: center;
+    }
+    .score-ring {
+      width: 110px; height: 110px;
+      margin: 0 auto;
+    }
+    .score-ring svg {
+      width: 100%; height: 100%;
+    }
+    .score-ring circle {
+      fill: none;
+      stroke-width: 5;
+    }
+    .score-ring circle.bg { stroke: rgba(0, 212, 255, 0.15); }
+    .score-ring circle.fg { 
+      stroke: var(--accent-cyan); 
+      stroke-dasharray: 283; 
+      stroke-dashoffset: 40;
+      transform: rotate(-90deg);
+    }
+    .score-value {
+      position: absolute;
+      inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+    .score-label {
+      font-size: 13px;
+      color: var(--fg-muted);
+      margin-top: 12px;
+    }
+    .keywords {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 20px;
+    }
+    .kw {
+      padding: 6px 11px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--accent-cyan);
+    }
+    .kw.more {
+      background: var(--glass);
+      border-color: var(--glass-border);
+      color: var(--fg-muted);
+    }
+    
+    /* Scene 4: Resume Optimization */
+    .resume-card {
+      width: 560px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .resume-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .tab {
+      padding: 14px 22px;
+      font-size: 12px;
+      color: var(--fg-muted);
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      color: var(--accent-cyan);
+      border-bottom-color: var(--accent-cyan);
+    }
+    .resume-body { padding: 24px; }
+    .resume-header {
+      display: flex; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .role-text {
+      font-size: 17px;
+      font-weight: 600;
+    }
+    .ats-badge {
+      font-size: 11px;
+      padding: 4px 10px;
+      background: linear-gradient(90deg, rgba(239, 68, 68, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+      border-radius: 12px;
+      color: var(--success);
+      font-weight: 600;
+    }
+    .bullet-point {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      font-size: 13px; line-height: 1.5;
+    }
+    .bullet-point.orig {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--fg-secondary);
+    }
+    .bullet-point.opt {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--fg-primary);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .bullet-marker { color: var(--accent-cyan); }
+    .opt-badge {
+      font-size: 10px;
+      padding: 3px 6px;
+      background: rgba(16, 185, 129, 0.3);
+      border-radius: 4px;
+      color: var(--success);
+    }
+    .skills-bar {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 14px;
+    }
+    .skill {
+      padding: 6px 11px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--fg-secondary);
+    }
+    .skill.add {
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--accent-indigo);
+    }
+    .ats-big {
+      text-align: center;
+    }
+    .ats-value {
+      font-size: 84px;
+      font-weight: 800;
+      color: var(--success);
+      letter-spacing: -3px;
+    }
+    .ats-label {
+      font-size: 12px;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    /* Scene 5: Templates */
+    .section-label {
+      font-size: 12px;
+      color: var(--fg-muted);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      margin-bottom: 40px;
+    }
+    .templates-row {
+      display: flex; gap: 28px;
+    }
+    .tpl-card {
+      width: 160px;
+      padding: 14px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .tpl-card:hover {
+      border-color: rgba(0, 212, 255, 0.3);
+      transform: translateY(-3px);
+    }
+    .tpl-card.active {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 25px rgba(0, 212, 255, 0.15);
+    }
+    .tpl-preview {
+      height: 100px;
+      background: #fff;
+      border-radius: 6px;
+      padding: 10px;
+    }
+    .tpl-head {
+      height: 10px;
+      background: #18181b;
+      border-radius: 2px;
+      margin-bottom: 8px;
+    }
+    .tpl-lines::before, .tpl-lines::after, .tpl-lines span {
+      content: '';
+      display: block;
+      height: 4px;
+      background: #d4d4d8;
+      border-radius: 2px;
+      margin-bottom: 3px;
+    }
+    .tpl-lines::before { width: 80%; }
+    .tpl-lines span { width: 60%; }
+    .tpl-name {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--fg-secondary);
+      text-align: center;
+    }
+    .export-row {
+      display: flex; align-items: center; gap: 32px;
+      margin-top: 40px;
+      padding: 18px 28px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+    }
+    .fmt-btns { display: flex; gap: 8px; }
+    .fmt-btn {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--fg-secondary);
+    }
+    .export-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 18px;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-indigo) 100%);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #000;
+    }
+    
+    /* Scene 6: Interview Prep */
+    .prep-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .prep-title {
+      font-size: 40px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .prep-desc {
+      font-size: 17px;
+      color: var(--fg-muted);
+    }
+    .questions-grid {
+      display: flex; gap: 20px;
+    }
+    .q-card {
+      width: 260px;
+      padding: 22px;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+    }
+    .q-type {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-cyan);
+      margin-bottom: 10px;
+    }
+    .q-text {
+      font-size: 13px;
+      color: var(--fg-primary);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .q-difficulty {
+      font-size: 10px;
+      padding: 4px 7px;
+      border-radius: 4px;
+    }
+    .q-difficulty.easy {
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--success);
+    }
+    .q-difficulty.medium {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--warning);
+    }
+    .q-difficulty.hard {
+      background: rgba(239, 68, 68, 0.2);
+      color: var(--error);
+    }
+    .practice-cta {
+      margin-top: 40px;
+    }
+    .practice-btn {
+      padding: 16px 32px;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-indigo) 100%);
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #000;
+    }
+    
+    /* Scene 7: Final CTA */
+    .final-particles {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .f-particle {
+      position: absolute;
+      width: 3px; height: 3px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      opacity: 0;
+    }
+    .f-logo {
+      position: relative;
+      width: 90px; height: 90px;
+    }
+    .f-logo svg {
+      width: 100%; height: 100%;
+      filter: drop-shadow(0 0 35px rgba(0, 212, 255, 0.6));
+    }
+    .f-glow {
+      position: absolute;
+      inset: -25px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.35) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .final-cta-text {
+      font-size: 48px;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 40px;
+      letter-spacing: -1px;
+      line-height: 1.15;
+    }
+    .final-cta-btn {
+      margin-top: 36px;
+      padding: 18px 44px;
+      background: linear-gradient(135deg, var(--accent-cyan) 0%, var(--accent-indigo) 100%);
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 600;
+      color: #000;
+      cursor: pointer;
+    }
+    .social-proof {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 28px;
+    }
+    .sp-count {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+    .sp-label {
+      font-size: 14px;
+      color: var(--fg-muted);
+    }
+    
+    @keyframes float-up {
+      0% { transform: translateY(100vh); opacity: 0; }
+      10% { opacity: 0.7; }
+      90% { opacity: 0.2; }
+      100% { transform: translateY(-100px); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="video-root" data-composition-id="tailorcv-promo" data-width="1920" data-height="1080">
+    <div class="ambient-glow" id="ambient"></div>
+    
+    <!-- Scene 1: Pain -->
+    <div class="scene" id="scene1">
+      <div class="pain-icon"></div>
+      <h1 class="scene-title">Most resumes never get seen.</h1>
+      <p class="scene-subtitle">ATS systems filter out 70% of applications before a human sees them.</p>
+      <div class="pain-stats">
+        <div class="pain-stat">
+          <div class="pain-stat-value">70%</div>
+          <div class="pain-stat-label">Rejected</div>
+        </div>
+        <div class="pain-stat">
+          <div class="pain-stat-value">6s</div>
+          <div class="pain-stat-label">Review Time</div>
+        </div>
+        <div class="pain-stat">
+          <div class="pain-stat-value">ATS</div>
+          <div class="pain-stat-label">Gatekeeper</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scene 2: Product -->
+    <div class="scene" id="scene2">
+      <div class="logo-glow"></div>
+      <div class="logo-mark">
+        <svg viewBox="0 0 48 48" fill="none">
+          <path d="M8 40V8h8l8 24 8-24h8v32h-8V20l-8 20h-8l-8-20v20H8z" fill="url(#logoGrad)"/>
+          <defs>
+            <linearGradient id="logoGrad" x1="8" y1="8" x2="40" y2="40">
+              <stop stop-color="#00d4ff"/>
+              <stop offset="1" stop-color="#6366f1"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="scene-title gradient">TailorCV</h1>
+      <p class="scene-subtitle accent">AI-powered resume optimization</p>
+      <div class="feature-chips">
+        <span class="chip">ATS Optimized</span>
+        <span class="chip">AI Writing</span>
+        <span class="chip">Job Match</span>
+      </div>
+    </div>
+    
+    <!-- Scene 3: Analysis -->
+    <div class="scene" id="scene3">
+      <div class="analysis-panels">
+        <div class="panel">
+          <div class="panel-title">Job Description</div>
+          <div class="job-lines">
+            <div class="job-line"></div>
+            <div class="job-line"></div>
+            <div class="job-line"></div>
+          </div>
+          <div class="analyze-btn">Analyze</div>
+        </div>
+        <div class="ai-center">
+          <div class="brain-icon">
+            <div class="brain-ring"></div>
+            <div class="brain-ring"></div>
+            <div class="brain-ring"></div>
+            <div class="brain-core">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ai-label">AI Analyzing...</div>
+        </div>
+        <div class="panel score-display">
+          <div class="panel-title">Match Score</div>
+          <div class="score-ring">
+            <svg viewBox="0 0 100 100">
+              <circle class="bg" cx="50" cy="50" r="45"/>
+              <circle class="fg" cx="50" cy="50" r="45"/>
+            </svg>
+            <div class="score-value">87%</div>
+          </div>
+          <div class="score-label">Compatibility</div>
+          <div class="keywords">
+            <span class="kw">React</span>
+            <span class="kw">TypeScript</span>
+            <span class="kw">REST API</span>
+            <span class="kw more">+12 more</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scene 4: Optimization -->
+    <div class="scene" id="scene4">
+      <div class="analysis-panels">
+        <div class="resume-card">
+          <div class="resume-tabs">
+            <div class="tab active">Experience</div>
+            <div class="tab">Skills</div>
+            <div class="tab">Education</div>
+          </div>
+          <div class="resume-body">
+            <div class="resume-header">
+              <span class="role-text">Senior Developer</span>
+              <span class="ats-badge">72 → 94</span>
+            </div>
+            <div class="bullet-point orig">
+              <span class="bullet-marker">▸</span>
+              <span>Built APIs for customer data</span>
+            </div>
+            <div class="bullet-point opt">
+              <span class="bullet-marker">▸</span>
+              <span>Designed and implemented RESTful APIs serving 2M+ daily requests</span>
+              <span class="opt-badge">✓</span>
+            </div>
+            <div class="skills-bar">
+              <span class="skill">JavaScript</span>
+              <span class="skill">Python</span>
+              <span class="skill add">+ AWS</span>
+              <span class="skill add">+ CI/CD</span>
+            </div>
+          </div>
+        </div>
+        <div class="ats-big">
+          <div class="ats-value">94</div>
+          <div class="ats-label">ATS Score</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scene 5: Templates -->
+    <div class="scene" id="scene5">
+      <div class="section-label">Templates & Export</div>
+      <div class="templates-row">
+        <div class="tpl-card">
+          <div class="tpl-preview"><div class="tpl-head"></div><div class="tpl-lines"></div></div>
+          <div class="tpl-name">Modern</div>
+        </div>
+        <div class="tpl-card">
+          <div class="tpl-preview"><div class="tpl-head" style="height:6px;width:35%"></div><div class="tpl-lines"></div></div>
+          <div class="tpl-name">Minimal</div>
+        </div>
+        <div class="tpl-card active">
+          <div class="tpl-preview"><div class="tpl-head"></div><div class="tpl-lines"></div></div>
+          <div class="tpl-name">Professional</div>
+        </div>
+      </div>
+      <div class="export-row">
+        <div class="fmt-btns">
+          <span class="fmt-btn">PDF</span>
+          <span class="fmt-btn">DOCX</span>
+          <span class="fmt-btn">HTML</span>
+        </div>
+        <div class="export-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Export
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scene 6: Interview -->
+    <div class="scene" id="scene6">
+      <div class="prep-header">
+        <h2 class="prep-title">Interview Preparation</h2>
+        <p class="prep-desc">AI-generated questions tailored to your resume</p>
+      </div>
+      <div class="questions-grid">
+        <div class="q-card">
+          <div class="q-type">Technical</div>
+          <div class="q-text">Describe a time when you had to optimize a slow database query.</div>
+          <span class="q-difficulty medium">Medium</span>
+        </div>
+        <div class="q-card">
+          <div class="q-type">System Design</div>
+          <div class="q-text">Design a scalable URL shortening service. What components needed?</div>
+          <span class="q-difficulty hard">Hard</span>
+        </div>
+        <div class="q-card">
+          <div class="q-type">Behavioral</div>
+          <div class="q-text">Tell me about a time you disagreed with your team lead.</div>
+          <span class="q-difficulty easy">Easy</span>
+        </div>
+      </div>
+      <div class="practice-cta">
+        <div class="practice-btn">Practice Interview</div>
+      </div>
+    </div>
+    
+    <!-- Scene 7: Final CTA -->
+    <div class="scene" id="scene7">
+      <div class="final-particles" id="fparticles"></div>
+      <div class="f-logo">
+        <div class="f-glow"></div>
+        <svg viewBox="0 0 48 48" fill="none">
+          <path d="M8 40V8h8l8 24 8-24h8v32h-8V20l-8 20h-8l-8-20v20H8z" fill="url(#logoGrad2)"/>
+          <defs>
+            <linearGradient id="logoGrad2" x1="8" y1="8" x2="40" y2="40">
+              <stop stop-color="#00d4ff"/>
+              <stop offset="1" stop-color="#6366f1"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="final-cta-text">Land better opportunities with AI</h1>
+      <div class="final-cta-btn">Get Started Free</div>
+      <div class="social-proof">
+        <span class="sp-count">10,000+</span>
+        <span class="sp-label">resumes optimized</span>
+      </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      (function() {
+        // Create floating particles for final scene
+        const fp = document.getElementById('fparticles');
+        for(let i = 0; i < 25; i++) {
+          const p = document.createElement('div');
+          p.className = 'f-particle';
+          p.style.left = Math.random() * 100 + '%';
+          p.style.animationDuration = (6 + Math.random() * 4) + 's';
+          p.style.animationDelay = Math.random() * 5 + 's';
+          p.style.animation = 'float-up ' + p.style.animationDuration + ' linear infinite';
+          p.style.animationDelay = p.style.animationDelay;
+          fp.appendChild(p);
+        }
+        
+        const scenes = [
+          { id: '#scene1', start: 0, duration: 3.5 },
+          { id: '#scene2', start: 3.5, duration: 3.5 },
+          { id: '#scene3', start: 7, duration: 4 },
+          { id: '#scene4', start: 11, duration: 4.5 },
+          { id: '#scene5', start: 15.5, duration: 4 },
+          { id: '#scene6', start: 19.5, duration: 4 },
+          { id: '#scene7', start: 23.5, duration: 5 }
+        ];
+        
+        const master = gsap.timeline({ paused: true });
+        
+        // Scene 1 animations
+        master.from('#scene1 .pain-icon', { scale: 0.5, opacity: 0, duration: 0.6, ease: 'back.out(1.7)' }, 0.2);
+        master.from('#scene1 .scene-title', { y: 40, opacity: 0, duration: 0.7, ease: 'power3.out' }, 0.5);
+        master.from('#scene1 .scene-subtitle', { y: 25, opacity: 0, duration: 0.5, ease: 'power2.out' }, 0.8);
+        master.from('#scene1 .pain-stat', { y: 20, opacity: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 1.2);
+        
+        // Scene 2 animations
+        master.from('#scene2 .logo-glow', { scale: 0.5, opacity: 0, duration: 1, ease: 'power2.out' }, 3.5);
+        master.from('#scene2 .logo-mark', { scale: 0.3, opacity: 0, duration: 0.8, ease: 'back.out(1.5)' }, 4);
+        master.from('#scene2 .scene-title', { y: 30, opacity: 0, duration: 0.7, ease: 'power3.out' }, 5);
+        master.from('#scene2 .scene-subtitle', { y: 20, opacity: 0, duration: 0.5, ease: 'power2.out' }, 5.5);
+        master.from('#scene2 .chip', { y: 15, opacity: 0, stagger: 0.1, duration: 0.4, ease: 'power2.out' }, 6);
+        
+        // Scene 3 animations
+        master.from('#scene3 .panel', { x: -30, opacity: 0, stagger: 0.15, duration: 0.6, ease: 'power3.out' }, 7.5);
+        master.from('#scene3 .brain-icon', { scale: 0.7, opacity: 0, duration: 0.7, ease: 'back.out(1.3)' }, 8);
+        master.from('#scene3 .ai-label', { y: 15, opacity: 0, duration: 0.4, ease: 'power2.out' }, 8.5);
+        
+        // Scene 4 animations
+        master.from('#scene4 .resume-card', { x: -25, opacity: 0, duration: 0.6, ease: 'power3.out' }, 11.2);
+        master.from('#scene4 .tab', { y: -10, opacity: 0, stagger: 0.05, duration: 0.3, ease: 'power2.out' }, 11.5);
+        master.from('#scene4 .role-text', { x: -15, opacity: 0, duration: 0.35, ease: 'power2.out' }, 11.8);
+        master.to('#scene4 .bullet-point.orig', { opacity: 0, duration: 0.25 }, 12.3);
+        master.from('#scene4 .bullet-point.opt', { y: 10, opacity: 0, duration: 0.45, ease: 'power2.out' }, 12.5);
+        master.from('#scene4 .skill', { scale: 0.8, opacity: 0, stagger: 0.08, duration: 0.3, ease: 'back.out(1.5)' }, 12.9);
+        master.from('#scene4 .ats-value', { scale: 0.5, opacity: 0, duration: 0.7, ease: 'elastic.out(1, 0.5)' }, 13.3);
+        
+        // Scene 5 animations
+        master.from('#scene5 .section-label', { y: -20, opacity: 0, duration: 0.5, ease: 'power2.out' }, 15.8);
+        master.from('#scene5 .tpl-card', { y: 30, opacity: 0, stagger: 0.12, duration: 0.5, ease: 'power3.out' }, 16.2);
+        master.from('#scene5 .export-row', { y: 25, opacity: 0, duration: 0.5, ease: 'power2.out' }, 17);
+        
+        // Scene 6 animations
+        master.from('#scene6 .prep-header', { y: -25, opacity: 0, duration: 0.55, ease: 'power3.out' }, 19.8);
+        master.from('#scene6 .q-card', { y: 35, opacity: 0, stagger: 0.12, duration: 0.55, ease: 'power3.out' }, 20.3);
+        master.from('#scene6 .practice-btn', { scale: 0.9, opacity: 0, duration: 0.5, ease: 'back.out(1.5)' }, 21.2);
+        
+        // Scene 7 animations
+        master.from('#scene7 .f-logo', { scale: 0.35, opacity: 0, duration: 1, ease: 'back.out(1.5)' }, 23.8);
+        master.from('#scene7 .final-cta-text', { y: 35, opacity: 0, duration: 0.75, ease: 'power3.out' }, 25);
+        master.from('#scene7 .final-cta-btn', { scale: 0.85, opacity: 0, duration: 0.6, ease: 'back.out(1.5)' }, 25.8);
+        master.from('#scene7 .social-proof', { y: 18, opacity: 0, duration: 0.45, ease: 'power2.out' }, 26.3);
+        
+        // Scene visibility control (crossfade transitions)
+        function showScene(idx, delay) {
+          const scenes = document.querySelectorAll('.scene');
+          scenes.forEach(function(s, i) {
+            if(i === idx - 1) {
+              s.classList.add('visible');
+            } else {
+              s.classList.remove('visible');
+            }
+          });
+        }
+        
+        // Set up scene transitions
+        for(let i = 0; i < scenes.length; i++) {
+          master.call(showScene, [i + 1], scenes[i].start);
+        }
+        
+        // Auto-first scene
+        showScene(1, 0);
+        
+        window.__timelines = window.__timelines || {};
+        window.__timelines['tailorcv-promo'] = master;
+      })();
+    </script>
+  </div>
+</body>
+</html>

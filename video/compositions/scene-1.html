@@ -1,0 +1,154 @@
+<div id="scene-1" class="scene-1" data-scene="1">
+  <div class="pain-icon"></div>
+  <h1 class="scene-1-title">Most resumes never get seen.</h1>
+  <p class="scene-1-subtitle">ATS systems filter out 70% of applications before a human sees them.</p>
+  
+  <div class="pain-stats">
+    <div class="pain-stat" id="stat-rejected">
+      <div class="pain-stat-value">70%</div>
+      <div class="pain-stat-label">Rejected</div>
+    </div>
+    <div class="pain-stat" id="stat-seconds">
+      <div class="pain-stat-value">6s</div>
+      <div class="pain-stat-label">Review Time</div>
+    </div>
+    <div class="pain-stat" id="stat-ats">
+      <div class="pain-stat-value">ATS</div>
+      <div class="pain-stat-label">The Gatekeeper</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.scene-1 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0f;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.pain-bg-glow {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 50% 80%, rgba(239, 68, 68, 0.1) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.pain-icon {
+  width: 100px;
+  height: 100px;
+  border: 2px solid rgba(239, 68, 68, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 48px;
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.2);
+}
+
+.pain-icon::before {
+  content: '✕';
+  font-size: 48px;
+  color: #ef4444;
+  font-weight: 300;
+}
+
+.scene-1-title {
+  font-size: 72px;
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  max-width: 900px;
+  line-height: 1.05;
+  letter-spacing: -2px;
+}
+
+.scene-1-subtitle {
+  font-size: 22px;
+  color: #71717a;
+  margin-top: 24px;
+  text-align: center;
+  max-width: 600px;
+}
+
+.pain-stats {
+  display: flex;
+  gap: 80px;
+  margin-top: 80px;
+}
+
+.pain-stat-value {
+  font-size: 64px;
+  font-weight: 700;
+  color: #ef4444;
+  font-family: 'Geist', system-ui, sans-serif;
+  letter-spacing: -2px;
+}
+
+.pain-stat-label {
+  font-size: 14px;
+  color: #52525b;
+  margin-top: 12px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-weight: 500;
+}
+</style>
+
+<script>
+(function() {
+  const scene = document.getElementById('scene-1');
+  const tl = gsap.timeline({ paused: true });
+  
+  tl.from('.pain-icon', {
+    scale: 0.5,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'back.out(1.7)'
+  }, 0.2);
+  
+  tl.from('.scene-1-title', {
+    y: 40,
+    opacity: 0,
+    duration: 0.7,
+    ease: 'power3.out'
+  }, 0.5);
+  
+  tl.from('.scene-1-subtitle', {
+    y: 30,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'power2.out'
+  }, 0.8);
+  
+  tl.from('#stat-rejected', {
+    x: -30,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 1.2);
+  
+  tl.from('#stat-seconds', {
+    y: 30,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 1.35);
+  
+  tl.from('#stat-ats', {
+    x: 30,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 1.5);
+  
+  window.__timelines = window.__timelines || {};
+  window.__timelines['scene-1'] = tl;
+})();
+</script>

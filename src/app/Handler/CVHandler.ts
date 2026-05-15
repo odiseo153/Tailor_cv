@@ -145,10 +145,7 @@ export class CVHandler {
     }
   }
 
-  async getPlantillaById(
-    templateId: string,
-    progressCallback?: ProgressCallback,
-  ): Promise<string> {
+  async getPlantillaById(templateId: string): Promise<string> {
     try {
       const response = await fetch("/api/templates");
       if (!response.ok)
@@ -156,7 +153,7 @@ export class CVHandler {
 
       const payload = await response.json();
       const templates = payload.templates || [];
-      
+
       if (templates.length === 0) {
         throw new Error("No templates available");
       }
@@ -428,10 +425,7 @@ Return ONLY the JSON object.`;
       if (plantilla && typeof plantilla !== "string") {
         plantillaHTML = await this.getPlantillaFromPdf(plantilla);
       } else if (templateId) {
-        plantillaHTML = await this.getPlantillaById(
-          templateId,
-          progressCallback,
-        );
+        plantillaHTML = await this.getPlantillaById(templateId);
       } else if (typeof plantilla === "string") {
         plantillaHTML = plantilla;
         progressCallback?.onTemplateProcessed?.();

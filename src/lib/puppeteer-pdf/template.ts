@@ -4,9 +4,10 @@ const PRINT_STYLE = `
     body {
       width: 210mm;
       min-height: 297mm;
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #ffffff !important;
+      display: block !important;
       overflow-wrap: break-word;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
@@ -18,6 +19,19 @@ const PRINT_STYLE = `
       padding: 10mm;
       box-sizing: border-box;
       background: #ffffff;
+    }
+
+    .tailor-cv-print-page,
+    .tailor-cv-print-page * {
+      max-width: none !important;
+    }
+
+    .tailor-cv-print-page :where(.bg-gray-50, .bg-gray-100, .bg-gray-200) {
+      background: transparent !important;
+    }
+
+    .tailor-cv-print-page :where(.shadow, .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl) {
+      box-shadow: none !important;
     }
 
     :where(body:not([style]) .tailor-cv-print-page) {

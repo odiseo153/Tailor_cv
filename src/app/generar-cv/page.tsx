@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   UploadIcon,
   TextIcon,
@@ -32,10 +32,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type {
-  ProgressCallback,
-  AIModelConfig,
-} from "../Handler/CVHandler";
+import type { ProgressCallback, AIModelConfig } from "../Handler/CVHandler";
 import { Message } from "../utils/Message";
 import {
   Popover,
@@ -55,11 +52,32 @@ import {
 import { processUploadedCV, validateCVContent } from "../utils/file-processing";
 import { generatePdfViaBrowser } from "@/lib/puppeteer-pdf/client";
 import dynamic from "next/dynamic";
-import { ModelSelector } from "./components/ModelSelector";
-import { TemplateSelector } from "./components/TemplateSelector";
+import { AIModel } from "./types";
 import { EditableJobData } from "./components/EditableJobData";
+import { AccordionItem } from "./components/AccordionItem";
+import { LoaderSpin } from "./components/LoaderSpin";
+import {
+  ProviderIcon,
+  ProviderId,
+  PROVIDERS_CONFIG,
+} from "./components/ProviderIcons";
+import {
+  A4_PAGE_HEIGHT,
+  A4_PAGE_WIDTH,
+  addEditablePreviewStyles,
+  addPreviewPageStyles,
+} from "./utils/preview-html";
 
 type GenerationStep = "input" | "analyze" | "edit" | "preview";
+
+interface JobOfferData {
+  skills: string[];
+  requisitos: string[];
+  seniority: string;
+  keywords: string[];
+  jobTitle: string;
+  description: string;
+}
 
 const AnalysisResults = dynamic(
   () => import("../components/CVAnalysis/AnalysisResults"),
@@ -77,404 +95,6 @@ const ThinkingAnimation = dynamic(
     ssr: false,
   },
 );
-
-const A4_PAGE_WIDTH = "210mm";
-const A4_PAGE_HEIGHT = "297mm";
-
-function addPreviewPageStyles(html: string, pageIndex: number) {
-  const pageStyle = `
-    <style>
-      @page {
-        size: ${A4_PAGE_WIDTH} ${A4_PAGE_HEIGHT};
-        margin: 0;
-      }
-
-      html {
-        width: ${A4_PAGE_WIDTH};
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
-      }
-
-      body {
-        width: ${A4_PAGE_WIDTH};
-        min-height: ${A4_PAGE_HEIGHT};
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
-      }
-
-      .tailor-cv-page-content {
-        width: ${A4_PAGE_WIDTH};
-        min-height: ${A4_PAGE_HEIGHT};
-        padding: 10mm;
-        box-sizing: border-box;
-        overflow-wrap: break-word;
-        transform: translateY(calc(-${A4_PAGE_HEIGHT} * ${pageIndex}));
-        transform-origin: top left;
-      }
-
-      :where(body:not([style]) .tailor-cv-page-content) {
-        color: #111827;
-        font-family: Georgia, "Times New Roman", serif;
-        font-size: 10.5pt;
-        line-height: 1.42;
-      }
-
-      :where(h1, h2, h3, p, ul, ol) {
-        margin-top: 0;
-      }
-
-      :where(h1) {
-        font-size: 18pt;
-        line-height: 1.1;
-        margin-bottom: 4mm;
-      }
-
-      :where(h2) {
-        border-bottom: 1px solid #d1d5db;
-        font-size: 13pt;
-        margin: 6mm 0 3mm;
-        padding-bottom: 1.5mm;
-      }
-
-      :where(h3) {
-        font-size: 11pt;
-        margin: 4mm 0 1mm;
-      }
-
-      :where(p) {
-        margin-bottom: 2mm;
-      }
-
-      :where(ul, ol) {
-        padding-left: 5mm;
-        margin-bottom: 3mm;
-      }
-
-      :where(li) {
-        margin-bottom: 1.5mm;
-      }
-    </style>
-  `;
-
-  const htmlWithStyles = /<\/head>/i.test(html)
-    ? html.replace(/<\/head>/i, `${pageStyle}</head>`)
-    : `<!DOCTYPE html><html><head>${pageStyle}</head><body>${html}</body></html>`;
-
-  if (/<body[^>]*>/i.test(htmlWithStyles)) {
-    return htmlWithStyles
-      .replace(/<body([^>]*)>/i, "<body$1><div class=\"tailor-cv-page-content\">")
-      .replace(/<\/body>/i, "</div></body>");
-  }
-
-  return htmlWithStyles;
-}
-
-function addEditablePreviewStyles(html: string) {
-  const editableStyle = `
-    <style>
-      @page {
-        size: ${A4_PAGE_WIDTH} ${A4_PAGE_HEIGHT};
-        margin: 0;
-      }
-
-      html {
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
-      }
-
-      body {
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
-      }
-
-      .tailor-cv-edit-content {
-        width: ${A4_PAGE_WIDTH};
-        min-height: ${A4_PAGE_HEIGHT};
-        padding: 10mm;
-        box-sizing: border-box;
-        overflow-wrap: break-word;
-      }
-
-      .tailor-cv-edit-content [contenteditable="plaintext-only"] {
-        outline: 1px dashed transparent;
-        transition: outline-color 0.15s ease;
-      }
-
-      .tailor-cv-edit-content [contenteditable="plaintext-only"]:hover {
-        outline-color: #93c5fd;
-      }
-
-      .tailor-cv-edit-content [contenteditable="plaintext-only"]:focus {
-        outline-color: #2563eb;
-        background: rgba(37, 99, 235, 0.04);
-      }
-    </style>
-  `;
-
-  const editableScript = `
-    <script>
-      (function () {
-        const root = document.querySelector(".tailor-cv-edit-content");
-        if (!root) return;
-
-        const selectable = root.querySelectorAll("h1,h2,h3,h4,h5,h6,p,li,span,a,strong,em,small");
-        selectable.forEach((el) => {
-          if (el.children.length === 0) {
-            el.setAttribute("contenteditable", "plaintext-only");
-          }
-        });
-
-        document.addEventListener("paste", function (event) {
-          const target = event.target;
-          if (!(target instanceof HTMLElement) || target.getAttribute("contenteditable") !== "plaintext-only") {
-            return;
-          }
-          event.preventDefault();
-          const text = (event.clipboardData || window.clipboardData).getData("text");
-          document.execCommand("insertText", false, text);
-        });
-      })();
-    </script>
-  `;
-
-  const htmlWithStyles = /<\/head>/i.test(html)
-    ? html.replace(/<\/head>/i, `${editableStyle}</head>`)
-    : `<!DOCTYPE html><html><head>${editableStyle}</head><body>${html}</body></html>`;
-
-  const htmlWithWrapper = /<body[^>]*>/i.test(htmlWithStyles)
-    ? htmlWithStyles
-        .replace(/<body([^>]*)>/i, "<body$1><div class=\"tailor-cv-edit-content\">")
-        .replace(/<\/body>/i, `</div>${editableScript}</body>`)
-    : `<!DOCTYPE html><html><head>${editableStyle}</head><body><div class="tailor-cv-edit-content">${html}</div>${editableScript}</body></html>`;
-
-  return htmlWithWrapper;
-}
-
-// Accordion Component
-const AccordionItem = ({
-  title,
-  isOpen,
-  onToggle,
-  children,
-  icon: Icon,
-}: any) => {
-  return (
-    <div className="border-b last:border-b-0">
-      <button
-        onClick={onToggle}
-        className="flex items-center justify-between w-full p-4 hover:bg-gray-50 transition-colors text-left focus:outline-none"
-      >
-        <div className="flex items-center gap-3">
-          {Icon && <Icon className="w-5 h-5 text-gray-500" />}
-          <span className="font-semibold text-gray-700 text-sm sm:text-base">
-            {title}
-          </span>
-        </div>
-        <ChevronDown
-          className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="p-4 pt-0">{children}</div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-type AIModel = { provider: string; id: string; name: string };
-type JobOfferData = {
-  skills: string[];
-  requisitos: string[];
-  seniority: string;
-  keywords: string[];
-  jobTitle: string;
-  description: string;
-};
-
-// ─── Provider config & icons ────────────────────────────────────────────────
-const PROVIDERS_CONFIG = [
-  { id: "deepseek", name: "DeepSeek", color: "#4D6BFE", bg: "#EEF2FF" },
-  { id: "openai", name: "OpenAI", color: "#10A37F", bg: "#F0FDF4" },
-  { id: "gemini", name: "Gemini", color: "#1A73E8", bg: "#EFF6FF" },
-  { id: "groq", name: "Groq", color: "#F55036", bg: "#FFF1F2" },
-  {
-    id: "openrouter",
-    name: "OpenRouter",
-    color: "#6467F2",
-    bg: "#F5F3FF",
-  },
-] as const;
-
-type ProviderId = (typeof PROVIDERS_CONFIG)[number]["id"];
-
-const DeepSeekIcon = ({ size = 20 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="24" height="24" rx="6" fill="#4D6BFE" />
-    <path
-      d="M6 12C6 8.69 8.69 6 12 6C13.59 6 15.04 6.63 16.12 7.66"
-      stroke="white"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
-    <path
-      d="M18 12C18 15.31 15.31 18 12 18C10.41 18 8.96 17.37 7.88 16.34"
-      stroke="white"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
-    <circle cx="12" cy="12" r="2.2" fill="white" />
-  </svg>
-);
-
-const OpenAIIcon = ({ size = 20 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="24" height="24" rx="6" fill="#10A37F" />
-    <path
-      d="M20.032 9.404a5.537 5.537 0 0 0-.475-4.533 5.594 5.594 0 0 0-6.015-2.677A5.603 5.603 0 0 0 9.361 3.86a5.537 5.537 0 0 0-3.695 2.679 5.594 5.594 0 0 0 .686 6.556A5.537 5.537 0 0 0 6.82 17.63a5.594 5.594 0 0 0 6.018 2.676A5.537 5.537 0 0 0 17.01 21.5a5.594 5.594 0 0 0 5.335-3.883 5.537 5.537 0 0 0 3.695-2.679 5.594 5.594 0 0 0-.686-6.556l-.322.022ZM13.02 20.14a4.14 4.14 0 0 1-2.658-.96l.13-.075 4.416-2.549a.718.718 0 0 0 .362-.63v-6.225l1.866 1.079a.066.066 0 0 1 .036.048v5.158a4.156 4.156 0 0 1-4.152 4.154ZM3.96 16.91a4.14 4.14 0 0 1-.494-2.784l.13.078 4.42 2.553a.718.718 0 0 0 .72 0l5.397-3.116v2.156a.074.074 0 0 1-.03.057l-4.468 2.58A4.156 4.156 0 0 1 3.96 16.91ZM2.88 8.04a4.14 4.14 0 0 1 2.185-1.823V11.3a.718.718 0 0 0 .36.624l5.376 3.102-1.867 1.079a.07.07 0 0 1-.065 0l-4.465-2.577A4.156 4.156 0 0 1 2.88 8.04Zm15.338 3.565-5.377-3.106 1.866-1.078a.07.07 0 0 1 .066 0l4.464 2.578a4.154 4.154 0 0 1-.625 7.493v-5.26a.718.718 0 0 0-.394-.627Zm1.858-2.793-.13-.079-4.412-2.57a.718.718 0 0 0-.726 0L9.43 9.28V7.123a.07.07 0 0 1 .027-.057l4.464-2.577a4.154 4.154 0 0 1 6.155 4.303v.013Zm-11.684 3.82-1.866-1.079a.066.066 0 0 1-.036-.048V6.347a4.154 4.154 0 0 1 6.812-3.187l-.131.075L8.657 5.784a.718.718 0 0 0-.363.63l-.002 6.218Zm1.015-2.186 2.402-1.388 2.403 1.385v2.77L11.81 14.6 9.408 13.21V10.446Z"
-      fill="white"
-    />
-  </svg>
-);
-
-const GeminiIcon = ({ size = 20 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="24" height="24" rx="6" fill="#1A73E8" />
-    <defs>
-      <linearGradient
-        id="gem-g"
-        x1="12"
-        y1="3"
-        x2="12"
-        y2="21"
-        gradientUnits="userSpaceOnUse"
-      >
-        <stop stopColor="#AECBFA" />
-        <stop offset="1" stopColor="#E8F0FE" />
-      </linearGradient>
-    </defs>
-    <path
-      d="M12 3C12 3 13.8 9 19 12C13.8 15 12 21 12 21C12 21 10.2 15 5 12C10.2 9 12 3 12 3Z"
-      fill="url(#gem-g)"
-    />
-  </svg>
-);
-
-const GroqIcon = ({ size = 20 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="24" height="24" rx="6" fill="#F55036" />
-    <path
-      d="M15.5 9.5C15.5 7.57 13.93 6 12 6C10.07 6 8.5 7.57 8.5 9.5V12C8.5 13.93 10.07 15.5 12 15.5H15.5V12.5H12.5C11.67 12.5 11 11.83 11 11C11 10.17 11.67 9.5 12.5 9.5H15.5V9.5Z"
-      fill="white"
-    />
-    <path d="M15.5 12.5V15.5H16.5C17.05 15.5 17.5 15.05 17.5 14.5V13.5C17.5 12.95 17.05 12.5 16.5 12.5H15.5Z" fill="white" />
-  </svg>
-);
-
-const OpenRouterIcon = ({ size = 20 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect width="24" height="24" rx="6" fill="#6467F2" />
-    <path
-      d="M5 8H13M13 8L10.5 5.5M13 8L10.5 10.5"
-      stroke="white"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M19 16H11M11 16L13.5 13.5M11 16L13.5 18.5"
-      stroke="white"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="5" cy="16" r="1.5" fill="white" />
-    <circle cx="19" cy="8" r="1.5" fill="white" />
-  </svg>
-);
-
-function ProviderIcon({
-  provider,
-  size = 20,
-}: {
-  provider: string;
-  size?: number;
-}) {
-  switch (provider) {
-    case "deepseek":
-      return <DeepSeekIcon size={size} />;
-    case "openai":
-      return <OpenAIIcon size={size} />;
-    case "gemini":
-      return <GeminiIcon size={size} />;
-    case "groq":
-      return <GroqIcon size={size} />;
-    case "openrouter":
-      return <OpenRouterIcon size={size} />;
-    default: {
-      const cfg = PROVIDERS_CONFIG.find((p) => p.id === provider);
-      return (
-        <span
-          style={{
-            width: size,
-            height: size,
-            background: cfg?.bg ?? "#F3F4F6",
-            color: cfg?.color ?? "#6B7280",
-            fontSize: size * 0.35,
-          }}
-          className="inline-flex items-center justify-center rounded font-bold shrink-0"
-        >
-          {provider.slice(0, 2).toUpperCase()}
-        </span>
-      );
-    }
-  }
-}
 
 export default function GenerarCV() {
   // CV Generation states
@@ -498,7 +118,7 @@ export default function GenerarCV() {
   const [currentStep, setCurrentStep] = useState<GenerationStep>("input");
   const [jobOfferData, setJobOfferData] = useState<JobOfferData | null>(null);
   const [isAnalyzingOffer, setIsAnalyzingOffer] = useState(false);
-  
+
   // Editable job offer data
   const [editableSkills, setEditableSkills] = useState<string>("");
   const [editableRequisitos, setEditableRequisitos] = useState<string>("");
@@ -587,7 +207,8 @@ export default function GenerarCV() {
       documentNode.documentElement.scrollHeight,
       documentNode.body?.scrollHeight ?? 0,
     );
-    const pageHeight = iframe.clientHeight || documentNode.documentElement.clientHeight;
+    const pageHeight =
+      iframe.clientHeight || documentNode.documentElement.clientHeight;
 
     if (!contentHeight || !pageHeight) return;
 
@@ -646,30 +267,6 @@ export default function GenerarCV() {
       modelId: model.id,
     };
   };
-
-  // Debounce & Auto-update
-  const [debouncedValues, setDebouncedValues] = useState({
-    carrera,
-    info: informacion,
-    oferta: ofertaLaboral,
-  });
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValues({ carrera, info: informacion, oferta: ofertaLaboral });
-    }, 800); // 800ms debounce (slightly longer to reduce AI load)
-
-    return () => clearTimeout(handler);
-  }, [carrera, informacion, ofertaLaboral]);
-
-  useEffect(() => {
-    if (data && !isLoading && !isUpdating) {
-      // Only auto-update if we already have a generated CV and not currently loading.
-      // Check if values actually changed from what `data` was generated with?
-      // For now, assume any change in debounced inputs triggers update.
-      // handleGenerate(true);
-    }
-  }, [debouncedValues]);
 
   // Handlers
   const handleAnalyzeCV = async (e: React.FormEvent) => {
@@ -736,95 +333,6 @@ export default function GenerarCV() {
       Message.errorMessage(errorMessage);
     } finally {
       setAnalysisState((prev) => ({ ...prev, isAnalyzing: false }));
-    }
-  };
-
-  const handleGenerate = async (isSilentUpdate = false) => {
-    if (!isSilentUpdate) {
-      setIsLoading(true);
-      setData(null);
-      setApiProgress(0);
-      startTimeRef.current = Date.now();
-    } else {
-      setIsUpdating(true);
-    }
-
-    try {
-      if (
-        (ofertaType === "text" && typeof ofertaLaboral !== "string") ||
-        (typeof ofertaLaboral === "string" && !ofertaLaboral.trim())
-      ) {
-        if (!isSilentUpdate)
-          Message.errorMessage(
-            t("cv_generator.job_offer.validation_error.text_empty"),
-          );
-        setIsLoading(false);
-        setIsUpdating(false);
-        return;
-      }
-      if (ofertaType !== "text" && typeof ofertaLaboral === "string") {
-        if (!isSilentUpdate)
-          Message.errorMessage(
-            t("cv_generator.job_offer.validation_error.file_missing"),
-          );
-        setIsLoading(false);
-        setIsUpdating(false);
-        return;
-      }
-
-      const progressCallback: ProgressCallback = {
-        onProgress: (progress) => setApiProgress(progress),
-      };
-
-      const templateIdToUse =
-        !plantillaCV && templateId ? templateId : undefined;
-      let userInfoString = informacion;
-
-      if (session) {
-        try {
-          const user = session.user;
-          const response = await fetch(`/api/apiHandler/user/${user.id}`);
-          if (response.ok) {
-            const { data } = await response.json();
-            userInfoString = informacion
-              ? `${informacion}\n${JSON.stringify(data)}`
-              : JSON.stringify(data);
-          }
-        } catch (error) {
-          console.error("User data fetch error:", error);
-        }
-      }
-
-      // Dynamically load CVHandler
-      const { CVHandler } = await import("../Handler/CVHandler");
-      const cvHandler = new CVHandler();
-
-      const responseHtml = await cvHandler.crearCV(
-        ofertaLaboral,
-        ofertaType,
-        plantillaCV ?? template,
-        userInfoString,
-        carrera,
-        undefined,
-        templateIdToUse,
-        progressCallback,
-        locale,
-        getModelConfig(),
-      );
-
-      setData(responseHtml);
-      if (!isSilentUpdate)
-        Message.successMessage(t("cv_generator.messages.success"));
-    } catch (error: any) {
-      console.error("Error generating CV:", error);
-      if (!isSilentUpdate)
-        Message.errorMessage(
-          t("cv_generator.messages.error") +
-            (error.message || "Error desconocido"),
-        );
-    } finally {
-      setIsLoading(false);
-      setIsUpdating(false);
     }
   };
 
@@ -900,7 +408,7 @@ export default function GenerarCV() {
         ofertaType as "text" | "image" | "pdf",
         progressCallback,
         locale,
-        getModelConfig()
+        getModelConfig(),
       );
 
       setJobOfferData(analyzedData);
@@ -909,11 +417,13 @@ export default function GenerarCV() {
       setEditableSeniority(analyzedData.seniority);
       setEditableKeywords(analyzedData.keywords.join(", "));
       setCurrentStep("edit");
-      Message.successMessage("Job offer analyzed! Review and edit the extracted data.");
+      Message.successMessage(
+        "Job offer analyzed! Review and edit the extracted data.",
+      );
     } catch (error: any) {
       console.error("Error analyzing offer:", error);
       Message.errorMessage(
-        "Failed to analyze job offer: " + (error.message || "Unknown error")
+        "Failed to analyze job offer: " + (error.message || "Unknown error"),
       );
     } finally {
       setIsAnalyzingOffer(false);
@@ -957,10 +467,19 @@ export default function GenerarCV() {
       const cvHandler = new CVHandler();
 
       const editableJobOfferData = {
-        skills: editableSkills.split(",").map(s => s.trim()).filter(Boolean),
-        requisitos: editableRequisitos.split(",").map(r => r.trim()).filter(Boolean),
+        skills: editableSkills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        requisitos: editableRequisitos
+          .split(",")
+          .map((r) => r.trim())
+          .filter(Boolean),
         seniority: editableSeniority,
-        keywords: editableKeywords.split(",").map(k => k.trim()).filter(Boolean),
+        keywords: editableKeywords
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean),
       };
 
       const responseHtml = await cvHandler.crearCV(
@@ -974,7 +493,7 @@ export default function GenerarCV() {
         progressCallback,
         locale,
         getModelConfig(),
-        editableJobOfferData
+        editableJobOfferData,
       );
 
       setData(responseHtml);
@@ -1150,12 +669,11 @@ export default function GenerarCV() {
                       {/* Search results view */}
                       {modelSearchQuery ? (
                         <div className="max-h-64 overflow-auto">
-                          {(
-                            "auto (fallback)".includes(
-                              modelSearchQuery.toLowerCase(),
-                            )
-                              ? [{ isAuto: true }]
-                              : []
+                          {("auto (fallback)".includes(
+                            modelSearchQuery.toLowerCase(),
+                          )
+                            ? [{ isAuto: true }]
+                            : []
                           ).map(() => (
                             <button
                               key="auto"
@@ -1198,6 +716,7 @@ export default function GenerarCV() {
                                     provider={m.provider}
                                     size={16}
                                   />
+
                                   <span className="flex-1 text-left truncate">
                                     {m.name}
                                   </span>
@@ -1273,9 +792,7 @@ export default function GenerarCV() {
                               </button>
                             )}
                             {aiModels
-                              .filter(
-                                (m) => m.provider === browsingProvider,
-                              )
+                              .filter((m) => m.provider === browsingProvider)
                               .map((m) => {
                                 const value = `${m.provider}:${m.id}`;
                                 return (
@@ -1636,7 +1153,8 @@ export default function GenerarCV() {
                 >
                   {isDownloadingPdf ? (
                     <>
-                      <Loader2 size={16} className="animate-spin" /> Generating...
+                      <Loader2 size={16} className="animate-spin" />{" "}
+                      Generating...
                     </>
                   ) : (
                     <>
@@ -1654,7 +1172,11 @@ export default function GenerarCV() {
                   <ThinkingAnimation
                     type="generate"
                     progress={apiProgress}
-                    message={isAnalyzingOffer ? "Analyzing job offer..." : t("thinking.generating_cv")}
+                    message={
+                      isAnalyzingOffer
+                        ? "Analyzing job offer..."
+                        : t("thinking.generating_cv")
+                    }
                   />
                 </div>
               ) : currentStep === "edit" ? (
@@ -1697,27 +1219,32 @@ export default function GenerarCV() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-8">
-                      {Array.from({ length: previewPageCount }).map((_, pageIndex) => (
-                        <div key={pageIndex} className="shadow-2xl bg-white">
-                          <iframe
-                            srcDoc={addPreviewPageStyles(data.html, pageIndex)}
-                            className="bg-white"
-                            onLoad={(event) => {
-                              if (pageIndex === 0) {
-                                updatePreviewPageCount(event.currentTarget);
-                              }
-                            }}
-                            scrolling="no"
-                            style={{
-                              width: A4_PAGE_WIDTH,
-                              height: A4_PAGE_HEIGHT,
-                              border: "none",
-                              pointerEvents: "auto",
-                            }}
-                            title={`CV Preview - Page ${pageIndex + 1}`}
-                          />
-                        </div>
-                      ))}
+                      {Array.from({ length: previewPageCount }).map(
+                        (_, pageIndex) => (
+                          <div key={pageIndex} className="shadow-2xl bg-white">
+                            <iframe
+                              srcDoc={addPreviewPageStyles(
+                                data.html,
+                                pageIndex,
+                              )}
+                              className="bg-white"
+                              onLoad={(event) => {
+                                if (pageIndex === 0) {
+                                  updatePreviewPageCount(event.currentTarget);
+                                }
+                              }}
+                              scrolling="no"
+                              style={{
+                                width: A4_PAGE_WIDTH,
+                                height: A4_PAGE_HEIGHT,
+                                border: "none",
+                                pointerEvents: "auto",
+                              }}
+                              title={`CV Preview - Page ${pageIndex + 1}`}
+                            />
+                          </div>
+                        ),
+                      )}
                     </div>
                   )}
                 </div>
@@ -1741,148 +1268,145 @@ export default function GenerarCV() {
       {/* CV Analysis Tab - Restored */}
       {activeTab === "analyze" && (
         <div className="flex-1 overflow-auto">
-        <div className="container mx-auto max-w-7xl py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <motion.form
-              onSubmit={handleAnalyzeCV}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="lg:col-span-2 p-6 sm:p-8 bg-white border-2 rounded-2xl shadow-xl space-y-6 h-fit"
-            >
-              <div className="text-center mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
-                  {t("cv_analysis.title")}
-                </h1>
-                <p className="text-gray-600 text-sm">
-                  {t("cv_analysis.subtitle")}
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-gray-700">
-                    {t("cv_analysis.job_title_label")}
-                  </h2>
-                  <BriefcaseIcon className="w-5 h-5 text-gray-500" />
-                </div>
-                <Input
-                  type="text"
-                  value={analysisFormData.jobTitle}
-                  onChange={(e) =>
-                    setAnalysisFormData((prev) => ({
-                      ...prev,
-                      jobTitle: e.target.value,
-                    }))
-                  }
-                  placeholder={t("cv_analysis.job_title_placeholder")}
-                  className="bg-gray-50 rounded-xl border-gray-200"
-                  required
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-gray-700">
-                    {t("cv_analysis.industry_label")}
-                  </h2>
-                  <BriefcaseIcon className="w-5 h-5 text-gray-500" />
-                </div>
-                <Input
-                  type="text"
-                  value={analysisFormData.industry}
-                  onChange={(e) =>
-                    setAnalysisFormData((prev) => ({
-                      ...prev,
-                      industry: e.target.value,
-                    }))
-                  }
-                  placeholder={t("cv_analysis.industry_placeholder")}
-                  className="bg-gray-50 rounded-xl border-gray-200"
-                  required
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold text-gray-700">
-                  {t("cv_analysis.upload_label")}
-                </h2>
-                <Input
-                  type="file"
-                  accept=".pdf,.doc,.docx,.txt"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] || null;
-                    setAnalysisFormData((prev) => ({ ...prev, cvFile: file }));
-                  }}
-                  className="bg-gray-50 rounded-xl border-gray-200"
-                  required
-                />
-                <p className="text-xs text-gray-500">
-                  {t("cv_analysis.upload_description")}
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={
-                  analysisState.isAnalyzing ||
-                  !analysisFormData.jobTitle ||
-                  !analysisFormData.industry ||
-                  !analysisFormData.cvFile
-                }
-                className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300"
+          <div className="container mx-auto max-w-7xl py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              <motion.form
+                onSubmit={handleAnalyzeCV}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="lg:col-span-2 p-6 sm:p-8 bg-white border-2 rounded-2xl shadow-xl space-y-6 h-fit"
               >
-                {analysisState.isAnalyzing ? (
-                  <LoaderSpin />
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <FileSearch className="w-5 h-5" />{" "}
-                    {t("cv_analysis.analyze_button")}
-                  </span>
-                )}
-              </Button>
-            </motion.form>
+                <div className="text-center mb-6">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                    {t("cv_analysis.title")}
+                  </h1>
+                  <p className="text-gray-600 text-sm">
+                    {t("cv_analysis.subtitle")}
+                  </p>
+                </div>
 
-            <div className="lg:col-span-3 p-3 border-2 bg-white rounded-2xl shadow-xl flex flex-col">
-              <h2 className="text-lg font-semibold text-gray-700 mb-4">
-                {t("cv_analysis.results_title")}
-              </h2>
-              <div className="flex-grow rounded-lg overflow-hidden bg-gray-50 min-h-[500px]">
-                {analysisState.isAnalyzing ? (
-                  <div className="flex items-center justify-center h-full">
-                    <ThinkingAnimation
-                      type="analyze"
-                      progress={analysisState.progress}
-                      message={t("thinking.analyzing_cv")}
-                    />
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-gray-700">
+                      {t("cv_analysis.job_title_label")}
+                    </h2>
+                    <BriefcaseIcon className="w-5 h-5 text-gray-500" />
                   </div>
-                ) : analysisState.result ? (
-                  <div className="h-full overflow-auto p-4">
-                    <AnalysisResults result={analysisState.result} />
+                  <Input
+                    type="text"
+                    value={analysisFormData.jobTitle}
+                    onChange={(e) =>
+                      setAnalysisFormData((prev) => ({
+                        ...prev,
+                        jobTitle: e.target.value,
+                      }))
+                    }
+                    placeholder={t("cv_analysis.job_title_placeholder")}
+                    className="bg-gray-50 rounded-xl border-gray-200"
+                    required
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-gray-700">
+                      {t("cv_analysis.industry_label")}
+                    </h2>
+                    <BriefcaseIcon className="w-5 h-5 text-gray-500" />
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 p-4">
-                    <FileSearch size={48} className="mb-4 text-gray-400" />
-                    <p className="text-lg font-medium mb-2">
-                      {t("cv_analysis.ready_to_analyze")}
-                    </p>
-                  </div>
-                )}
+                  <Input
+                    type="text"
+                    value={analysisFormData.industry}
+                    onChange={(e) =>
+                      setAnalysisFormData((prev) => ({
+                        ...prev,
+                        industry: e.target.value,
+                      }))
+                    }
+                    placeholder={t("cv_analysis.industry_placeholder")}
+                    className="bg-gray-50 rounded-xl border-gray-200"
+                    required
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold text-gray-700">
+                    {t("cv_analysis.upload_label")}
+                  </h2>
+                  <Input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setAnalysisFormData((prev) => ({
+                        ...prev,
+                        cvFile: file,
+                      }));
+                    }}
+                    className="bg-gray-50 rounded-xl border-gray-200"
+                    required
+                  />
+                  <p className="text-xs text-gray-500">
+                    {t("cv_analysis.upload_description")}
+                  </p>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={
+                    analysisState.isAnalyzing ||
+                    !analysisFormData.jobTitle ||
+                    !analysisFormData.industry ||
+                    !analysisFormData.cvFile
+                  }
+                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300"
+                >
+                  {analysisState.isAnalyzing ? (
+                    <LoaderSpin />
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <FileSearch className="w-5 h-5" />{" "}
+                      {t("cv_analysis.analyze_button")}
+                    </span>
+                  )}
+                </Button>
+              </motion.form>
+
+              <div className="lg:col-span-3 p-3 border-2 bg-white rounded-2xl shadow-xl flex flex-col">
+                <h2 className="text-lg font-semibold text-gray-700 mb-4">
+                  {t("cv_analysis.results_title")}
+                </h2>
+                <div className="flex-grow rounded-lg overflow-hidden bg-gray-50 min-h-[500px]">
+                  {analysisState.isAnalyzing ? (
+                    <div className="flex items-center justify-center h-full">
+                      <ThinkingAnimation
+                        type="analyze"
+                        progress={analysisState.progress}
+                        message={t("thinking.analyzing_cv")}
+                      />
+                    </div>
+                  ) : analysisState.result ? (
+                    <div className="h-full overflow-auto p-4">
+                      <AnalysisResults result={analysisState.result} />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 p-4">
+                      <FileSearch size={48} className="mb-4 text-gray-400" />
+                      <p className="text-lg font-medium mb-2">
+                        {t("cv_analysis.ready_to_analyze")}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        </div>
       )}
     </div>
-  );
-}
-
-function LoaderSpin() {
-  return (
-    <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2 inline-block" />
   );
 }

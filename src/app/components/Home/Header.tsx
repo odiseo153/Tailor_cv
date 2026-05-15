@@ -8,7 +8,6 @@ import {
   User,
   LogOut,
   Home,
-  Settings,
   FileText,
   Info,
   Mail,
@@ -115,11 +114,6 @@ export default function Header() {
       label: t("header.profile"),
       href: "/profile",
       icon: <User className="h-4 w-4 mr-2" />,
-    },
-    {
-      label: t("header.settings"),
-      href: "/profile/billing",
-      icon: <Settings className="h-4 w-4 mr-2" />,
     },
     {
       label: t("header.logout"),

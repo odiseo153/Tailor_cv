@@ -35,6 +35,8 @@ model User {
   cvHistories       cv_histories[]
   favoriteTemplates UserFavoriteTemplate[]
   cvTemplates       cv_templates[]
+  userBalances      user_balance[]
+  balanceHistories  balance_histories[]
 }
 
 model WorkExperience {
@@ -153,6 +155,7 @@ model cv_histories {
   cv_template    cv_templates? @relation(fields: [cv_template_id], references: [id], onDelete: SetNull)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  user_balanceId String?
 
   @@index([userId, status])
   @@index([userId, createdAt])
@@ -173,12 +176,39 @@ model cv_templates {
 }
 
 model UserFavoriteTemplate {
-  id         String       @id @default(uuid())
-  userId     String
-  templateId String
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  template   cv_templates @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  createdAt  DateTime     @default(now())
+  id             String       @id @default(uuid())
+  userId         String
+  templateId     String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template       cv_templates @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  user_balanceId String?
 
   @@unique([userId, templateId])
+}
+
+model user_balance {
+  id        String   @id @default(uuid())
+  userId    String
+  balance   Float    @default(10)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model balance_histories {
+  id             String   @id @default(uuid())
+  user_id        String
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  type           String   @default("usage")
+  amount         Float
+  balance_after  Float
+  description    String?  @db.Text
+  reference_type String?
+  reference_id   String?
+  metadata       Json?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@index([user_id])
 }

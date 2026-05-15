@@ -1,0 +1,247 @@
+<div id="scene-4" class="scene-4" data-scene="4">
+  <div class="resume-panel">
+    <div class="resume-header">
+      <div class="tab active">Experience</div>
+      <div class="tab">Skills</div>
+      <div class="tab">Education</div>
+    </div>
+    <div class="resume-content">
+      <div class="resume-section">
+        <div class="section-header">
+          <span class="role">Senior Developer</span>
+          <span class="ats-badge">ATS: 72 → 94</span>
+        </div>
+        <div class="bullet original">
+          <span class="bullet-marker">▸</span>
+          <span class="bullet-text">Built APIs for customer data</span>
+          <span class="improvement">+metrics</span>
+        </div>
+        <div class="bullet improved" style="opacity: 0;">
+          <span class="bullet-marker">▸</span>
+          <span class="bullet-text">Designed and implemented RESTful APIs serving 2M+ daily requests with 99.9% uptime</span>
+          <span class="improvement glow">✓</span>
+        </div>
+      </div>
+      <div class="skills-row">
+        <span class="skill-tag">JavaScript</span>
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag add">+ AWS</span>
+        <span class="skill-tag add">+ CI/CD</span>
+      </div>
+    </div>
+  </div>
+  <div class="side-stats">
+    <div class="stat">
+      <div class="stat-value" id="ats-final">94</div>
+      <div class="stat-label">ATS Score</div>
+    </div>
+  </div>
+</div>
+
+<style>
+.scene-4 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  padding: 60px;
+}
+
+.resume-panel {
+  width: 600px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.resume-header {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tab {
+  padding: 16px 24px;
+  font-size: 13px;
+  color: #52525b;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: #00d4ff;
+  border-bottom-color: #00d4ff;
+}
+
+.resume-content {
+  padding: 24px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.role {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.ats-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+  border-radius: 12px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.bullet.original {
+  background: rgba(255, 255, 255, 0.02);
+  color: #71717a;
+}
+
+.bullet.improved {
+  background: rgba(16, 185, 129, 0.1);
+  color: #e2e8f0;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.bullet-marker {
+  color: #00d4ff;
+}
+
+.improvement {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #a1a1b0;
+}
+
+.improvement.glow {
+  background: rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.skills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 16px;
+}
+
+.skill-tag {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #a1a1b0;
+}
+
+.skill-tag.add {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+}
+
+.side-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 96px;
+  font-weight: 800;
+  color: #10b981;
+  letter-spacing: -4px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #52525b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+</style>
+
+<script>
+(function() {
+  const tl = gsap.timeline({ paused: true });
+  
+  tl.from('.resume-panel', {
+    x: -30,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'power3.out'
+  }, 0.2);
+  
+  tl.from('.tab', {
+    y: -10,
+    opacity: 0,
+    stagger: 0.05,
+    duration: 0.3,
+    ease: 'power2.out'
+  }, 0.4);
+  
+  tl.from('.role', {
+    x: -20,
+    opacity: 0,
+    duration: 0.4,
+    ease: 'power2.out'
+  }, 0.7);
+  
+  tl.to('.bullet.original', {
+    opacity: 0,
+    duration: 0.3
+  }, 1.2);
+  
+  tl.from('.bullet.improved', {
+    opacity: 0,
+    y: 10,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 1.4);
+  
+  tl.from('.skill-tag', {
+    scale: 0.8,
+    opacity: 0,
+    stagger: 0.08,
+    duration: 0.3,
+    ease: 'back.out(1.5)'
+  }, 1.8);
+  
+  tl.from('#ats-final', {
+    scale: 0.5,
+    opacity: 0,
+    duration: 0.7,
+    ease: 'elastic.out(1, 0.5)'
+  }, 2.2);
+  
+  window.__timelines = window.__timelines || {};
+  window.__timelines['scene-4'] = tl;
+})();
+</script>

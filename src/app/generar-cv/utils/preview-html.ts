@@ -1,5 +1,5 @@
-const A4_PAGE_WIDTH = "210mm";
-const A4_PAGE_HEIGHT = "297mm";
+export const A4_PAGE_WIDTH = "210mm";
+export const A4_PAGE_HEIGHT = "297mm";
 
 export function addPreviewPageStyles(html: string, pageIndex: number) {
   const pageStyle = `
@@ -196,6 +196,3 @@ export function addEditablePreviewStyles(html: string) {
 
   return htmlWithWrapper;
 }
-
-export const CV_A4_PAGE_WIDTH = A4_PAGE_WIDTH;
-export const CV_A4_PAGE_HEIGHT = A4_PAGE_HEIGHT;

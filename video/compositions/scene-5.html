@@ -1,0 +1,205 @@
+<div id="scene-5" class="scene-5" data-scene="5">
+  <h2 class="section-label">Templates & Export</h2>
+  <div class="templates-grid">
+    <div class="template-card" id="tpl-modern">
+      <div class="tpl-preview">
+        <div class="tpl-header"></div>
+        <div class="tpl-lines"></div>
+      </div>
+      <div class="tpl-name">Modern</div>
+    </div>
+    <div class="template-card" id="tpl-minimal">
+      <div class="tpl-preview">
+        <div class="tpl-header minimal"></div>
+        <div class="tpl-lines minimal"></div>
+      </div>
+      <div class="tpl-name">Minimal</div>
+    </div>
+    <div class="template-card active" id="tpl-professional">
+      <div class="tpl-preview">
+        <div class="tpl-header"></div>
+        <div class="tpl-lines"></div>
+      </div>
+      <div class="tpl-name">Professional</div>
+    </div>
+  </div>
+  <div class="export-bar">
+    <div class="format-btns">
+      <span class="fmt-btn">PDF</span>
+      <span class="fmt-btn">DOCX</span>
+      <span class="fmt-btn">HTML</span>
+    </div>
+    <div class="export-btn">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      <span>Export</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.scene-5 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+}
+
+.section-label {
+  font-size: 14px;
+  color: #52525b;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 48px;
+}
+
+.templates-grid {
+  display: flex;
+  gap: 32px;
+}
+
+.template-card {
+  width: 180px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.template-card:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+  transform: translateY(-4px);
+}
+
+.template-card.active {
+  border-color: #00d4ff;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
+}
+
+.tpl-preview {
+  height: 120px;
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.tpl-header {
+  height: 12px;
+  background: #18181b;
+  border-radius: 2px;
+  margin-bottom: 8px;
+}
+
+.tpl-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tpl-lines::before, .tpl-lines::after, .tpl-lines span {
+  content: '';
+  height: 4px;
+  background: #d4d4d8;
+  border-radius: 2px;
+}
+
+.tpl-header.minimal {
+  height: 8px;
+  width: 40%;
+}
+
+.tpl-name {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #a1a1b0;
+  text-align: center;
+}
+
+.export-bar {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-top: 48px;
+  padding: 20px 32px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.format-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.fmt-btn {
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 13px;
+  color: #a1a1b0;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #00d4ff 0%, #6366f1 100%);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+</style>
+
+<script>
+(function() {
+  const tl = gsap.timeline({ paused: true });
+  
+  tl.from('.section-label', {
+    y: -20,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power2.out'
+  }, 0.2);
+  
+  tl.from('#tpl-modern', {
+    y: 30,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power3.out'
+  }, 0.5);
+  
+  tl.from('#tpl-minimal', {
+    y: 30,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power3.out'
+  }, 0.65);
+  
+  tl.from('#tpl-professional', {
+    y: 30,
+    opacity: 0,
+    duration: 0.5,
+    ease: 'power3.out'
+  }, 0.8);
+  
+  tl.from('.export-bar', {
+    y: 30,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'power2.out'
+  }, 1.2);
+  
+  window.__timelines = window.__timelines || {};
+  window.__timelines['scene-5'] = tl;
+})();
+</script>

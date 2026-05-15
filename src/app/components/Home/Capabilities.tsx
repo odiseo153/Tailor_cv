@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   BadgeCheck,
   BriefcaseBusiness,
-  CreditCard,
   FileClock,
   FileText,
   LayoutTemplate,
@@ -69,14 +68,6 @@ const capabilities = [
     href: "/buscar-trabajo",
     icon: BriefcaseBusiness,
     accent: "bg-green-50 text-green-700 border-green-100",
-  },
-  {
-    title: "Suscripcion y pagos",
-    description:
-      "Consulta planes, gestiona facturacion y metodos de pago desde el panel de usuario.",
-    href: "/plans",
-    icon: CreditCard,
-    accent: "bg-rose-50 text-rose-700 border-rose-100",
   },
 ];
 

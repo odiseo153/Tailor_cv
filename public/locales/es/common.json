@@ -575,7 +575,7 @@
       "search_term": "Escribe al menos 2 caracteres para buscar vacantes.",
       "sites": "Selecciona al menos una fuente antes de buscar."
     },
-    "results": {
+"results": {
       "summary": "{count} vacantes encontradas",
       "page_summary": "Página {currentPage} de {totalPages}",
       "load_more": "Cargar más",
@@ -584,5 +584,60 @@
       "company_fallback": "Empresa no especificada",
       "remote_badge": "Remoto"
     }
+  },
+  "video": {
+    "title": "Ver TailorCV en Acción",
+    "description": "Mira cómo TailorCV transforma tu currículum en minutos",
+    "scenes": {
+      "pain": {
+        "title": "La mayoría de los currículums nunca se ven.",
+        "subtitle": "Los sistemas ATS filtran el 70% de las solicitudes antes de que un humano las vea.",
+        "rejected": "Rechazados",
+        "reviewTime": "Tiempo de Revisión",
+        "gatekeeper": "El Filter"
+      },
+      "logo": {
+        "title": "TailorCV",
+        "subtitle": "Optimización de currículums con IA",
+        "feature1": "ATS Optimizado",
+        "feature2": "Escritura IA",
+        "feature3": "Match Laboral"
+      },
+      "analysis": {
+        "title": "Análisis de Empleo",
+        "subtitle": "La IA analiza requisitos y encuentra la mejor coincidencia",
+        "match": "Coincidencia",
+        "compatibility": "Compatibilidad",
+        "high": "Alta"
+      },
+      "optimize": {
+        "title": "Optimización del CV",
+        "subtitle": "Transforma tu currículum con sugerencias de IA",
+        "original": "Creé APIs",
+        "improved": "APIs RESTful sirviendo 2M+ solicitudes",
+        "puntajeATS": "Puntaje ATS"
+      },
+      "templates": {
+        "title": "Plantillas y Exportar",
+        "subtitle": "Plantillas profesionales en PDF, DOCX y HTML",
+        "modern": "Moderno",
+        "minimal": "Minimalista",
+        "professional": "Profesional"
+      },
+      "interview": {
+        "title": "Preparación para Entrevista",
+        "subtitle": "Practica con preguntas de entrevista generadas por IA",
+        "technical": "Técnico",
+        "systemDesign": "Diseño de Sistemas"
+      },
+      "cta": {
+        "title": "Consigue mejores oportunidades con IA",
+        "button": "Empezar Gratis",
+        "usersCount": "10,000+ currículums optimizados"
+      }
+    },
+    "feature1": "Optimización ATS",
+    "feature2": "Con IA",
+    "feature3": "Match Laboral"
   }
-} 
+}

@@ -1,0 +1,242 @@
+<div id="scene-3" class="scene-3">
+  <div class="panel-left">
+    <div class="panel-title">Job Description</div>
+    <div class="job-input">
+      <div class="input-line"></div>
+      <div class="input-line short"></div>
+      <div class="input-line"></div>
+    </div>
+    <div class="analyze-btn">
+      <span>Analyze</span>
+    </div>
+  </div>
+  
+  <div class="panel-center">
+    <div class="ai-brain">
+      <div class="brain-ring"></div>
+      <div class="brain-ring delay-1"></div>
+      <div class="brain-ring delay-2"></div>
+      <div class="brain-core">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <div class="ai-label">AI Analyzing...</div>
+  </div>
+  
+  <div class="panel-right">
+    <div class="panel-title">Analysis Results</div>
+    <div class="match-score">
+      <div class="score-ring">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(0,212,255,0.2)" stroke-width="6"/>
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#00d4ff" stroke-width="6" stroke-dasharray="283" stroke-dashoffset="70" transform="rotate(-90 50 50)"/>
+        </svg>
+        <div class="score-value">87%</div>
+      </div>
+      <div class="score-label">Match Score</div>
+    </div>
+    <div class="keywords">
+      <span class="kw">React</span>
+      <span class="kw">TypeScript</span>
+      <span class="kw">REST API</span>
+      <span class="kw more">+12 more</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.scene-3 {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  padding: 80px;
+}
+
+.panel-left, .panel-right {
+  width: 320px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 32px;
+  backdrop-filter: blur(20px);
+}
+
+.panel-title {
+  font-size: 12px;
+  color: #52525b;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.job-input {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.input-line {
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.input-line.short { width: 60%; }
+.input-line:nth-child(2) { width: 80%; }
+
+.analyze-btn {
+  margin-top: 32px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #00d4ff 0%, #6366f1 100%);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+.panel-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ai-brain {
+  position: relative;
+  width: 120px;
+  height: 120px;
+}
+
+.brain-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(0, 212, 255, 0.3);
+  border-radius: 50%;
+  animation: ring-spin 3s linear infinite;
+}
+
+.delay-1 { animation-delay: 1s; }
+.delay-2 { animation-delay: 2s; }
+
+@keyframes ring-spin {
+  0% { transform: rotate(0deg) scale(0.5); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: rotate(180deg) scale(1); opacity: 0; }
+}
+
+.brain-core {
+  position: absolute;
+  inset: 30px;
+  background: rgba(0, 212, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brain-core svg {
+  width: 40px;
+  height: 40px;
+  color: #00d4ff;
+}
+
+.ai-label {
+  margin-top: 24px;
+  font-size: 14px;
+  color: #00d4ff;
+  font-weight: 500;
+}
+
+.match-score {
+  text-align: center;
+}
+
+.score-ring {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.score-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.score-value {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #00d4ff;
+}
+
+.score-label {
+  font-size: 14px;
+  color: #71717a;
+  margin-top: 12px;
+}
+
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.kw {
+  padding: 6px 12px;
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #00d4ff;
+}
+
+.more {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #71717a;
+}
+</style>
+
+<script>
+(function() {
+  const tl = gsap.timeline({ paused: true });
+  
+  tl.from('.panel-left', {
+    x: -40,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'power3.out'
+  }, 0.2);
+  
+  tl.from('.panel-center', {
+    scale: 0.8,
+    opacity: 0,
+    duration: 0.7,
+    ease: 'back.out(1.3)'
+  }, 0.5);
+  
+  tl.from('.panel-right', {
+    x: 40,
+    opacity: 0,
+    duration: 0.6,
+    ease: 'power3.out'
+  }, 0.8);
+  
+  window.__timelines = window.__timelines || {};
+  window.__timelines['scene-3'] = tl;
+})();
+</script>
