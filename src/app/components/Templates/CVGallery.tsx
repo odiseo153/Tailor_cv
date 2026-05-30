@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { buildTemplatePreviewSrcDoc } from "@/lib/template-preview";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -80,7 +81,7 @@ export default function CVGallery() {
                   />
                 ) : (
                   <iframe
-                    srcDoc={template.templateHtml}
+                    srcDoc={buildTemplatePreviewSrcDoc(template.templateHtml)}
                     title={template.name}
                     className="absolute top-0 border-0 bg-white"
                     style={{
@@ -174,7 +175,7 @@ export default function CVGallery() {
             ) : (
               <div className="w-full max-w-[800px] min-h-[1130px] bg-white shadow-sm border border-gray-200">
                 <iframe
-                  srcDoc={previewTemplate?.templateHtml}
+                  srcDoc={buildTemplatePreviewSrcDoc(previewTemplate?.templateHtml || "")}
                   title="Detalle"
                   className="w-full h-full border-0"
                   sandbox="allow-same-origin allow-scripts"

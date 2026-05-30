@@ -1,13 +1,10 @@
 import { jsonrepair } from "jsonrepair";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { CVAnalysisResult } from "../types/cv-analysis";
 import {
   buildAnalyzeCVSystemPrompt,
   buildAnalyzeCVUserPrompt,
-  buildExtractCVInfoPrompt,
   buildGenerateCVSystemPrompt,
   buildGenerateCVUserPrompt,
-  buildTemplateFromPdfPrompt,
 } from "../utils/cv-prompts";
 
 export interface ProgressCallback {
@@ -21,14 +18,6 @@ export interface AIModelConfig {
   modelId: string;
 }
 
-const API_CONFIG = {
-  GEMINI: {
-    key: process.env.GEMINI_API_KEY ?? "",
-    model: "gemini-flash-latest",
-  },
-};
-
-const genAI = new GoogleGenerativeAI(API_CONFIG.GEMINI.key);
 const CSS_FRAMEWORK = "CSS";
 
 // Call AI via server-side API route (avoids CSP issues)
@@ -87,31 +76,61 @@ export class CVHandler {
       .replace(/\n{3,}/g, "\n\n");
   }
 
+  private async processFileWithGemini(params: {
+    action: "extract" | "template";
+    file: File;
+    fileType?: "image" | "pdf";
+  }): Promise<string> {
+    const { action, file, fileType } = params;
+    const fileData = await this.fileToBase64(file);
+
+    const res = await fetch("/api/cv-file", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action,
+        fileType,
+        fileData,
+      }),
+    });
+
+    const responseText = await res.text();
+    let payload: { content?: string; error?: string } | null = null;
+
+    try {
+      payload = responseText ? JSON.parse(responseText) : null;
+    } catch {
+      payload = null;
+    }
+
+    if (!res.ok) {
+      throw new Error(
+        payload?.error ||
+          responseText ||
+          `File AI request failed with status ${res.status}`,
+      );
+    }
+
+    if (!payload?.content) {
+      throw new Error("File AI response did not include generated content");
+    }
+
+    return payload.content;
+  }
+
   async getInfoFromFile(
     file: File,
     fileType: "image" | "pdf",
     progressCallback?: ProgressCallback,
   ): Promise<any> {
-    const model = genAI.getGenerativeModel({ model: API_CONFIG.GEMINI.model });
-    const prompt = buildExtractCVInfoPrompt(fileType);
-
     progressCallback?.onProgress?.(10);
     try {
-      const fileData = await this.fileToBase64(file);
       progressCallback?.onProgress?.(25);
-
-      const filePart = {
-        inlineData: {
-          data: fileData,
-          mimeType: fileType === "pdf" ? "application/pdf" : "image/jpeg",
-        },
-      };
-
-      const result = await model.generateContent([prompt, filePart]);
-      const responseText = this.cleanGeneratedContent(
-        (await result.response).text(),
-        "json",
-      );
+      const responseText = await this.processFileWithGemini({
+        action: "extract",
+        file,
+        fileType,
+      });
       progressCallback?.onInfoProcessed?.();
       progressCallback?.onProgress?.(50);
 
@@ -123,22 +142,14 @@ export class CVHandler {
   }
 
   async getPlantillaFromPdf(file: File): Promise<string> {
-    const model = genAI.getGenerativeModel({
-      model: API_CONFIG.GEMINI.model,
-      generationConfig: { temperature: 0.3 },
-    });
-
-    const prompt = buildTemplateFromPdfPrompt(CSS_FRAMEWORK);
-
     try {
-      const base64Data = await this.fileToBase64(file);
-      const parts = [
-        { text: prompt },
-        { inlineData: { mimeType: "application/pdf", data: base64Data } },
-      ];
-      const { response } = await model.generateContent(parts);
-
-      return this.cleanGeneratedContent(response.text(), "html");
+      return this.cleanGeneratedContent(
+        await this.processFileWithGemini({
+          action: "template",
+          file,
+        }),
+        "html",
+      );
     } catch (error) {
       console.error("Error generating template:", error);
       throw new Error(`Failed to generate template: ${error}`);

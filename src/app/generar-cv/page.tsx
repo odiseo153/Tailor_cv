@@ -6,7 +6,6 @@ import {
   UploadIcon,
   TextIcon,
   ImageIcon,
-  Eye,
   BriefcaseIcon,
   Check,
   FileSearch,
@@ -39,7 +38,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useAppContext, useStore } from "../context/AppContext";
+import { useStore } from "../context/AppContext";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
 import { Session } from "../api/auth/[...nextauth]/route";
@@ -52,7 +51,7 @@ import {
 import { processUploadedCV, validateCVContent } from "../utils/file-processing";
 import { generatePdfViaBrowser } from "@/lib/puppeteer-pdf/client";
 import dynamic from "next/dynamic";
-import { AIModel } from "./types";
+import { AIModel, CVTemplate } from "./types";
 import { EditableJobData } from "./components/EditableJobData";
 import { AccordionItem } from "./components/AccordionItem";
 import { LoaderSpin } from "./components/LoaderSpin";
@@ -67,6 +66,7 @@ import {
   addEditablePreviewStyles,
   addPreviewPageStyles,
 } from "./utils/preview-html";
+import { buildTemplatePreviewSrcDoc } from "@/lib/template-preview";
 
 type GenerationStep = "input" | "analyze" | "edit" | "preview";
 
@@ -100,7 +100,6 @@ export default function GenerarCV() {
   // CV Generation states
   const [ofertaLaboral, setOfertaLaboral] = useState<string | File>("");
   const [carrera, setCarrera] = useState<string>("");
-  const [plantillaCV, setPlantillaCV] = useState<File | null>(null);
   const [informacion, setInformacion] = useState("");
   const [data, setData] = useState<{ html: string } | null>(null);
   const [previewPageCount, setPreviewPageCount] = useState(1);
@@ -112,7 +111,11 @@ export default function GenerarCV() {
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [isManualEditMode, setIsManualEditMode] = useState(false);
   const [isManualEditReady, setIsManualEditReady] = useState(false);
-  const [previewTemplate, setPreviewTemplate] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<CVTemplate[]>([]);
+  const [templateSearchOpen, setTemplateSearchOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate | null>(
+    null,
+  );
 
   // Step-based generation states
   const [currentStep, setCurrentStep] = useState<GenerationStep>("input");
@@ -174,8 +177,7 @@ export default function GenerarCV() {
 
   // Context & Hooks
   const { data: session } = useSession() as { data: Session | null };
-  const { template } = useAppContext();
-  const { templateId } = useStore();
+  const { templateId, setTemplateId } = useStore();
   // cvHandler instantiated dynamically
   const { t, locale } = useI18n();
 
@@ -186,6 +188,19 @@ export default function GenerarCV() {
       .then((data) => setAiModels(data.models || []))
       .catch(() => setAiModels([]));
   }, []);
+
+  useEffect(() => {
+    fetch("/api/templates")
+      .then((res) => res.json())
+      .then((payload) => setTemplates(payload.templates || []))
+      .catch(() => setTemplates([]));
+  }, []);
+
+  useEffect(() => {
+    setSelectedTemplate(
+      templates.find((item) => item.id === templateId) ?? null,
+    );
+  }, [templateId, templates]);
 
   useEffect(() => {
     setPreviewPageCount(1);
@@ -444,8 +459,7 @@ export default function GenerarCV() {
         onProgress: (progress) => setApiProgress(progress),
       };
 
-      const templateIdToUse =
-        !plantillaCV && templateId ? templateId : undefined;
+      const templateIdToUse = templateId || undefined;
       let userInfoString = informacion;
 
       if (session) {
@@ -485,7 +499,7 @@ export default function GenerarCV() {
       const responseHtml = await cvHandler.crearCV(
         ofertaLaboral,
         ofertaType,
-        plantillaCV ?? template,
+        "",
         userInfoString,
         carrera,
         undefined,
@@ -973,37 +987,110 @@ export default function GenerarCV() {
                   isOpen={openSections.includes("template")}
                   onToggle={() => toggleSection("template")}
                 >
-                  <Input
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) =>
-                      handleFileChange(e, setPlantillaCV, setPreviewTemplate)
-                    }
-                    className="bg-gray-50"
-                  />
-                  {previewTemplate && (
-                    <Dialog>
-                      <DialogTrigger asChild>
+                  <div className="space-y-3">
+                    {selectedTemplate ? (
+                      <div className="rounded-2xl border border-blue-100 bg-blue-50 px-3 py-3 text-sm text-blue-700">
+                        <p>
+                          Plantilla activa:{" "}
+                          <span className="font-semibold">
+                            {selectedTemplate.name}
+                          </span>
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500">
+                        La plantilla es opcional. Si no eliges una, el CV se
+                        generara sin plantilla base.
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Dialog
+                        open={templateSearchOpen}
+                        onOpenChange={setTemplateSearchOpen}
+                      >
+                        <DialogTrigger asChild>
+                          <Button type="button" variant="outline">
+                            Seleccionar plantilla
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="h-[90vh] w-[94vw] max-w-[94vw]">
+                          <DialogHeader>
+                            <DialogTitle>Seleccionar plantilla</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid h-[78vh] gap-4 overflow-y-auto pr-1 lg:grid-cols-2">
+                            {templates.map((item) => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => {
+                                  setTemplateId(item.id);
+                                  setTemplateSearchOpen(false);
+                                }}
+                                className={`rounded-2xl border p-3 text-left transition ${
+                                  item.id === templateId
+                                    ? "border-blue-600 bg-blue-50"
+                                    : "border-gray-200 bg-white hover:border-gray-300"
+                                }`}
+                              >
+                                <div className="mb-3 flex items-start justify-between gap-3">
+                                  <div>
+                                    <p className="text-sm font-semibold text-gray-900">
+                                      {item.name}
+                                    </p>
+                                    <div className="mt-1 flex gap-2">
+                                      {item.isDefault && (
+                                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                                          Default
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                                  {item.previewImage ? (
+                                    <img
+                                      src={item.previewImage}
+                                      alt={item.name}
+                                      className="h-[32rem] w-full object-contain object-top bg-white"
+                                    />
+                                  ) : (
+                                    <div className="relative h-[32rem] w-full overflow-hidden bg-white">
+                                      <iframe
+                                        srcDoc={buildTemplatePreviewSrcDoc(
+                                          item.templateHtml,
+                                        )}
+                                        title={item.name}
+                                        className="absolute left-0 top-0 border-0 bg-white"
+                                        style={{
+                                          width: "210mm",
+                                          height: "297mm",
+                                          transform: "scale(0.58)",
+                                          transformOrigin: "top left",
+                                          pointerEvents: "none",
+                                        }}
+                                        sandbox="allow-same-origin allow-scripts"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      {selectedTemplate && (
                         <Button
+                          type="button"
                           variant="ghost"
-                          size="sm"
-                          className="mt-2 text-blue-600 w-full justify-start"
+                          onClick={() => setTemplateId("")}
                         >
-                          <Eye size={16} className="mr-2" />{" "}
-                          {t("cv_generator.template.preview")}
+                          Quitar
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-3xl">
-                        <DialogHeader>
-                          <DialogTitle>Template Preview</DialogTitle>
-                        </DialogHeader>
-                        <iframe
-                          src={previewTemplate}
-                          className="w-full h-96 rounded-lg border"
-                        />
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                      )}
+                    </div>
+                  </div>
                 </AccordionItem>
 
                 <AccordionItem

@@ -46,7 +46,9 @@ Template requirements:
   `.trim();
 }
 
-export function buildPredominantOfferLanguageInstruction(language: string): string {
+export function buildPredominantOfferLanguageInstruction(
+  language: string,
+): string {
   return `
     ### CRITICAL Language Selection Rule
     - Detect the predominant language used in the "Job Offer" text.
@@ -90,7 +92,7 @@ export function buildGenerateCVSystemPrompt(params: {
 
     ### Output Requirements
     - Produce clean, semantic, valid HTML5, ready for PDF or Word export.
-    - Design must be responsive, minimalist, elegant, and printable using embedded ${cssFramework}.
+    - Design must be responsive, minimalist, elegant, visually polished, and printable using embedded ${cssFramework}.
     - Include all required visual styles inside the returned HTML with a <style> block or inline style attributes.
     - Do not rely on external CSS, Tailwind utility classes, browser defaults, or app-level styles.
     - Any class name used in the HTML must have a matching CSS rule in the returned <style> block.
@@ -98,6 +100,15 @@ export function buildGenerateCVSystemPrompt(params: {
     - Do not design the CV as a centered card inside the page. Avoid outer borders, page frames, shadows, gray page backgrounds, or decorative wrappers.
     - Typography: 10-12pt for body text, 14-16pt for headings.
     - Margins: 10mm on all sides.
+    - The layout must feel intentionally designed, not like plain default HTML. Use strong visual hierarchy, disciplined spacing, and refined alignment.
+    - Prefer an editorial resume aesthetic: clean typography, subtle section rhythm, balanced whitespace, and restrained visual accents.
+    - Use at most one subdued accent color plus neutrals. Avoid saturated palettes, rainbow sections, loud backgrounds, or excessive visual contrast.
+    - Create distinction through layout more than color: vary font weight, spacing, column structure, rules, small caps, label treatment, and grouping.
+    - Section headings should feel designed and consistent, using subtle separators, spacing, or typographic treatment rather than heavy decoration.
+    - Contact information and key skills should be easy to scan at a glance, using compact layout patterns such as inline groups, chips, meta rows, or side columns when appropriate.
+    - Experience entries should have clear hierarchy between role, employer, dates, and achievements, with elegant spacing and alignment.
+    - Use subtle dividers, thin rules, muted fills, or soft blocks only when they improve structure. Keep the result sober and professional.
+    - Avoid templates that look generic, unfinished, overly colorful, playful, or like a simple text document pasted into HTML.
     - Emphasize skills, experiences, and achievements that best match the job offer.
     - Maintain consistent section hierarchy (e.g., Profile, Experience, Education, Skills, Contact Info).
     - Use professional, localized terminology for the detected predominant language of the job offer.
@@ -135,7 +146,7 @@ export function buildGenerateCVSystemPrompt(params: {
     - Output only HTML code (no Markdown, explanations, comments, or code fences).
     - Use inline or embedded ${cssFramework} styling; avoid external dependencies.
     - The HTML must render correctly inside a standalone iframe and in headless Chrome PDF export.
-    - Ensure the design looks professional, clean, and export-friendly.
+    - Ensure the design looks professional, clean, intentionally styled, and export-friendly.
     - The result must feel human-written, with natural phrasing and contextual emphasis.
 
     ### ATS/HR Optimization Guidelines
@@ -204,6 +215,11 @@ export function buildGenerateCVUserPrompt(params: {
     - Ensure a responsive, printable layout that looks great on screen and in PDF.
     - Include a complete embedded <style> block for spacing, typography, section dividers, and layout.
     - Use the full printable page area. Do not create an inner card with fixed max-width, outer border, shadow, or large vertical padding.
+    - Make the resume feel designed and premium through typography, spacing, hierarchy, and alignment, even if the color palette is minimal.
+    - Use a restrained palette: neutrals plus a single subtle accent if needed. Avoid bright colors, multicolor sections, gradients, or decorative excess.
+    - Prefer elegant structure choices such as a refined two-column header, compact metadata rows, disciplined section spacing, and understated dividers.
+    - Make headings, dates, role titles, and company names visually distinct without making the page loud.
+    - Use layout and typographic contrast to improve scanability instead of relying on strong fills or large colored blocks.
     - Do not output class-only markup unless every class is defined in the embedded CSS.
     - ${
       infoAdicional
