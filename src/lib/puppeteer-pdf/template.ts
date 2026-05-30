@@ -21,6 +21,14 @@ const PRINT_STYLE = `
       background: #ffffff;
     }
 
+    .tailor-cv-print-page > * {
+      width: 100% !important;
+      max-width: none !important;
+      min-height: calc(297mm - 20mm) !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+
     .tailor-cv-print-page,
     .tailor-cv-print-page * {
       max-width: none !important;

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "bunx prisma generate --no-engine && next build",
+    "build": "bunx prisma generate && next build",
     "build_local": "prisma generate && next build",
     "start": "next start",
     "seed": "node .\\prisma\\seed.js",

@@ -1,57 +1,143 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Francisco Andrade</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plantilla CV Profesional</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      color: #111827;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 10.5pt;
+      line-height: 1.42;
+    }
+
+    body {
+      padding: 10mm;
+    }
+
+    .cv-page {
+      width: 100%;
+      min-height: 277mm;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cv-header {
+      margin-bottom: 7mm;
+      padding-bottom: 4mm;
+      border-bottom: 1px solid #d1d5db;
+    }
+
+    .cv-name {
+      margin: 0;
+      font-size: 24pt;
+      line-height: 1;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .cv-role {
+      margin: 2mm 0 0;
+      color: #4b5563;
+      font-size: 10pt;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .cv-section {
+      margin-bottom: 5mm;
+    }
+
+    .cv-section-title {
+      margin: 0 0 2.5mm;
+      padding-bottom: 1.5mm;
+      border-bottom: 1px solid #d1d5db;
+      font-size: 12.5pt;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .cv-text,
+    .cv-item,
+    .cv-contact {
+      margin: 0 0 2mm;
+    }
+
+    .cv-item-title {
+      margin: 0 0 1mm;
+      font-weight: 700;
+    }
+
+    .cv-spacer {
+      flex: 1;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex justify-center py-10">
-    <div class="bg-white w-4/5 max-w-2xl shadow-lg p-8">
-        <header class="border-l-4 border-black pl-4 mb-6">
-            <h1 class="text-3xl font-bold">FRANCISCO <span class="block">ANDRADE</span></h1>
-            <p class="text-gray-600 uppercase tracking-wide text-sm">Programador Web</p>
-        </header>
-        
-        <section class="mb-6">
-            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Perfil</h2>
-            <p class="text-gray-700 text-sm">Me recibí de Diseñador Web en el año 2020 y estoy en busca de un nuevo trabajo. Actualmente estoy cursando en el área de Marketing, especializado en redes sociales. Me considero una persona responsable y creativa.</p>
-        </section>
-        
-        <section class="mb-6">
-            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Idiomas</h2>
-            <p class="text-sm text-gray-700">Inglés: <span class="font-semibold">Avanzado</span></p>
-            <p class="text-sm text-gray-700">Alemán: <span class="font-semibold">Intermedio</span></p>
-        </section>
-        
-        <section class="mb-6">
-            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Educación</h2>
-            <p class="text-sm text-gray-700"><span class="font-semibold">Licenciatura en Diseño Web</span> - Universidad de Córdoba (2018-2020)</p>
-            <p class="text-sm text-gray-700 mt-2"><span class="font-semibold">Escuela Secundaria</span> - Colegio San Andrés (2010-2016)</p>
-        </section>
-        
-        <section class="mb-6">
-            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Experiencia</h2>
-            <div class="mb-4">
-                <p class="font-semibold">Asistente de Gerencia</p>
-                <p class="text-sm text-gray-700">Seguros de Agencia. Revisión de balances de documentos y control de facturación.</p>
-            </div>
-            <div class="mb-4">
-                <p class="font-semibold">Pasante Administrativo</p>
-                <p class="text-sm text-gray-700">Recepción en Clínicas. Organización de bases de datos y salas.</p>
-            </div>
-            <div>
-                <p class="font-semibold">Atención al Público</p>
-                <p class="text-sm text-gray-700">Mención en Clínicas personales. Asistencia y seguimiento de stock.</p>
-            </div>
-        </section>
-        
-        <section>
-            <h2 class="text-lg font-semibold border-b-2 border-gray-300 pb-1 mb-4">Contacto</h2>
-            <p class="text-sm text-gray-700"><span class="font-semibold">Dirección:</span> Calle Odugarse 125, Córdoba</p>
-            <p class="text-sm text-gray-700"><span class="font-semibold">Teléfono:</span> (954) 123-4567</p>
-            <p class="text-sm text-gray-700"><span class="font-semibold">Email:</span> hola@hotashotmail.com</p>
-        </section>
-    </div>
+<body>
+  <main class="cv-page">
+    <header class="cv-header">
+      <h1 class="cv-name">FRANCISCO ANDRADE</h1>
+      <p class="cv-role">Programador Web</p>
+    </header>
+
+    <section class="cv-section">
+      <h2 class="cv-section-title">Perfil</h2>
+      <p class="cv-text">Me recibi de Disenador Web en el ano 2020 y estoy en busca de un nuevo trabajo. Actualmente estoy cursando en el area de Marketing, especializado en redes sociales. Me considero una persona responsable y creativa.</p>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="cv-section-title">Experiencia</h2>
+      <article class="cv-item">
+        <p class="cv-item-title">Asistente de Gerencia</p>
+        <p class="cv-text">Seguros de Agencia. Revision de balances de documentos y control de facturacion.</p>
+      </article>
+      <article class="cv-item">
+        <p class="cv-item-title">Pasante Administrativo</p>
+        <p class="cv-text">Recepcion en Clinicas. Organizacion de bases de datos y salas.</p>
+      </article>
+      <article class="cv-item">
+        <p class="cv-item-title">Atencion al Publico</p>
+        <p class="cv-text">Mencion en Clinicas personales. Asistencia y seguimiento de stock.</p>
+      </article>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="cv-section-title">Educacion</h2>
+      <p class="cv-text"><strong>Licenciatura en Diseno Web</strong> - Universidad de Cordoba (2018-2020)</p>
+      <p class="cv-text"><strong>Escuela Secundaria</strong> - Colegio San Andres (2010-2016)</p>
+    </section>
+
+    <section class="cv-section">
+      <h2 class="cv-section-title">Idiomas</h2>
+      <p class="cv-text">Ingles: <strong>Avanzado</strong></p>
+      <p class="cv-text">Aleman: <strong>Intermedio</strong></p>
+    </section>
+
+    <div class="cv-spacer"></div>
+
+    <section class="cv-section">
+      <h2 class="cv-section-title">Contacto</h2>
+      <p class="cv-contact"><strong>Direccion:</strong> Calle Odugarse 125, Cordoba</p>
+      <p class="cv-contact"><strong>Telefono:</strong> (954) 123-4567</p>
+      <p class="cv-contact"><strong>Email:</strong> hola@hotashotmail.com</p>
+    </section>
+  </main>
 </body>
 </html>

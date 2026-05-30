@@ -48,6 +48,14 @@ export function addPreviewPageStyles(html: string, pageIndex: number) {
         transform-origin: top left;
       }
 
+      .tailor-cv-page-content > * {
+        width: 100% !important;
+        max-width: none !important;
+        min-height: calc(${A4_PAGE_HEIGHT} - 20mm) !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+      }
+
       :where(body:not([style]) .tailor-cv-page-content) {
         color: #111827;
         font-family: Georgia, "Times New Roman", serif;
@@ -137,6 +145,14 @@ export function addEditablePreviewStyles(html: string) {
         padding: 10mm;
         box-sizing: border-box;
         overflow-wrap: break-word;
+      }
+
+      .tailor-cv-edit-content > * {
+        width: 100% !important;
+        max-width: none !important;
+        min-height: calc(${A4_PAGE_HEIGHT} - 20mm) !important;
+        margin: 0 !important;
+        box-shadow: none !important;
       }
 
       .tailor-cv-edit-content [contenteditable="plaintext-only"] {

@@ -8,7 +8,8 @@ import { prisma } from "@/lib/utils";
 
 const defaultTemplateFiles = [
   {
-    name: "Profesional Clásica",
+    name: "Profesional Clasica",
+    legacyNames: ["Profesional Clásica", "Profesional Cl\u00c3\u00a1sica"],
     file: "plantilla.html",
     isDefault: true,
   },
@@ -20,25 +21,52 @@ const defaultTemplateFiles = [
 ];
 
 async function ensureDefaultTemplates() {
-  const count = await prisma.cv_templates.count();
-  if (count > 0) {
-    return;
-  }
-
   const templates = await Promise.all(
-    defaultTemplateFiles.map(async ({ name, file, isDefault }) => {
+    defaultTemplateFiles.map(async ({ name, legacyNames = [], file, isDefault }) => {
       const templatePath = path.join(process.cwd(), "src", "templates", file);
       const templateHtml = await fs.promises.readFile(templatePath, "utf-8");
 
       return {
         name,
+        legacyNames,
         template_html: templateHtml,
         is_default: isDefault,
       };
     }),
   );
 
-  await prisma.cv_templates.createMany({ data: templates });
+  for (const template of templates) {
+    const existing = await prisma.cv_templates.findFirst({
+      where: {
+        authorId: null,
+        OR: [
+          { name: template.name },
+          ...template.legacyNames.map((name) => ({ name })),
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      await prisma.cv_templates.update({
+        where: { id: existing.id },
+        data: {
+          name: template.name,
+          template_html: template.template_html,
+          is_default: template.is_default,
+        },
+      });
+      continue;
+    }
+
+    await prisma.cv_templates.create({
+      data: {
+        name: template.name,
+        template_html: template.template_html,
+        is_default: template.is_default,
+      },
+    });
+  }
 }
 
 export async function GET() {
@@ -70,7 +98,10 @@ export async function GET() {
         previewImage: template.preview_image,
         templateHtml: template.template_html,
         isDefault: template.is_default,
-        isFavorite: "favorites" in template && template.favorites ? template.favorites.length > 0 : false,
+        isFavorite:
+          "favorites" in template && template.favorites
+            ? template.favorites.length > 0
+            : false,
         author: template.author || null,
       })),
     });

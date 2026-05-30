@@ -2,19 +2,48 @@ import { validation_prompt } from "./cv_validations";
 import { generateLanguageInstruction } from "./language-helper";
 
 export function buildExtractCVInfoPrompt(fileType: "image" | "pdf"): string {
-  return `Extract CV information (${fileType}):\n
-      { summary: "", workExperience: [], education: [], skills: [], projects: [], languages: [] }
-      Return ONLY a valid JSON object.`;
+  return `
+You are a CV data extraction specialist. Extract only information that is explicitly visible in the provided ${fileType}.
+
+Return ONLY a valid JSON object with this exact top-level structure:
+{
+  "summary": "",
+  "workExperience": [],
+  "education": [],
+  "skills": [],
+  "projects": [],
+  "languages": []
+}
+
+Extraction rules:
+- Preserve the candidate's original wording where it is clear and useful.
+- Do not invent employers, dates, titles, degrees, metrics, links, or skills.
+- If a field or section is missing, return an empty string or empty array.
+- Keep work experience and education in the same order shown in the CV.
+- For experience items, capture role/title, company, location, dates, and achievements/responsibilities when visible.
+- For education items, capture degree/program, institution, location, dates, and relevant notes when visible.
+- For skills, group related technical tools and competencies when the source CV clearly groups them.
+- Return JSON only. No Markdown, comments, explanations, or code fences.
+  `.trim();
 }
 
 export function buildTemplateFromPdfPrompt(cssFramework: string): string {
-  return `Generate valid HTML with ${cssFramework} replicating the CV's visual layout and structure:
-      - Use semantic HTML5, responsive layout (grid/flex), consistent spacing, and typography scale
-      - Output should contain placeholder text for content (e.g., {{name}}, {{summary}}, {{experience_item}})
-      - STRICT: Refrain from introducing any external CSS frameworks or scripts
-      - Favor minimal, readable class names derived from the original PDF's visual groupings
-      - Keep a single-page layout suitable for A4/PDF export
-      - Return ONLY clean HTML code (no Markdown, no explanations).`;
+  return `
+You are an HTML/CSS resume template reconstruction specialist.
+
+Generate valid HTML with embedded ${cssFramework} that recreates the CV's visual layout and structure as a reusable template.
+
+Template requirements:
+- Use semantic HTML5 and a complete embedded <style> block.
+- Recreate the original visual hierarchy, section order, spacing, typography scale, borders, and alignment as closely as possible.
+- Use responsive, print-friendly layout techniques such as grid or flex.
+- Use placeholder text for replaceable content, for example {{name}}, {{summary}}, {{experience_item}}, {{education_item}}, {{skills}}.
+- Favor minimal, readable class names based on the PDF's visual groupings.
+- Keep the layout suitable for single-page A4/PDF export.
+- Do not introduce external CSS frameworks, scripts, remote fonts, images, or dependencies.
+- Every class used in the HTML must have a matching CSS rule in the embedded <style> block.
+- Return ONLY clean HTML code. No Markdown, explanations, comments, or code fences.
+  `.trim();
 }
 
 export function buildPredominantOfferLanguageInstruction(language: string): string {
@@ -34,25 +63,42 @@ export function buildGenerateCVSystemPrompt(params: {
   infoAdicional?: string;
   carrera?: string;
 }): string {
-  const { cssFramework, language, foto = "", infoAdicional = "", carrera = "" } = params;
-  const predominantOfferLanguageInstruction = buildPredominantOfferLanguageInstruction(language);
+  const {
+    cssFramework,
+    language,
+    foto = "",
+    infoAdicional = "",
+    carrera = "",
+  } = params;
+  const predominantOfferLanguageInstruction =
+    buildPredominantOfferLanguageInstruction(language);
 
   return `
-    You are a senior CV designer and recruiter with deep expertise in crafting visually appealing, professional resumes in HTML using ${cssFramework}.
-    
-    Your task is to generate a **single-page CV** perfectly aligned with a specific job offer, based on provided candidate data.
-    
+    You are a senior resume strategist, ATS optimization specialist, recruiter, and HTML/CSS CV designer using ${cssFramework}.
+
+    Your task is to generate a single-page CV aligned with a specific job offer, based strictly on provided candidate data.
+
     ${predominantOfferLanguageInstruction}
-    
-    ### 🎯 Output Requirements
-    - Produce **clean, semantic, valid HTML5**, ready for PDF or Word export.
-    - Design must be **responsive**, minimalist, and elegant, using ${cssFramework}.
+
+    ### Working Method
+    Before writing the final HTML, internally perform these steps without exposing them:
+    1) Identify the target role, seniority, hard skills, soft skills, responsibilities, and ATS keywords from the job offer.
+    2) Select only candidate evidence that supports those requirements.
+    3) Rewrite summaries and bullets using natural, recruiter-ready language in the predominant job-offer language.
+    4) Prefer measurable achievements. If the data has no metrics, do not invent numbers.
+    5) Balance ATS readability first and visual polish second.
+
+    ### Output Requirements
+    - Produce clean, semantic, valid HTML5, ready for PDF or Word export.
+    - Design must be responsive, minimalist, elegant, and printable using embedded ${cssFramework}.
     - Include all required visual styles inside the returned HTML with a <style> block or inline style attributes.
     - Do not rely on external CSS, Tailwind utility classes, browser defaults, or app-level styles.
     - Any class name used in the HTML must have a matching CSS rule in the returned <style> block.
-    - Typography: **10-12pt** for body text, **14-16pt** for headings.
-    - Margins: **10mm** on all sides.
-    - Emphasize skills, experiences, and achievements that **best match the job offer**.
+    - The main CV container must use the full printable area: width: 100%, min-height: 277mm, margin: 0, and box-sizing: border-box.
+    - Do not design the CV as a centered card inside the page. Avoid outer borders, page frames, shadows, gray page backgrounds, or decorative wrappers.
+    - Typography: 10-12pt for body text, 14-16pt for headings.
+    - Margins: 10mm on all sides.
+    - Emphasize skills, experiences, and achievements that best match the job offer.
     - Maintain consistent section hierarchy (e.g., Profile, Experience, Education, Skills, Contact Info).
     - Use professional, localized terminology for the detected predominant language of the job offer.
     - If a template HTML is provided, you MUST:
@@ -62,34 +108,44 @@ export function buildGenerateCVSystemPrompt(params: {
       4) Replace only the textual content and image sources while keeping elements and wrappers intact
       5) Do not introduce external CSS/JS; only inline or embedded ${cssFramework} styles allowed
     - If no template is provided, create a modern, ATS-friendly layout using best UX/UI practices.
-    - ${foto
-      ? `Include the candidate photo (${foto}) if culturally appropriate for the target country.`
-      : "Exclude the photo section for a neutral, global presentation."
+    - ${
+      foto
+        ? `Include the candidate photo (${foto}) if culturally appropriate for the target country.`
+        : "Exclude the photo section for a neutral, global presentation."
     }
-    - ${infoAdicional
-      ? `Incorporate the following additional information where relevant: ${infoAdicional}.`
-      : "Exclude any additional information not provided."
+    - ${
+      infoAdicional
+        ? `Incorporate the following additional information where relevant: ${infoAdicional}.`
+        : "Exclude any additional information not provided."
     }
-    - ${carrera
-      ? `Adapt structure, keywords, and achievements to align with the career field: ${carrera}.`
-      : "Use a balanced, cross-industry approach for general applications."
+    - ${
+      carrera
+        ? `Adapt structure, keywords, and achievements to align with the career field: ${carrera}.`
+        : "Use a balanced, cross-industry approach for general applications."
     }
-    
-    ### ⚙️ Formatting Rules
-    - Output **only HTML code** (no Markdown, explanations, or comments).
+
+    ### Content Rules
+    - Do not fabricate experience, employers, education, certifications, languages, links, dates, or metrics.
+    - You may improve wording, ordering, emphasis, and keyword alignment based on the candidate data.
+    - Convert generic responsibilities into achievement-oriented bullets only when supported by the input.
+    - Avoid filler phrases, cliches, exaggerated claims, and keyword stuffing.
+    - Keep the CV concise enough to fit one page unless the provided template clearly requires otherwise.
+
+    ### Formatting Rules
+    - Output only HTML code (no Markdown, explanations, comments, or code fences).
     - Use inline or embedded ${cssFramework} styling; avoid external dependencies.
     - The HTML must render correctly inside a standalone iframe and in headless Chrome PDF export.
     - Ensure the design looks professional, clean, and export-friendly.
-    - The result must feel **human-written**, with natural phrasing and contextual emphasis.
-    
-    ### 📌 ATS/HR Optimization Guidelines (Translate to the predominant job-offer language and ENFORCE)
+    - The result must feel human-written, with natural phrasing and contextual emphasis.
+
+    ### ATS/HR Optimization Guidelines
     The following expert recommendations must be applied to maximize ATS compatibility and recruiter screening success. Translate all content and headings to the detected predominant language of the job offer and implement the practices within the generated HTML and text content.
 
     IMPORTANT: For this CV generation task, the predominant language detected in the job offer always takes precedence over any preselected UI language.
 
     ${validation_prompt}
 
-    Your goal: produce a **recruiter-ready HTML CV** that stands out visually and contextually.
+    Your goal: produce a recruiter-ready HTML CV that is accurate, targeted, visually clean, and compatible with ATS screening.
     `.trim();
 }
 
@@ -101,44 +157,61 @@ export function buildGenerateCVUserPrompt(params: {
   plantilla?: string;
   infoAdicional?: string;
 }): string {
-  const { cssFramework, ofertaTexto, infoCV, language, plantilla = "", infoAdicional = "" } = params;
-  const predominantOfferLanguageInstruction = buildPredominantOfferLanguageInstruction(language);
+  const {
+    cssFramework,
+    ofertaTexto,
+    infoCV,
+    language,
+    plantilla = "",
+    infoAdicional = "",
+  } = params;
+  const predominantOfferLanguageInstruction =
+    buildPredominantOfferLanguageInstruction(language);
 
   return `
-    Generate a **one-page HTML CV** using ${cssFramework}.
-    
-    Job Offer:
+    Generate a one-page HTML CV using embedded ${cssFramework}.
+
+    ### Job Offer
     "${ofertaTexto}"
-    
-    Candidate Data:
+
+    ### Candidate Data
     ${JSON.stringify(infoCV, null, 2)}
-    
+
     ${predominantOfferLanguageInstruction}
-    
-    ${plantilla ? `
+
+    ${
+      plantilla
+        ? `
     ### Template HTML (STRICTLY PRESERVE STRUCTURE & CLASSES)
     """
     ${plantilla}
     """
-    
+
     CRITICAL Template Rules:
     - Reuse containers, wrappers, and section tags exactly as in the template
     - Keep all class names and IDs unchanged; do not add UI libraries
     - Replace placeholder text and image URLs only; do not alter DOM structure
     - Keep layout (grid/flex) and spacing scales intact
-    ` : ""}
-    
-    ### Guidelines:
-    - Tailor the CV to highlight **skills, experiences, and achievements** matching the job offer.
-    - Ensure a **responsive, printable layout** that looks great on screen and in PDF.
-    - Include a complete embedded <style> block for spacing, typography, section dividers, and layout.
-    - Do not output class-only markup unless every class is defined in the embedded CSS.
-    - ${infoAdicional
-      ? `Include this additional information where relevant: ${infoAdicional}.`
-      : "No additional information."
+    `
+        : ""
     }
-    - Strictly apply the ATS/HR optimization guidelines provided in the system instructions (translated to the detected predominant language of the job offer)
-    - Return **only valid HTML code**, without explanations or Markdown.
+
+    ### Generation Guidelines
+    - Tailor the CV to highlight skills, experiences, and achievements matching the job offer.
+    - Use only facts supported by Candidate Data or Additional Information.
+    - Improve phrasing and relevance, but do not invent metrics, employers, titles, dates, certifications, or tools.
+    - Mirror important job-offer terminology naturally where the candidate has matching evidence.
+    - Ensure a responsive, printable layout that looks great on screen and in PDF.
+    - Include a complete embedded <style> block for spacing, typography, section dividers, and layout.
+    - Use the full printable page area. Do not create an inner card with fixed max-width, outer border, shadow, or large vertical padding.
+    - Do not output class-only markup unless every class is defined in the embedded CSS.
+    - ${
+      infoAdicional
+        ? `Include this additional information where relevant: ${infoAdicional}.`
+        : "No additional information."
+    }
+    - Strictly apply the ATS/HR optimization guidelines provided in the system instructions.
+    - Return only valid HTML code, without explanations, Markdown, comments, or code fences.
     `.trim();
 }
 
@@ -150,16 +223,24 @@ export function buildAnalyzeCVSystemPrompt(params: {
 }): string {
   const { language, jobTitle, industry, analysisDateISO } = params;
   return `
-You are an expert CV consultant and career advisor with deep expertise in resume optimization, ATS systems, and modern recruitment practices. Your role is to analyze CVs and provide comprehensive, actionable improvement recommendations.
+You are a senior CV auditor specializing in ATS screening, recruiter review, role targeting, and practical resume improvement. Your role is to analyze CVs and provide specific, evidence-based recommendations.
 
 ${generateLanguageInstruction(language)}
 
 ### Analysis Framework
 Analyze the provided CV across three key dimensions:
 
-1. **Visual Aspect (0-100 score)**: Design, formatting, readability, ATS compatibility
-2. **Structural Aspect (0-100 score)**: Organization, flow, section hierarchy, length optimization
-3. **Content Enrichment (0-100 score)**: Impact statements, keyword optimization, quantifiable achievements
+1. Visual Aspect (0-100 score): Design, formatting, readability, ATS compatibility
+2. Structural Aspect (0-100 score): Organization, flow, section hierarchy, length optimization
+3. Content Enrichment (0-100 score): Impact statements, keyword optimization, quantifiable achievements
+
+Scoring rules:
+- 90-100: excellent and ready with only minor refinements
+- 75-89: strong but missing some targeting, clarity, or polish
+- 60-74: usable but requires meaningful improvement
+- 40-59: weak for the target role and likely to underperform
+- 0-39: incomplete, unclear, or poorly aligned
+- overallScore should reflect the combined quality of visual, structural, and content dimensions, with content weighted most heavily
 
 ### Output Requirements
 You MUST return ONLY a valid JSON object with this exact structure. Do not include any text before or after the JSON. Ensure all strings are properly quoted and escaped:
@@ -236,14 +317,15 @@ You MUST return ONLY a valid JSON object with this exact structure. Do not inclu
 }
 
 ### Analysis Guidelines
-- Be encouraging and constructive in tone
-- Focus on actionable, specific improvements
-- Prioritize ATS optimization and modern CV best practices
-- Tailor recommendations to the target job title and industry
-- Include quantifiable metrics where possible
-- Suggest specific tools and resources
-- Ensure privacy-focused approach (no data storage mentioned)
-- Provide realistic time estimates for improvements
+- Be direct, constructive, and specific.
+- Focus on actionable improvements tied to the target role.
+- Prioritize ATS optimization and modern CV best practices.
+- Tailor recommendations to the target job title and industry.
+- Include quantifiable metrics where possible.
+- Do not invent facts about the candidate.
+- Do not invent resource URLs. If unsure, use broadly known reputable resources or leave the URL as an empty string.
+- Ensure privacy-focused approach; do not mention data storage.
+- Provide realistic time estimates for improvements.
 `;
 }
 
@@ -267,7 +349,7 @@ Industry: ${industry}
 
 ${generateLanguageInstruction(language)}
 
-Please provide a comprehensive analysis with specific, actionable recommendations to improve this CV's effectiveness for the target role. Focus on:
+Provide a comprehensive analysis with specific, actionable recommendations to improve this CV's effectiveness for the target role. Focus on:
 
 1. Visual presentation and ATS compatibility
 2. Structural organization and flow
@@ -275,7 +357,22 @@ Please provide a comprehensive analysis with specific, actionable recommendation
 4. Missing keywords and industry-specific terms
 5. Quantifiable achievements and impact statements
 
-IMPORTANT: All text in the JSON response must be in ${language === "en" ? "English" : language === "es" ? "Spanish" : language === "fr" ? "French" : language === "zh" ? "Chinese" : "English"}. Use professional terminology appropriate for the target language and region.
+Important:
+- Base recommendations only on the CV content provided.
+- If information is missing, identify the gap instead of assuming details.
+- Keep examples realistic and aligned with the target role.
+
+IMPORTANT: All text in the JSON response must be in ${
+    language === "en"
+      ? "English"
+      : language === "es"
+        ? "Spanish"
+        : language === "fr"
+          ? "French"
+          : language === "zh"
+            ? "Chinese"
+            : "English"
+  }. Use professional terminology appropriate for the target language and region.
 
 CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no additional text. Start with { and end with }. Ensure all quotes are properly escaped.
 `;
