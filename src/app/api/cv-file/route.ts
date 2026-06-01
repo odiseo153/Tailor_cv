@@ -62,31 +62,32 @@ export async function POST(request: NextRequest) {
       }
 
       const prompt = buildExtractCVInfoPrompt(fileType);
+      const content = [
+        {
+          type: "text",
+          text: prompt,
+        },
+        fileType === "pdf"
+          ? {
+              type: "file",
+              file: {
+                filename: "document.pdf",
+                file_data: `data:application/pdf;base64,${fileData}`,
+              },
+            }
+          : {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${fileData}`,
+              },
+            },
+      ] as any;
       const completion = await openai.chat.completions.create({
         model: OPENAI_MODEL,
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: prompt,
-              },
-              fileType === "pdf"
-                ? {
-                    type: "file",
-                    file: {
-                      filename: "document.pdf",
-                      file_data: `data:application/pdf;base64,${fileData}`,
-                    },
-                  }
-                : {
-                    type: "image_url",
-                    image_url: {
-                      url: `data:image/jpeg;base64,${fileData}`,
-                    },
-                  },
-            ],
+            content,
           },
         ],
       });
@@ -101,25 +102,26 @@ export async function POST(request: NextRequest) {
 
     if (action === "template") {
       const prompt = buildTemplateFromPdfPrompt(CSS_FRAMEWORK);
+      const content = [
+        {
+          type: "text",
+          text: prompt,
+        },
+        {
+          type: "file",
+          file: {
+            filename: "template.pdf",
+            file_data: `data:application/pdf;base64,${fileData}`,
+          },
+        },
+      ] as any;
       const completion = await openai.chat.completions.create({
         model: OPENAI_MODEL,
         temperature: 0.3,
         messages: [
           {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: prompt,
-              },
-              {
-                type: "file",
-                file: {
-                  filename: "template.pdf",
-                  file_data: `data:application/pdf;base64,${fileData}`,
-                },
-              },
-            ],
+            content,
           },
         ],
       });
