@@ -171,6 +171,18 @@ export function GenerateCVModule() {
   }, []);
 
   useEffect(() => {
+    if (!templates.length) return;
+
+    const matchedTemplate = templates.find((item) => item.id === templateId);
+    if (matchedTemplate) return;
+
+    const defaultTemplate = templates.find((item) => item.isDefault) ?? templates[0];
+    if (defaultTemplate?.id) {
+      setTemplateId(defaultTemplate.id);
+    }
+  }, [templateId, templates, setTemplateId]);
+
+  useEffect(() => {
     setSelectedTemplate(
       templates.find((item) => item.id === templateId) ?? null,
     );
@@ -289,8 +301,9 @@ export function GenerateCVModule() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (e) {
-      console.error(e);
-      Message.errorMessage("Error downloading PDF");
+      console.error("PDF download failed:", e);
+      const message = e instanceof Error ? e.message : "Error downloading PDF";
+      Message.errorMessage(message);
     } finally {
       setIsDownloadingPdf(false);
     }

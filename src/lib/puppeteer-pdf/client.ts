@@ -1,41 +1,15 @@
-import { buildPrintableHtml } from "./template";
+import {
+  addPreviewPageStyles,
+  CV_A4_PAGE_HEIGHT,
+  CV_A4_PAGE_WIDTH,
+} from "@/app/generar-cv/components/CVPreviewStyles";
 
 const MAX_IMAGE_DIMENSION = 1400;
 const MAX_DATA_URL_LENGTH = 350_000;
 const JPEG_QUALITY = 0.82;
 
-function buildExportContainer(html: string) {
-  const parser = new DOMParser();
-  const printableHtml = buildPrintableHtml(html);
-  const documentNode = parser.parseFromString(printableHtml, "text/html");
-  const container = document.createElement("div");
-
-  container.style.position = "fixed";
-  container.style.left = "-200vw";
-  container.style.top = "0";
-  container.style.width = "210mm";
-  container.style.minHeight = "100mm";
-  container.style.backgroundColor = "#ffffff";
-  container.style.zIndex = "-1";
-  container.style.overflow = "hidden";
-
-  const headNodes = Array.from(
-    documentNode.head.querySelectorAll("style, link[rel='stylesheet']"),
-  );
-
-  headNodes.forEach((node) => {
-    container.appendChild(node.cloneNode(true));
-  });
-
-  const wrapper = document.createElement("div");
-  wrapper.innerHTML = documentNode.body.innerHTML || html;
-  container.appendChild(wrapper);
-
-  return container;
-}
-
-async function waitForImages(container: HTMLElement) {
-  const images = Array.from(container.querySelectorAll("img"));
+async function waitForImages(root: ParentNode) {
+  const images = Array.from(root.querySelectorAll("img"));
 
   await Promise.all(
     images.map(
@@ -53,54 +27,135 @@ async function waitForImages(container: HTMLElement) {
   );
 }
 
+function buildExportPageHtml(html: string, pageIndex: number) {
+  const previewHtml = addPreviewPageStyles(html, pageIndex);
+  const viewportStyle = `
+    <style>
+      .tailor-cv-export-viewport {
+        width: ${CV_A4_PAGE_WIDTH};
+        height: ${CV_A4_PAGE_HEIGHT};
+        overflow: hidden;
+        background: #ffffff;
+      }
+    </style>
+  `;
+
+  return previewHtml
+    .replace(/<\/head>/i, `${viewportStyle}</head>`)
+    .replace(
+      /<body([^>]*)><div class="tailor-cv-page-content">/i,
+      '<body$1><div class="tailor-cv-export-viewport"><div class="tailor-cv-page-content">',
+    )
+    .replace(/<\/div><\/body>/i, "</div></div></body>");
+}
+
+async function buildFrame(srcdoc: string) {
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("aria-hidden", "true");
+  iframe.style.position = "fixed";
+  iframe.style.left = "-200vw";
+  iframe.style.top = "0";
+  iframe.style.width = CV_A4_PAGE_WIDTH;
+  iframe.style.height = CV_A4_PAGE_HEIGHT;
+  iframe.style.border = "0";
+  iframe.style.background = "#ffffff";
+  iframe.style.opacity = "0";
+  iframe.srcdoc = srcdoc;
+
+  document.body.appendChild(iframe);
+
+  await new Promise<void>((resolve, reject) => {
+    iframe.onload = () => resolve();
+    iframe.onerror = () => reject(new Error("Failed to load PDF export frame"));
+  });
+
+  const frameWindow = iframe.contentWindow;
+  const frameDocument = iframe.contentDocument;
+
+  if (!frameWindow || !frameDocument) {
+    document.body.removeChild(iframe);
+    throw new Error("Unable to access PDF export frame");
+  }
+
+  await frameDocument.fonts.ready;
+  await waitForImages(frameDocument);
+
+  return { iframe, frameWindow, frameDocument };
+}
+
+async function getPageCount(html: string) {
+  const { iframe, frameDocument } = await buildFrame(addPreviewPageStyles(html, 0));
+
+  try {
+    const contentHeight = Math.max(
+      frameDocument.documentElement.scrollHeight,
+      frameDocument.body?.scrollHeight ?? 0,
+    );
+    const pageHeight = iframe.clientHeight || frameDocument.documentElement.clientHeight;
+
+    if (!contentHeight || !pageHeight) {
+      return 1;
+    }
+
+    return Math.max(1, Math.ceil(contentHeight / pageHeight));
+  } finally {
+    document.body.removeChild(iframe);
+  }
+}
+
 async function generatePdfBlobFromHtml(html: string) {
   const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
     import("html2canvas"),
     import("jspdf"),
   ]);
 
-  const container = buildExportContainer(html);
-  document.body.appendChild(container);
+  const pageCount = await getPageCount(html);
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
 
-  try {
-    await document.fonts.ready;
-    await waitForImages(container);
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+    const { iframe, frameWindow, frameDocument } = await buildFrame(
+      buildExportPageHtml(html, pageIndex),
+    );
 
-    const canvas = await html2canvas(container, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-    });
+    try {
+      const exportViewport = frameDocument.querySelector(
+        ".tailor-cv-export-viewport",
+      );
 
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
+      if (!exportViewport || exportViewport.nodeType !== Node.ELEMENT_NODE) {
+        throw new Error("PDF export viewport not found");
+      }
 
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    const pageHeight = pdf.internal.pageSize.getHeight();
+      const exportViewportElement = exportViewport as HTMLElement;
 
-    let heightLeft = pdfHeight;
-    let position = 0;
+      const canvas = await html2canvas(exportViewportElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+        windowWidth: frameWindow.innerWidth,
+        windowHeight: frameWindow.innerHeight,
+      });
 
-    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-    heightLeft -= pageHeight;
+      const imgData = canvas.toDataURL("image/png");
 
-    while (heightLeft > 0) {
-      position = heightLeft - pdfHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
+      if (pageIndex > 0) {
+        pdf.addPage();
+      }
+
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+    } finally {
+      document.body.removeChild(iframe);
     }
-
-    return pdf.output("blob");
-  } finally {
-    document.body.removeChild(container);
   }
+
+  return pdf.output("blob");
 }
 
 async function loadImage(src: string): Promise<HTMLImageElement | null> {
