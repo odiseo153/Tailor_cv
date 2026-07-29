@@ -1,19 +1,23 @@
+import { buildPrintableHtml } from "./template";
+
 const MAX_IMAGE_DIMENSION = 1400;
 const MAX_DATA_URL_LENGTH = 350_000;
 const JPEG_QUALITY = 0.82;
 
 function buildExportContainer(html: string) {
   const parser = new DOMParser();
-  const documentNode = parser.parseFromString(html, "text/html");
+  const printableHtml = buildPrintableHtml(html);
+  const documentNode = parser.parseFromString(printableHtml, "text/html");
   const container = document.createElement("div");
 
   container.style.position = "fixed";
   container.style.left = "-200vw";
   container.style.top = "0";
-  container.style.width = "794px";
-  container.style.minHeight = "1123px";
+  container.style.width = "210mm";
+  container.style.minHeight = "297mm";
   container.style.backgroundColor = "#ffffff";
   container.style.zIndex = "-1";
+  container.style.overflow = "hidden";
 
   const headNodes = Array.from(
     documentNode.head.querySelectorAll("style, link[rel='stylesheet']"),
