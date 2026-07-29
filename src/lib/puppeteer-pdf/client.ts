@@ -2,6 +2,103 @@ const MAX_IMAGE_DIMENSION = 1400;
 const MAX_DATA_URL_LENGTH = 350_000;
 const JPEG_QUALITY = 0.82;
 
+function buildExportContainer(html: string) {
+  const parser = new DOMParser();
+  const documentNode = parser.parseFromString(html, "text/html");
+  const container = document.createElement("div");
+
+  container.style.position = "fixed";
+  container.style.left = "-200vw";
+  container.style.top = "0";
+  container.style.width = "794px";
+  container.style.minHeight = "1123px";
+  container.style.backgroundColor = "#ffffff";
+  container.style.zIndex = "-1";
+
+  const headNodes = Array.from(
+    documentNode.head.querySelectorAll("style, link[rel='stylesheet']"),
+  );
+
+  headNodes.forEach((node) => {
+    container.appendChild(node.cloneNode(true));
+  });
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = documentNode.body.innerHTML || html;
+  container.appendChild(wrapper);
+
+  return container;
+}
+
+async function waitForImages(container: HTMLElement) {
+  const images = Array.from(container.querySelectorAll("img"));
+
+  await Promise.all(
+    images.map(
+      (image) =>
+        new Promise<void>((resolve) => {
+          if (image.complete) {
+            resolve();
+            return;
+          }
+
+          image.onload = () => resolve();
+          image.onerror = () => resolve();
+        }),
+    ),
+  );
+}
+
+async function generatePdfBlobFromHtml(html: string) {
+  const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+    import("html2canvas"),
+    import("jspdf"),
+  ]);
+
+  const container = buildExportContainer(html);
+  document.body.appendChild(container);
+
+  try {
+    await document.fonts.ready;
+    await waitForImages(container);
+
+    const canvas = await html2canvas(container, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    let heightLeft = pdfHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - pdfHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+    }
+
+    return pdf.output("blob");
+  } finally {
+    document.body.removeChild(container);
+  }
+}
+
 async function loadImage(src: string): Promise<HTMLImageElement | null> {
   return await new Promise((resolve) => {
     const image = new Image();
@@ -99,21 +196,13 @@ async function optimizeHtmlImagesForPdf(html: string) {
 
 export async function generatePdfViaBrowser(
   html: string,
-  templateId?: string,
+  _templateId?: string,
 ): Promise<Blob> {
   const optimizedHtml = await optimizeHtmlImagesForPdf(html);
-  const response = await fetch("/api/pdf-export", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ html: optimizedHtml, templateId }),
-  });
 
-  if (!response.ok) {
-    const payload = await response.json().catch(() => null);
-    throw new Error(payload?.error || "PDF export request failed");
+  if (typeof window === "undefined") {
+    throw new Error("PDF export is only available in the browser");
   }
 
-  return await response.blob();
+  return await generatePdfBlobFromHtml(optimizedHtml);
 }
