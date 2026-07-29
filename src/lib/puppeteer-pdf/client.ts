@@ -14,7 +14,7 @@ function buildExportContainer(html: string) {
   container.style.left = "-200vw";
   container.style.top = "0";
   container.style.width = "210mm";
-  container.style.minHeight = "297mm";
+  container.style.minHeight = "100mm";
   container.style.backgroundColor = "#ffffff";
   container.style.zIndex = "-1";
   container.style.overflow = "hidden";
