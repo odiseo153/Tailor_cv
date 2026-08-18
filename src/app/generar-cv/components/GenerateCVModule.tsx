@@ -57,6 +57,7 @@ import {
   addPreviewPageStyles,
 } from "../utils/preview-html";
 import { buildTemplatePreviewSrcDoc } from "@/lib/template-preview";
+import { buildCandidateProfile } from "../../utils/candidate-profile";
 
 type GenerationStep = "input" | "analyze" | "edit" | "preview";
 
@@ -488,22 +489,29 @@ export function GenerateCVModule() {
       };
 
       const templateIdToUse = templateId || undefined;
-      let userInfoString = informacion;
 
+      let userProfile: any = null;
       if (session) {
         try {
           const user = session.user;
           const response = await fetch(`/api/apiHandler/user/${user.id}`);
           if (response.ok) {
             const { data } = await response.json();
-            userInfoString = informacion
-              ? `${informacion}\n${JSON.stringify(data)}`
-              : JSON.stringify(data);
+            userProfile = data;
           }
         } catch (error) {
           console.error("User data fetch error:", error);
         }
       }
+
+      const candidateData = buildCandidateProfile(userProfile);
+      const foto =
+        userProfile &&
+        userProfile.cvPreferences?.showPhoto !== false &&
+        typeof userProfile.profilePicture === "string" &&
+        userProfile.profilePicture.trim().length > 0
+          ? userProfile.profilePicture
+          : undefined;
 
       const { CVHandler } = await import("../../Handler/CVHandler");
       const cvHandler = new CVHandler();
@@ -522,15 +530,18 @@ export function GenerateCVModule() {
           .split(",")
           .map((k) => k.trim())
           .filter(Boolean),
+        jobTitle: jobOfferData?.jobTitle,
+        description: jobOfferData?.description,
       };
 
       const responseHtml = await cvHandler.crearCV(
         ofertaLaboral,
         ofertaType,
+        candidateData,
         "",
-        userInfoString,
+        informacion,
         carrera,
-        undefined,
+        foto,
         templateIdToUse,
         progressCallback,
         locale,

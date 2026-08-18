@@ -18,7 +18,7 @@ Experience integrating AI models (OpenAI, Cohere, or custom LLMs) into backend s
 Infrastructure & DevOps Skills:
 
 Familiarity with cloud platforms (AWS, GCP, Azure)
-Experience with Docker (Kubernetes is a plus)
+Experience with Dock er (Kubernetes is a plus)
 Knowledge of Git and CI/CD pipelines
 
 Soft Skills & Work Style:

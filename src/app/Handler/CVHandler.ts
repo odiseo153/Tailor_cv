@@ -197,6 +197,14 @@ export class CVHandler {
     progressCallback?: ProgressCallback,
     language: string = "en",
     modelConfig?: AIModelConfig,
+    jobOfferData?: {
+      skills: string[];
+      requisitos: string[];
+      seniority: string;
+      keywords: string[];
+      jobTitle?: string;
+      description?: string;
+    },
   ): Promise<string> {
     const systemPrompt = buildGenerateCVSystemPrompt({
       cssFramework: CSS_FRAMEWORK,
@@ -213,6 +221,7 @@ export class CVHandler {
       language,
       plantilla,
       infoAdicional,
+      jobOfferData,
     });
 
     progressCallback?.onProgress?.(85);
@@ -404,8 +413,9 @@ Return ONLY the JSON object.`;
   }
 
   async crearCV(
-    data: any,
-    type: "text" | "image" | "pdf",
+    oferta: string | File,
+    ofertaType: "text" | "image" | "pdf",
+    candidateData: any,
     plantilla?: File | string,
     infoAdicional?: string,
     carrera?: string,
@@ -419,17 +429,21 @@ Return ONLY the JSON object.`;
       requisitos: string[];
       seniority: string;
       keywords: string[];
+      jobTitle?: string;
+      description?: string;
     },
   ): Promise<{ html: string }> {
     progressCallback?.onProgress?.(5);
     try {
-      const infoCV =
-        type === "text"
-          ? data
-          : await this.getInfoFromFile(data, type, progressCallback);
-      if (type === "text") {
+      let ofertaTexto: string;
+      if (ofertaType === "text") {
+        ofertaTexto = typeof oferta === "string" ? oferta : "";
         progressCallback?.onInfoProcessed?.();
         progressCallback?.onProgress?.(50);
+      } else {
+        ofertaTexto = JSON.stringify(
+          await this.getInfoFromFile(oferta as File, ofertaType, progressCallback),
+        );
       }
 
       let plantillaHTML: string | null = null;
@@ -446,35 +460,17 @@ Return ONLY the JSON object.`;
         progressCallback?.onProgress?.(75);
       }
 
-      const ofertaTexto = type === "text" ? data : JSON.stringify(infoCV);
-
-      let additionalInfo = infoAdicional || "";
-      if (
-        jobOfferData &&
-        (jobOfferData.skills.length > 0 || jobOfferData.keywords.length > 0)
-      ) {
-        const formattedData = `
-Focus on these extracted requirements:
-- Skills to highlight: ${jobOfferData.skills.join(", ")}
-- Required qualifications: ${jobOfferData.requisitos.join(", ")}
-- Seniority level: ${jobOfferData.seniority}
-- Important keywords: ${jobOfferData.keywords.join(", ")}
-        `.trim();
-        additionalInfo = additionalInfo
-          ? `${additionalInfo}\n${formattedData}`
-          : formattedData;
-      }
-
       const cvHtml = await this.generarCVAdaptado(
         ofertaTexto,
-        infoCV,
+        candidateData,
         plantillaHTML || "",
-        additionalInfo,
+        infoAdicional || "",
         carrera,
         foto,
         progressCallback,
         language,
         modelConfig,
+        jobOfferData,
       );
 
       progressCallback?.onProgress?.(100);
