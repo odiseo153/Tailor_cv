@@ -57,7 +57,7 @@ import {
   addPreviewPageStyles,
 } from "../utils/preview-html";
 import { buildTemplatePreviewSrcDoc } from "@/lib/template-preview";
-import { buildCandidateProfile } from "../../utils/candidate-profile";
+import { buildCandidateProfile, hasCandidateDetails } from "../../utils/candidate-profile";
 
 type GenerationStep = "input" | "analyze" | "edit" | "preview";
 
@@ -217,13 +217,13 @@ export function GenerateCVModule() {
     setPreviewPageCount(Math.max(1, Math.ceil(contentHeight / pageHeight)));
   };
 
-  const syncManualEditsToData = () => {
+  const syncManualEditsToData = (): string | null => {
     const editDoc = manualEditIframeRef.current?.contentDocument;
     const contentRoot = editDoc?.querySelector(".tailor-cv-edit-content");
 
     if (!editDoc || editDoc.readyState !== "complete") {
       Message.errorMessage("Editor is still loading. Try again in a second.");
-      return false;
+      return null;
     }
 
     const fallbackRoot = editDoc.body;
@@ -236,7 +236,7 @@ export function GenerateCVModule() {
 
     if (!sourceNode) {
       Message.errorMessage("Could not read edited content.");
-      return false;
+      return null;
     }
 
     let updatedHtml = sourceNode.innerHTML.trim();
@@ -251,11 +251,18 @@ export function GenerateCVModule() {
 
     if (!updatedHtml) {
       Message.errorMessage("Edited content cannot be empty.");
-      return false;
+      return null;
     }
 
-    setData((prev) => (prev ? { ...prev, html: updatedHtml } : prev));
-    return true;
+    if (!data?.html) return null;
+
+    const sourceDocument = new DOMParser().parseFromString(data.html, "text/html");
+    sourceDocument.body.innerHTML = updatedHtml;
+    const doctype = data.html.match(/<!doctype[^>]*>/i)?.[0] ?? "<!DOCTYPE html>";
+    const completeHtml = `${doctype}\n${sourceDocument.documentElement.outerHTML}`;
+
+    setData((prev) => (prev ? { ...prev, html: completeHtml } : prev));
+    return completeHtml;
   };
 
   const getModelConfig = (): AIModelConfig | undefined => {
@@ -288,11 +295,14 @@ export function GenerateCVModule() {
 
   const handleDownloadPdf = async () => {
     if (!data?.html) return;
-    if (isManualEditMode && !syncManualEditsToData()) return;
+    const htmlToExport = isManualEditMode
+      ? syncManualEditsToData()
+      : data.html;
+    if (!htmlToExport) return;
 
     setIsDownloadingPdf(true);
     try {
-      const pdfBlob = await generatePdfViaBrowser(data.html);
+      const pdfBlob = await generatePdfViaBrowser(htmlToExport);
       const url = window.URL.createObjectURL(pdfBlob);
       const a = document.createElement("a");
       a.href = url;
@@ -372,8 +382,13 @@ export function GenerateCVModule() {
 
     setIsSendingEmail(true);
     try {
+      const htmlToExport = isManualEditMode
+        ? syncManualEditsToData()
+        : data.html;
+      if (!htmlToExport) return;
+
       const pdfBlob = await generatePdfViaBrowser(
-        data.html,
+        htmlToExport,
         templateId || undefined,
       );
       const buffer = await pdfBlob.arrayBuffer();
@@ -504,7 +519,8 @@ export function GenerateCVModule() {
         }
       }
 
-      const candidateData = buildCandidateProfile(userProfile);
+      const candidateData = buildCandidateProfile({ ...session?.user, ...userProfile });
+      candidateData.demoMode = !hasCandidateDetails(candidateData);
       const foto =
         userProfile &&
         userProfile.cvPreferences?.showPhoto !== false &&

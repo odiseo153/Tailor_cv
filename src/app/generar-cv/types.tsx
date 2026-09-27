@@ -18,9 +18,6 @@ export type CVTemplate = {
 export const PROVIDERS_CONFIG = [
   { id: "deepseek", name: "DeepSeek", color: "#4D6BFE", bg: "#EEF2FF" },
   { id: "openai", name: "OpenAI", color: "#10A37F", bg: "#F0FDF4" },
-  { id: "gemini", name: "Gemini", color: "#1A73E8", bg: "#EFF6FF" },
-  { id: "groq", name: "Groq", color: "#F55036", bg: "#FFF1F2" },
-  { id: "openrouter", name: "OpenRouter", color: "#6467F2", bg: "#F5F3FF" },
 ] as const;
 
 export type ProviderId = (typeof PROVIDERS_CONFIG)[number]["id"];

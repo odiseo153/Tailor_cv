@@ -20,6 +20,7 @@ const LANGUAGE_NAMES = new Set([
 ]);
 
 export interface CandidateProfile {
+  demoMode?: boolean;
   name?: string;
   email?: string;
   phone?: string;
@@ -45,6 +46,15 @@ export interface CandidateProfile {
     showContact?: boolean;
     showSocial?: boolean;
   };
+}
+
+export function hasCandidateDetails(profile: CandidateProfile): boolean {
+  return Boolean(
+    profile.workExperience.length ||
+    profile.education.length ||
+    profile.skills.length ||
+    profile.languages.length,
+  );
 }
 
 function normalize(value: string): string {

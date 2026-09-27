@@ -9,6 +9,12 @@ import { buildPrintableHtml } from "./template";
 const execFileAsync = promisify(execFile);
 const CHROME_CANDIDATES = [
   process.env.CHROME_PATH,
+  "/usr/bin/chromium",
+  "/usr/bin/chromium-browser",
+  "/usr/bin/google-chrome",
+  "/usr/bin/google-chrome-stable",
+  "/usr/bin/microsoft-edge",
+  "/snap/bin/chromium",
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
   "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",

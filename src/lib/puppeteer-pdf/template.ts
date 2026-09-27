@@ -96,9 +96,14 @@ const PRINT_STYLE = `
       break-inside: avoid;
     }
 
-    section, article, aside, header, footer, table, ul, ol, h1, h2, h3, h4, h5, h6 {
+    article, aside, header, footer, h1, h2, h3, h4, h5, h6 {
       page-break-inside: avoid;
       break-inside: avoid;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      page-break-after: avoid;
+      break-after: avoid;
     }
 
     @page {

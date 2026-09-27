@@ -7,6 +7,7 @@ import {
 const MAX_IMAGE_DIMENSION = 1400;
 const MAX_DATA_URL_LENGTH = 350_000;
 const JPEG_QUALITY = 0.82;
+const PDF_PAGE_JPEG_QUALITY = 0.9;
 
 async function waitForImages(root: ParentNode) {
   const images = Array.from(root.querySelectorAll("img"));
@@ -143,13 +144,13 @@ async function generatePdfBlobFromHtml(html: string) {
         windowHeight: frameWindow.innerHeight,
       });
 
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/jpeg", PDF_PAGE_JPEG_QUALITY);
 
       if (pageIndex > 0) {
         pdf.addPage();
       }
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
     } finally {
       document.body.removeChild(iframe);
     }

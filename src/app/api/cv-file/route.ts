@@ -9,9 +9,8 @@ import {
 export const maxDuration = 60;
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? "";
-const OPENAI_MODEL = "gpt-4o-mini";
+const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-5.5";
 const CSS_FRAMEWORK = "CSS";
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
 function cleanGeneratedContent(raw: string, type: "html" | "json"): string {
   return raw
@@ -47,6 +46,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
     const { action, fileType, fileData } = await request.json();
 
     if (!fileData || typeof fileData !== "string") {

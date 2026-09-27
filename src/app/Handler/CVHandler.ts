@@ -6,6 +6,8 @@ import {
   buildGenerateCVSystemPrompt,
   buildGenerateCVUserPrompt,
 } from "../utils/cv-prompts";
+import { validateGeneratedCvHtml } from "../../lib/cv-html-validation";
+import { validateJobOfferAnalysis } from "../../lib/cv-job-analysis-validation";
 
 export interface ProgressCallback {
   onProgress?: (progress: number) => void;
@@ -14,7 +16,7 @@ export interface ProgressCallback {
 }
 
 export interface AIModelConfig {
-  provider: "groq" | "openrouter" | "deepseek" | "openai" | "gemini";
+  provider: "deepseek" | "openai";
   modelId: string;
 }
 
@@ -212,6 +214,7 @@ export class CVHandler {
       foto,
       infoAdicional,
       carrera,
+      demoMode: Boolean(infoCV?.demoMode),
     });
 
     const userPrompt = buildGenerateCVUserPrompt({
@@ -222,6 +225,7 @@ export class CVHandler {
       plantilla,
       infoAdicional,
       jobOfferData,
+      demoMode: Boolean(infoCV?.demoMode),
     });
 
     progressCallback?.onProgress?.(85);
@@ -234,7 +238,7 @@ export class CVHandler {
         modelConfig,
       );
       progressCallback?.onProgress?.(95);
-      return this.cleanGeneratedContent(content, "html");
+      return validateGeneratedCvHtml(content);
     } catch (error) {
       console.error("Error generating CV:", error);
       throw new Error(`CV generation failed: ${error}`);
@@ -397,14 +401,16 @@ Return ONLY the JSON object.`;
         result = JSON.parse(jsonrepair(responseText));
       }
 
+      const validatedResult = validateJobOfferAnalysis(result);
+
       progressCallback?.onProgress?.(100);
       return {
-        skills: result.skills || [],
-        requisitos: result.requisitos || [],
-        seniority: result.seniority || "Mid",
-        keywords: result.keywords || [],
-        jobTitle: result.jobTitle || "",
-        description: result.description || "",
+        skills: validatedResult.skills,
+        requisitos: validatedResult.requisitos,
+        seniority: validatedResult.seniority,
+        keywords: validatedResult.keywords,
+        jobTitle: validatedResult.jobTitle,
+        description: validatedResult.description,
       };
     } catch (error) {
       console.error("Error extracting job offer data:", error);

@@ -1,64 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
+import { validateGeneratedCvHtml } from "@/lib/cv-html-validation";
+import { validateJobOfferAnalysis } from "@/lib/cv-job-analysis-validation";
 
 // Vercel: allow up to 60s on Hobby, 300s on Pro. Set to max safe value.
 export const maxDuration = 60;
 
 const API_CONFIG = {
-  OPENROUTER: {
-    key: process.env.OPENROUTER_API_KEY ?? "",
-    url: "https://openrouter.ai/api/v1",
-    defaultModel: "openai/gpt-4.1-mini",
-  },
-  GROQ: {
-    key: process.env.GROQ_API_KEY ?? "",
-    url: "https://api.groq.com/openai/v1",
-    defaultModel: "llama-3.3-70b-versatile",
-  },
   DEEPSEEK: {
     key: process.env.DEEPSEEK_API_KEY ?? "",
     url: "https://api.deepseek.com/v1",
-    defaultModel: "deepseek-chat",
+    defaultModel: process.env.DEEPSEEK_MODEL ?? "deepseek-v4-pro",
   },
   OPENAI: {
     key: process.env.OPENAI_API_KEY ?? "",
     url: "https://api.openai.com/v1",
-    defaultModel: "gpt-4o-mini",
-  },
-  GEMINI: {
-    key: process.env.GEMINI_API_KEY ?? "",
-    url: "https://generativelanguage.googleapis.com/v1beta/openai/",
-    defaultModel: "gemini-1.5-flash",
+    defaultModel: process.env.OPENAI_MODEL ?? "gpt-5.5",
   },
 };
 
-// Module-level singletons — created once, reused across all requests
-const clients = {
-  openrouter: new OpenAI({
-    apiKey: API_CONFIG.OPENROUTER.key,
-    baseURL: API_CONFIG.OPENROUTER.url,
-  }),
-  groq: new OpenAI({
-    apiKey: API_CONFIG.GROQ.key,
-    baseURL: API_CONFIG.GROQ.url,
-  }),
-  deepseek: new OpenAI({
-    apiKey: API_CONFIG.DEEPSEEK.key,
-    baseURL: API_CONFIG.DEEPSEEK.url,
-  }),
-  openai: new OpenAI({
-    apiKey: API_CONFIG.OPENAI.key,
-    baseURL: API_CONFIG.OPENAI.url,
-  }),
-  gemini: new OpenAI({
-    apiKey: API_CONFIG.GEMINI.key,
-    baseURL: API_CONFIG.GEMINI.url,
-  }),
+type ProviderName = "openai" | "deepseek";
+
+const PROVIDERS: Record<ProviderName, { key: string; url: string; defaultModel: string }> = {
+  openai: API_CONFIG.OPENAI,
+  deepseek: API_CONFIG.DEEPSEEK,
 };
 
 export async function POST(request: NextRequest) {
   try {
     const { messages, provider, modelId } = await request.json();
+    if (
+      !Array.isArray(messages) ||
+      messages.length === 0 ||
+      messages.some(
+        (message) =>
+          !message ||
+          !["system", "user", "assistant"].includes(message.role) ||
+          typeof message.content !== "string",
+      )
+    ) {
+      return NextResponse.json({ error: "Valid messages are required" }, { status: 400 });
+    }
 
     const providers = buildProviderOrder(provider, modelId);
     if (providers.length === 0) {
@@ -70,24 +52,49 @@ export async function POST(request: NextRequest) {
 
     const failures: string[] = [];
 
-    for (const { name, model, client } of providers) {
+    for (const { name, model } of providers) {
       try {
+        const client = new OpenAI({ apiKey: PROVIDERS[name].key, baseURL: PROVIDERS[name].url });
         const response = await client.chat.completions.create({
           model,
           messages,
-          temperature: 0.7,
           max_completion_tokens: 4000,
+          ...(name === "deepseek" || !/^gpt-5/i.test(model) ? { temperature: 0.7 } : {}),
         });
-        if (response.choices?.[0]?.message?.content) {
+        if (typeof response.choices?.[0]?.message?.content === "string" && response.choices[0].message.content.trim()) {
+          let content = response.choices[0].message.content;
+          const isCvRequest = messages.some(
+            (message) =>
+              message.role === "system" &&
+              /resume strategist/i.test(message.content),
+          );
+          const isJobAnalysisRequest = messages.some(
+            (message) =>
+              message.role === "system" &&
+              /job offer analysis/i.test(message.content),
+          );
+          if (isCvRequest) {
+            content = validateGeneratedCvHtml(content);
+          }
+          if (isJobAnalysisRequest) {
+            try {
+              validateJobOfferAnalysis(
+                JSON.parse(content.replace(/^```(?:json)?\s*|\s*```$/gi, "").trim()),
+              );
+            } catch {
+              failures.push(`${name}: invalid job-analysis JSON response`);
+              continue;
+            }
+          }
           return NextResponse.json({
-            content: response.choices[0].message.content,
+            content,
             provider: name,
           });
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         failures.push(`${name}: ${message}`);
-        console.warn(`[${name}] failed:`, error);
+        console.warn(`[${name}] request failed`);
       }
     }
 
@@ -104,52 +111,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
+
 function buildProviderOrder(provider?: string, modelId?: string) {
-  const defaults = [
-    {
-      name: "openrouter",
-      model: API_CONFIG.OPENROUTER.defaultModel,
-      client: clients.openrouter,
-      apiKey: API_CONFIG.OPENROUTER.key,
-    },
-    {
-      name: "groq",
-      model: API_CONFIG.GROQ.defaultModel,
-      client: clients.groq,
-      apiKey: API_CONFIG.GROQ.key,
-    },
-    {
-      name: "deepseek",
-      model: API_CONFIG.DEEPSEEK.defaultModel,
-      client: clients.deepseek,
-      apiKey: API_CONFIG.DEEPSEEK.key,
-    },
-    {
-      name: "openai",
-      model: API_CONFIG.OPENAI.defaultModel,
-      client: clients.openai,
-      apiKey: API_CONFIG.OPENAI.key,
-    },
-    {
-      name: "gemini",
-      model: API_CONFIG.GEMINI.defaultModel,
-      client: clients.gemini,
-      apiKey: API_CONFIG.GEMINI.key,
-    },
-  ].filter((providerConfig) => Boolean(providerConfig.apiKey));
+  const defaults = (["openai", "deepseek"] as const)
+    .filter((name) => Boolean(PROVIDERS[name].key))
+    .map((name) => ({ name, model: PROVIDERS[name].defaultModel }));
 
-  if (provider && modelId) {
-    const providerKey = provider as keyof typeof clients;
-    const selectedApiKey = API_CONFIG[provider.toUpperCase() as keyof typeof API_CONFIG]?.key;
-
-    if (clients[providerKey] && selectedApiKey) {
-      const selected = {
-        name: provider,
-        model: modelId,
-        client: clients[providerKey],
-        apiKey: selectedApiKey,
-      };
-      return [selected, ...defaults.filter((p) => p.name !== provider)];
+  if (provider && provider in PROVIDERS) {
+    const name = provider as ProviderName;
+    const selected = defaults.find((item) => item.name === name);
+    if (selected && modelId) {
+      return [
+        { ...selected, model: modelId },
+        ...defaults.filter((item) => item.name !== name),
+      ];
     }
   }
 

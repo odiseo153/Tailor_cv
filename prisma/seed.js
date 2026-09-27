@@ -1,21 +1,25 @@
-import { PrismaClient } from '@prisma/client';
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+const { loadEnvConfig } = require('@next/env');
+
+loadEnvConfig(process.cwd());
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Iniciando el seed...');
+  const password = await bcrypt.hash('password', 10);
 
   // Crear primer usuario de prueba
-  const user1 = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'test@example.com' },
-    update: {},
+    update: { password },
     create: {
       name: 'Juan Pérez',
       email: 'test@example.com',
       phone: '+1 809 555 1234',
-      password: 'password',
+      password,
       location: 'Santo Domingo, RD',
-      profilePicture: 'https://wallpapers.com/images/hd/cute-boy-anime-736-x-1444-0v2pmz8r4n8qi3hs.jpg',
       workExperience: {
         create: [
           {
@@ -58,7 +62,7 @@ async function main() {
           fontFamily: 'Arial',
           fontSize: 'medium',
           spacing: 1,
-          showPhoto: true,
+          showPhoto: false,
           showContact: true,
           showSocial: true,
           pageSize: 'a4',
@@ -68,16 +72,15 @@ async function main() {
   });
 
   // Crear segundo usuario de prueba
-  const user2 = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'maria@example.com' },
-    update: {},
+    update: { password },
     create: {
       name: 'María González',
       email: 'maria@example.com',
       phone: '+1 809 555 5678',
-      password: 'password',
+      password,
       location: 'Santiago, RD',
-      profilePicture: 'https://wallpapers.com/images/hd/cute-girl-anime-736-x-1444-0v2pmz8r4n8qi3hs.jpg',
       workExperience: {
         create: [
           {
@@ -120,7 +123,7 @@ async function main() {
           fontFamily: 'Times New Roman',
           fontSize: 'small',
           spacing: 1.2,
-          showPhoto: true,
+          showPhoto: false,
           showContact: true,
           showSocial: true,
           pageSize: 'a4',
@@ -130,16 +133,15 @@ async function main() {
   });
 
   // Crear tercer usuario de prueba
-  const user3 = await prisma.user.upsert({
+  await prisma.user.upsert({
     where: { email: 'carlos@example.com' },
-    update: {},
+    update: { password },
     create: {
       name: 'Carlos Rodríguez',
       email: 'carlos@example.com',
       phone: '+1 809 555 9012',
-      password: 'password',
+      password,
       location: 'La Vega, RD',
-      profilePicture: 'https://wallpapers.com/images/hd/professional-anime-boy-736-x-1444-0v2pmz8r4n8qi3hs.jpg',
       workExperience: {
         create: [
           {
@@ -191,7 +193,7 @@ async function main() {
     },
   });
 
-  console.log('✅ Seed ejecutado correctamente. Usuarios creados:', { user1, user2, user3 });
+  console.log('✅ Seed ejecutado correctamente. Usuarios de prueba disponibles: 3');
 }
 
 main()
@@ -202,4 +204,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
