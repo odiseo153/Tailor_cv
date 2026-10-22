@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Session } from "@/app/api/auth/[...nextauth]/route";
+import type { Session } from "@/lib/auth";
 import ProfessionalProfile from "@/app/components/Profile/ProfessionalProfile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loading } from "../components/Loading";

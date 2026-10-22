@@ -28,7 +28,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useStore } from "@/app/context/AppContext";
 import { useSession, signOut } from "next-auth/react";
 import AuthForm from "../Auth/AuthComponent";
-import { Session } from "@/app/api/auth/[...nextauth]/route";
+import type { Session } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import LanguageSelector from "../LanguageSelector";

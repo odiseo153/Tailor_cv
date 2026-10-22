@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
-  UploadIcon,
   TextIcon,
   ImageIcon,
   BriefcaseIcon,
@@ -40,7 +39,7 @@ import {
 import { useStore } from "../../context/AppContext";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
-import { Session } from "../../api/auth/[...nextauth]/route";
+import type { Session } from "@/lib/auth";
 import { useI18n } from "../../context/I18nContext";
 import { generatePdfViaBrowser } from "@/lib/puppeteer-pdf/client";
 import dynamic from "next/dynamic";
@@ -84,9 +83,7 @@ export function GenerateCVModule() {
   const [informacion, setInformacion] = useState("");
   const [data, setData] = useState<{ html: string } | null>(null);
   const [previewPageCount, setPreviewPageCount] = useState(1);
-  const [ofertaType, setOfertaType] = useState<"pdf" | "image" | "text">(
-    "text",
-  );
+  const [ofertaType, setOfertaType] = useState<"image" | "text">("text");
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
@@ -955,18 +952,17 @@ export function GenerateCVModule() {
             >
               <div className="space-y-4">
                 <div className="flex gap-2">
-                  {[
-                    { type: "pdf", icon: UploadIcon, label: "PDF" },
+                  {([
                     { type: "image", icon: ImageIcon, label: "IMG" },
                     { type: "text", icon: TextIcon, label: "TXT" },
-                  ].map(({ type, icon: Icon, label }) => (
+                  ] as const).map(({ type, icon: Icon, label }) => (
                     <Button
                       key={type}
                       type="button"
                       size="sm"
                       variant={ofertaType === type ? "default" : "outline"}
                       onClick={() => {
-                        setOfertaType(type as any);
+                        setOfertaType(type);
                         setOfertaLaboral("");
                       }}
                       className="flex-1"
@@ -985,7 +981,7 @@ export function GenerateCVModule() {
                 ) : (
                   <Input
                     type="file"
-                    accept={ofertaType === "pdf" ? ".pdf" : "image/*"}
+                    accept="image/jpeg,image/png,image/gif,image/webp"
                     onChange={(e) =>
                       handleFileChange(e, setOfertaLaboral as any)
                     }

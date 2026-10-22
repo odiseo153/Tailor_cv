@@ -1,20 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { jsonrepair } from "jsonrepair";
-import {
-  buildExtractCVInfoPrompt,
-  buildTemplateFromPdfPrompt,
-} from "@/app/utils/cv-prompts";
+import { buildExtractCVInfoPrompt } from "@/app/utils/cv-prompts";
+import { createDeepSeekImageDataUrl } from "./deepseek-file";
 
 export const maxDuration = 60;
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY ?? "";
-const OPENAI_MODEL = process.env.OPENAI_MODEL ?? "gpt-5.5";
-const CSS_FRAMEWORK = "CSS";
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY ?? "";
+const DEEPSEEK_MODEL =
+  process.env.DEEPSEEK_VISION_MODEL ?? "deepseek-flash";
+const DEEPSEEK_BASE_URL = "https://api.deepseek.com";
 
-function cleanGeneratedContent(raw: string, type: "html" | "json"): string {
+function cleanGeneratedContent(raw: string): string {
   return raw
-    .replace(type === "html" ? /```html|```/g : /```json|```/g, "")
+    .replace(/```json|```/g, "")
     .trim()
     .replace(/\n{3,}/g, "\n\n");
 }
@@ -38,106 +37,64 @@ function getMessageText(
 }
 
 export async function POST(request: NextRequest) {
-  if (!OPENAI_API_KEY) {
-    return NextResponse.json(
-      { error: "OPENAI_API_KEY is not configured." },
-      { status: 500 },
-    );
-  }
-
   try {
-    const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
-    const { action, fileType, fileData } = await request.json();
+    const { action, fileType, fileData, mimeType } = await request.json();
 
     if (!fileData || typeof fileData !== "string") {
       return NextResponse.json({ error: "Missing fileData." }, { status: 400 });
     }
 
-    if (action === "extract") {
-      if (fileType !== "image" && fileType !== "pdf") {
-        return NextResponse.json(
-          { error: "Invalid fileType for extraction." },
-          { status: 400 },
-        );
-      }
-
-      const prompt = buildExtractCVInfoPrompt(fileType);
-      const content = [
-        {
-          type: "text",
-          text: prompt,
-        },
-        fileType === "pdf"
-          ? {
-              type: "file",
-              file: {
-                filename: "document.pdf",
-                file_data: `data:application/pdf;base64,${fileData}`,
-              },
-            }
-          : {
-              type: "image_url",
-              image_url: {
-                url: `data:image/jpeg;base64,${fileData}`,
-              },
-            },
-      ] as any;
-      const completion = await openai.chat.completions.create({
-        model: OPENAI_MODEL,
-        messages: [
-          {
-            role: "user",
-            content,
-          },
-        ],
-      });
-
-      const text = cleanGeneratedContent(
-        getMessageText(completion.choices[0]?.message?.content),
-        "json",
+    if (action === "template" || fileType === "pdf") {
+      return NextResponse.json(
+        { error: "DeepSeek file analysis supports image files only." },
+        { status: 415 },
       );
-
-      return NextResponse.json({ content: jsonrepair(text) });
     }
 
-    if (action === "template") {
-      const prompt = buildTemplateFromPdfPrompt(CSS_FRAMEWORK);
-      const content = [
-        {
-          type: "text",
-          text: prompt,
-        },
-        {
-          type: "file",
-          file: {
-            filename: "template.pdf",
-            file_data: `data:application/pdf;base64,${fileData}`,
-          },
-        },
-      ] as any;
-      const completion = await openai.chat.completions.create({
-        model: OPENAI_MODEL,
-        temperature: 0.3,
-        messages: [
-          {
-            role: "user",
-            content,
-          },
-        ],
-      });
-
-      const text = cleanGeneratedContent(
-        getMessageText(completion.choices[0]?.message?.content),
-        "html",
-      );
-
-      return NextResponse.json({ content: text });
+    if (action !== "extract") {
+      return NextResponse.json({ error: "Invalid action." }, { status: 400 });
     }
 
-    return NextResponse.json({ error: "Invalid action." }, { status: 400 });
+    if (!DEEPSEEK_API_KEY) {
+      return NextResponse.json(
+        { error: "DEEPSEEK_API_KEY is not configured." },
+        { status: 500 },
+      );
+    }
+
+    let imageUrl: string;
+    try {
+      imageUrl = createDeepSeekImageDataUrl(fileType, mimeType, fileData);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return NextResponse.json({ error: message }, { status: 415 });
+    }
+
+    const deepseek = new OpenAI({
+      apiKey: DEEPSEEK_API_KEY,
+      baseURL: DEEPSEEK_BASE_URL,
+    });
+    const completion = await deepseek.chat.completions.create({
+      model: DEEPSEEK_MODEL,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: buildExtractCVInfoPrompt("image") },
+            { type: "image_url", image_url: { url: imageUrl } },
+          ],
+        },
+      ],
+    });
+
+    const text = cleanGeneratedContent(
+      getMessageText(completion.choices[0]?.message?.content),
+    );
+
+    return NextResponse.json({ content: jsonrepair(text) });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("CV file API error:", error);
+    console.error("DeepSeek CV file API error:", error);
 
     return NextResponse.json({ error: message }, { status: 500 });
   }

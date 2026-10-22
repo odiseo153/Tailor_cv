@@ -63,3 +63,11 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+<claude-mem-context>
+# Memory Context
+
+# [Tailor_cv] recent context, 2026-10-22 12:11pm AST
+
+No previous sessions found.
+</claude-mem-context>

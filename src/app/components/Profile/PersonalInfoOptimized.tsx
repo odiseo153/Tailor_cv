@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, memo } from "react";
 import { useSession } from "next-auth/react";
-import { Session } from "@/app/api/auth/[...nextauth]/route";
+import type { Session } from "@/lib/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";

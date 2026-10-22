@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, memo, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { Session } from "@/app/api/auth/[...nextauth]/route";
+import type { Session } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";

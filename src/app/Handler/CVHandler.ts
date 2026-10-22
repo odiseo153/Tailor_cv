@@ -78,7 +78,7 @@ export class CVHandler {
       .replace(/\n{3,}/g, "\n\n");
   }
 
-  private async processFileWithGemini(params: {
+  private async processFileWithDeepSeek(params: {
     action: "extract" | "template";
     file: File;
     fileType?: "image" | "pdf";
@@ -93,6 +93,7 @@ export class CVHandler {
         action,
         fileType,
         fileData,
+        mimeType: file.type,
       }),
     });
 
@@ -128,7 +129,7 @@ export class CVHandler {
     progressCallback?.onProgress?.(10);
     try {
       progressCallback?.onProgress?.(25);
-      const responseText = await this.processFileWithGemini({
+      const responseText = await this.processFileWithDeepSeek({
         action: "extract",
         file,
         fileType,
@@ -146,7 +147,7 @@ export class CVHandler {
   async getPlantillaFromPdf(file: File): Promise<string> {
     try {
       return this.cleanGeneratedContent(
-        await this.processFileWithGemini({
+        await this.processFileWithDeepSeek({
           action: "template",
           file,
         }),

@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, Linkedin, Globe, Calendar, MapPin } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { Session } from "@/app/api/auth/[...nextauth]/route";
+import type { Session } from "@/lib/auth";
 import Image from "next/image";
 import { useI18n } from "@/app/context/I18nContext";
 
