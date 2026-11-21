@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output:"standalone",
   reactStrictMode: true,
   images: {
     // Enable optimization by default (remove unoptimized: true)

@@ -4,6 +4,7 @@ import React, { memo, useCallback, useMemo, useState, useRef, useEffect } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckIcon, X, Loader2, User, Save } from "lucide-react";
@@ -176,7 +177,7 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
   }, [formData]);
 
   // Optimized input change handler with useCallback
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const fieldName = name as keyof ProfileFormData;
     
@@ -311,6 +312,14 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
       placeholder: "Enter your location",
       value: formData.location,
       error: errors.location
+    },
+    {
+      id: "headline",
+      name: "headline" as const,
+      label: "Professional title",
+      placeholder: "Full Stack Developer | Backend Developer",
+      value: formData.headline,
+      error: errors.headline
     }
   ], [formData, errors]);
 
@@ -406,7 +415,7 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
           )}
           
           {/* User Avatar Section */}
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col gap-6">
             <div className="flex-shrink-0 flex flex-col items-center md:items-start gap-2">
               <div className="relative group">
                 <Avatar className="h-24 w-24 border-2 border-primary/20 transition-all duration-300 shadow-sm">
@@ -466,6 +475,18 @@ const ProfileEditForm = memo<ProfileEditFormProps>(({
                   onBlur={handleInputBlur}
                 />
               ))}
+              <div className="space-y-2">
+                <Label htmlFor="summary" className="text-sm font-medium">Professional summary</Label>
+                <Textarea
+                  id="summary"
+                  name="summary"
+                  rows={10}
+                  value={formData.summary}
+                  onChange={handleInputChange}
+                  disabled={isDisabled}
+                  placeholder="Describe your experience, specialization and goals"
+                />
+              </div>
             </div>
           </div>
           

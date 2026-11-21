@@ -1,5 +1,7 @@
 import { EducationHandler } from '@/app/Handler/PrismaHandler/EducationHandler';
 import { NextResponse,NextRequest } from 'next/server';
+import { prisma } from '@/lib/utils';
+import { deleteImage, isOwnImageUrl } from '@/lib/uploads';
 
 
 const education_handler = new EducationHandler();
@@ -21,8 +23,15 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (!institution || !degree || !startDate || !id) {
       return NextResponse.json({ error: 'Faltan parámetros requeridos' }, { status: 400 });
     }
+    if (jsonData.image && !isOwnImageUrl(jsonData.image, jsonData.userId)) {
+      return NextResponse.json({ error: 'Imagen inválida' }, { status: 400 });
+    }
     
+    const previous = await prisma.education.findUnique({ where: { id }, select: { image: true } });
     const resultado = await education_handler.update(id, jsonData);
+    if (resultado.success && 'image' in jsonData && previous?.image !== (jsonData.image || null)) {
+      await deleteImage(previous?.image);
+    }
 
     if (!resultado.success) {
       return NextResponse.json(
@@ -45,7 +54,9 @@ export async function DELETE(request: NextRequest,{ params }: { params: Promise<
   try {
     const {id} =  await params;
     
+    const previous = await prisma.education.findUnique({ where: { id }, select: { image: true } });
     const resultado = await education_handler.delete(id);
+    if (resultado.success) await deleteImage(previous?.image);
 
     if (!resultado.success) {
       return NextResponse.json(

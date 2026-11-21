@@ -24,8 +24,11 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   stripeCustomerId String?  @unique
+  headline         String?
+  summary          String?  @db.Text
 
   workExperience    WorkExperience[]
+  projects          Project[]
   skills            Skill[]
   education         Education[]
   socialLinks       SocialLink[]
@@ -52,6 +55,21 @@ model WorkExperience {
   createdAt   DateTime  @default(now())
 }
 
+model Project {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  name         String
+  role         String?
+  description  String?  @db.Text
+  technologies String?  @db.Text
+  image        String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
 model Skill {
   id        String   @id @default(uuid())
   userId    String
@@ -69,6 +87,7 @@ model Education {
   degree      String
   startDate   DateTime
   endDate     DateTime?
+  image       String?   @db.Text
   createdAt   DateTime  @default(now())
 }
 

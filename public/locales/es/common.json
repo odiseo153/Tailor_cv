@@ -414,7 +414,11 @@
       "deleted_success": "Habilidad eliminada correctamente",
       "add_error": "Error al añadir habilidad",
       "update_error": "Error al actualizar habilidad",
-      "delete_error": "Error al eliminar habilidad"
+      "delete_error": "Error al eliminar habilidad",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "page_of": "Página {current} de {total}",
+      "per_page": "{size} / página"
     },
     "social_links": {
       "title": "Enlaces Sociales",
@@ -433,7 +437,58 @@
         }
       }
     },
-    "professional_profile": "Resumen Profesional"
+    "professional_profile": "Resumen Profesional",
+    "layout": {
+      "eyebrow": "Trayectoria",
+      "title": "Tu recorrido profesional,",
+      "title_accent": "listo para cada oferta.",
+      "present": "Actualidad",
+      "stats_experience": "Experiencias",
+      "stats_projects": "Proyectos",
+      "stats_skills": "Habilidades",
+      "level_advanced": "Avanzado",
+      "level_intermediate": "Intermedio",
+      "level_basic": "Básico",
+      "show_more": "Ver más",
+      "show_less": "Ver menos"
+    },
+    "summary": {
+      "title": "Resumen profesional",
+      "empty": "No has agregado un resumen profesional todavía."
+    },
+    "projects": {
+      "title": "Proyectos",
+      "empty": "No has agregado proyectos todavía.",
+      "technologies": "Tecnologías",
+      "count_label": "proyectos",
+      "image": "Imagen de portada",
+      "view_details": "Ver detalle",
+      "edit_project": "Editar proyecto",
+      "add": "Añadir",
+      "add_project": "Añadir proyecto",
+      "add_first": "Añadir primer proyecto",
+      "project_name": "Nombre del proyecto",
+      "name_placeholder": "Ej: Quirocita v2",
+      "role": "Rol",
+      "role_placeholder": "Ej: Desarrollador Full Stack",
+      "technologies_placeholder": "Ej: Laravel, Next.js, MySQL",
+      "description": "Descripción",
+      "description_placeholder": "Describe el proyecto y tus aportes",
+      "name_required": "El nombre del proyecto es requerido",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "confirm_delete": "¿Seguro que quieres eliminar este proyecto?",
+      "added": "Proyecto añadido correctamente",
+      "updated": "Proyecto actualizado correctamente",
+      "deleted": "Proyecto eliminado correctamente",
+      "error_loading": "Error al cargar los proyectos",
+      "error_adding": "Error al añadir el proyecto",
+      "error_updating": "Error al actualizar el proyecto",
+      "error_deleting": "Error al eliminar el proyecto"
+    }
   },
   "auth": {
     "login": {

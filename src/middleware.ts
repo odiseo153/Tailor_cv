@@ -63,11 +63,9 @@ export async function middleware(request: NextRequest) {
 
     const response = NextResponse.next();
 
-    // 🔐 Redirigir si el usuario NO tiene sesión y la ruta NO es pública
+    // 🔐 Redirigir al home si el usuario NO tiene sesión y la ruta NO es pública
     if (!token) {
-      const loginUrl = new URL('/auth/login', request.url);
-      loginUrl.searchParams.set('callbackUrl', request.url);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL('/', request.url));
     }
 
     // 🔁 Redirigir si el usuario YA está autenticado e intenta acceder a login/register

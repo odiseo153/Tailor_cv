@@ -10,7 +10,8 @@ import { useI18n } from "@/app/context/I18nContext";
 import { Message } from "@/app/utils/Message";
 import { User as UserType, LoadingState } from '@/app/types/profile';
 import { updateProfile, handleApiError } from '@/app/utils/profile';
-import ProfileView from './ProfileView';
+import ProfileView, { ProfileDetails } from './ProfileView';
+import { PROFILE_CHANGED_EVENT } from './ProfileSection';
 import ProfileEditForm from './ProfileEditForm';
 import { cn } from "@/lib/utils";
 
@@ -82,6 +83,33 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
 
   const user = session?.user;
   const currentUser = optimisticUser || user;
+  const [details, setDetails] = useState<ProfileDetails | null>(null);
+
+  // Headline, summary and counters come from the full user record.
+  useEffect(() => {
+    const userId = user?.id;
+    if (!userId) return;
+    const load = () =>
+      fetch(`/api/apiHandler/user/${userId}`)
+        .then((response) => (response.ok ? response.json() : null))
+        .then((result) => {
+          const data = result?.data;
+          if (!data) return;
+          setDetails({
+            headline: data.headline,
+            summary: data.summary,
+            counts: {
+              experience: data.workExperience?.length ?? 0,
+              projects: data.projects?.length ?? 0,
+              skills: data.skills?.length ?? 0,
+            },
+          });
+        })
+        .catch((error) => console.error("Profile details fetch error:", error));
+    load();
+    window.addEventListener(PROFILE_CHANGED_EVENT, load);
+    return () => window.removeEventListener(PROFILE_CHANGED_EVENT, load);
+  }, [user?.id]);
 
   // Update optimistic user when session changes
   useEffect(() => {
@@ -144,6 +172,8 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
 
       // Show success message
       Message.successMessage(t('profile.personal_info.success'));
+      // Refresh headline/summary/counters shown in the identity card.
+      window.dispatchEvent(new Event(PROFILE_CHANGED_EVENT));
 
     } catch (error) {
       console.error('Profile update error:', error);
@@ -192,7 +222,7 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
     <div className={cn("space-y-4", className)}>
       {isEditing ? (
         <ProfileEditForm
-          user={currentUser}
+          user={{ ...currentUser, headline: details?.headline, summary: details?.summary }}
           onSave={handleSave}
           onCancel={handleCancel}
           className="transition-all duration-300"
@@ -200,6 +230,7 @@ const PersonalInfo = memo<PersonalInfoProps>(({ className }) => {
       ) : (
         <ProfileView
           user={currentUser}
+          details={details}
           onEdit={handleEdit}
           className="transition-all duration-300"
         />

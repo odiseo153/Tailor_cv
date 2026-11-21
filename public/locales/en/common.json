@@ -415,7 +415,11 @@
       "deleted_success": "Skill deleted successfully",
       "add_error": "Error adding skill",
       "update_error": "Error updating skill",
-      "delete_error": "Error deleting skill"
+      "delete_error": "Error deleting skill",
+      "previous": "Previous",
+      "next": "Next",
+      "page_of": "Page {current} of {total}",
+      "per_page": "{size} / page"
     },
     "social_links": {
       "title": "Social Links",
@@ -434,7 +438,58 @@
         }
       }
     },
-    "professional_profile": "Professional Summary"
+    "professional_profile": "Professional Summary",
+    "layout": {
+      "eyebrow": "Career path",
+      "title": "Your professional journey,",
+      "title_accent": "ready for every job offer.",
+      "present": "Present",
+      "stats_experience": "Experiences",
+      "stats_projects": "Projects",
+      "stats_skills": "Skills",
+      "level_advanced": "Advanced",
+      "level_intermediate": "Intermediate",
+      "level_basic": "Basic",
+      "show_more": "Show more",
+      "show_less": "Show less"
+    },
+    "summary": {
+      "title": "Professional summary",
+      "empty": "You have not added a professional summary yet."
+    },
+    "projects": {
+      "title": "Projects",
+      "empty": "You have not added any projects yet.",
+      "technologies": "Technologies",
+      "count_label": "projects",
+      "image": "Cover image",
+      "view_details": "View details",
+      "edit_project": "Edit project",
+      "add": "Add",
+      "add_project": "Add project",
+      "add_first": "Add first project",
+      "project_name": "Project name",
+      "name_placeholder": "E.g. Quirocita v2",
+      "role": "Role",
+      "role_placeholder": "E.g. Full Stack Developer",
+      "technologies_placeholder": "E.g. Laravel, Next.js, MySQL",
+      "description": "Description",
+      "description_placeholder": "Describe the project and your contributions",
+      "name_required": "Project name is required",
+      "edit": "Edit",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving...",
+      "confirm_delete": "Are you sure you want to delete this project?",
+      "added": "Project added successfully",
+      "updated": "Project updated successfully",
+      "deleted": "Project deleted successfully",
+      "error_loading": "Error loading projects",
+      "error_adding": "Error adding project",
+      "error_updating": "Error updating project",
+      "error_deleting": "Error deleting project"
+    }
   },
   "auth": {
     "login": {

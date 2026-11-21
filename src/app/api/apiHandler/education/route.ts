@@ -1,5 +1,6 @@
 import { EducationHandler } from '@/app/Handler/PrismaHandler/EducationHandler';
 import { NextResponse } from 'next/server';
+import { isOwnImageUrl } from '@/lib/uploads';
 
 const education_handler = new EducationHandler();
 
@@ -11,10 +12,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se proporcionó un payload válido' }, { status: 400 });
     }
     
-    const { institution, degree, startDate, endDate, userId } = jsonData;
+    const { institution, degree, startDate, endDate, userId, image } = jsonData;
     
     if (!institution || !degree || !startDate  || !userId) {
       return NextResponse.json({ error: 'Faltan parametros' }, { status: 400 });
+    }
+    if (image && !isOwnImageUrl(image, userId)) {
+      return NextResponse.json({ error: 'Imagen inválida' }, { status: 400 });
     }
     
     // Convertir las fechas a objetos Date
@@ -26,6 +30,7 @@ export async function POST(request: Request) {
       degree,
       startDate: parsedStartDate,
       endDate: parsedEndDate,
+      image: image || null,
       userId
     });
 

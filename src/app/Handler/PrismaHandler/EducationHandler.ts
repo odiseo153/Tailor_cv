@@ -48,6 +48,7 @@ export class EducationHandler implements BaseHandler<Education> {
             if (data.degree) updateData.degree = data.degree;
             if (data.startDate) updateData.startDate = new Date(data.startDate);
             if (data.endDate) updateData.endDate = new Date(data.endDate);
+            if ('image' in data) updateData.image = data.image || null;
 
             const updatedEducation = await prisma.education.update({
                 where: { id },

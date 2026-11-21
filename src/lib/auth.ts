@@ -86,6 +86,8 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!success || !user) {
+            // null makes NextAuth report "CredentialsSignin", which the login UI translates.
+            if (error === "Credenciales inválidas") return null;
             throw new Error(error || "Credenciales inválidas");
           }
 

@@ -2,19 +2,50 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import {
-  BriefcaseBusiness,
-  FileClock,
-  FileText,
-} from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import type { Session } from "@/lib/auth";
 import ProfessionalProfile from "@/app/components/Profile/ProfessionalProfile";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loading } from "../components/Loading";
-import { useI18n } from "../context/I18nContext";
+
+interface Template {
+  id: string;
+  name: string;
+  preview_image?: string | null;
+}
+
+async function fetchJson(url: string) {
+  try {
+    const response = await fetch(url);
+    return response.ok ? await response.json() : null;
+  } catch (error) {
+    console.error(`Error fetching ${url}:`, error);
+    return null;
+  }
+}
+
+function TemplateGrid({ title, templates }: { title: string; templates: Template[] }) {
+  return (
+    <div className="space-y-3">
+      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      {templates.length === 0 ? (
+        <p className="text-sm text-muted-foreground">—</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {templates.map((template) => (
+            <Link
+              key={template.id}
+              href={`/templates/${template.id}`}
+              className="rounded-xl border bg-card p-4 text-sm font-medium shadow-sm transition-shadow hover:shadow-md"
+            >
+              {template.name}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Profile() {
   const { data: session, status } = useSession() as {
@@ -22,9 +53,8 @@ export default function Profile() {
     status: "loading" | "authenticated" | "unauthenticated";
   };
   const router = useRouter();
-  const { t } = useI18n();
-  const [userTemplates, setUserTemplates] = useState<any[]>([]);
-  const [publicTemplates, setPublicTemplates] = useState<any[]>([]);
+  const [userTemplates, setUserTemplates] = useState<Template[]>([]);
+  const [publicTemplates, setPublicTemplates] = useState<Template[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -33,23 +63,10 @@ export default function Profile() {
   }, [status, router]);
 
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchUserTemplates();
-      fetchPublicTemplates();
-    }
-  }, [session]);
-
-  const fetchUserTemplates = async () => {
-    const response = await fetch(`/api/user/templates/${session?.user?.id}`);
-    const data = await response.json();
-    setUserTemplates(data);
-  };
-
-  const fetchPublicTemplates = async () => {
-    const response = await fetch(`/api/templates`);
-    const data = await response.json();
-    setPublicTemplates(data.templates);
-  };
+    if (!session?.user?.id) return;
+    fetchJson(`/api/user/templates/${session.user.id}`).then((data) => setUserTemplates(Array.isArray(data) ? data : []));
+    fetchJson(`/api/templates`).then((data) => setPublicTemplates(data?.templates ?? []));
+  }, [session?.user?.id]);
 
   if (status === "loading") {
     return <Loading />;
@@ -57,82 +74,17 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar with quick actions */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-8">
-              <CardHeader>
-                <CardTitle className="text-xl">
-                  {t("profile.quick_actions.title")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full justify-start hover:bg-gray-100 transition-colors"
-                >
-                  <Link href="/generar-cv">
-                    <FileText className="mr-3 h-5 w-5 text-primary" />
-                    {t("profile.quick_actions.generate_cv")}
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full justify-start hover:bg-gray-100 transition-colors"
-                >
-                  <Link href="/buscar-trabajo">
-                    <BriefcaseBusiness className="mr-3 h-5 w-5 text-primary" />
-                    {t("profile.quick_actions.job_search")}
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full justify-start hover:bg-gray-100 transition-colors"
-                >
-                  <Link href="/cv-history">
-                    <FileClock className="mr-3 h-5 w-5 text-primary" />
-                    {t("profile.quick_actions.cv_history") ||
-                      "Historial de CVs"}
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-          {/* Main content */}
-          <div className="lg:col-span-3">
-            <ProfessionalProfile />
-            <h2 className="text-xl font-bold mt-8">Mis Plantillas</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {userTemplates.map((template) => (
-                <Card key={template.id} className="shadow">
-                  <CardContent>
-                    <Link href={`/templates/${template.id}`}>
-                      <h3 className="font-semibold text-lg">{template.name}</h3>
-                    </Link>
-                    <p>{template.preview_image}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <h2 className="text-xl font-bold mt-8">Plantillas Públicas</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {publicTemplates.map((template) => (
-                <Card key={template.id} className="shadow">
-                  <CardContent>
-                    <Link href={`/templates/${template.id}`}>
-                      <h3 className="font-semibold text-lg">{template.name}</h3>
-                    </Link>
-                    <p>{template.preview_image}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="container mx-auto max-w-6xl px-4 py-10">
+        <ProfessionalProfile>
+          <section className="space-y-6">
+            <h2 className="flex items-baseline gap-3">
+              <span className="font-serif text-sm italic text-muted-foreground">05</span>
+              <span className="text-2xl font-semibold tracking-tight">Plantillas</span>
+            </h2>
+            <TemplateGrid title="Mis Plantillas" templates={userTemplates} />
+            <TemplateGrid title="Plantillas Públicas" templates={publicTemplates} />
+          </section>
+        </ProfessionalProfile>
       </div>
     </div>
   );

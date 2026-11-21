@@ -413,7 +413,11 @@
       "deleted_success": "Compétence supprimée avec succès",
       "add_error": "Erreur lors de l'ajout de la compétence",
       "update_error": "Erreur lors de la mise à jour de la compétence",
-      "delete_error": "Erreur lors de la suppression de la compétence"
+      "delete_error": "Erreur lors de la suppression de la compétence",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "page_of": "Page {current} sur {total}",
+      "per_page": "{size} / page"
     },
     "social_links": {
       "title": "Liens Sociaux",
@@ -432,7 +436,58 @@
         }
       }
     },
-    "professional_profile": "Résumé Professionnel"
+    "professional_profile": "Résumé Professionnel",
+    "layout": {
+      "eyebrow": "Parcours",
+      "title": "Votre parcours professionnel,",
+      "title_accent": "prêt pour chaque offre.",
+      "present": "Aujourd'hui",
+      "stats_experience": "Expériences",
+      "stats_projects": "Projets",
+      "stats_skills": "Compétences",
+      "level_advanced": "Avancé",
+      "level_intermediate": "Intermédiaire",
+      "level_basic": "Débutant",
+      "show_more": "Voir plus",
+      "show_less": "Voir moins"
+    },
+    "summary": {
+      "title": "Résumé professionnel",
+      "empty": "Vous n'avez pas encore ajouté de résumé professionnel."
+    },
+    "projects": {
+      "title": "Projets",
+      "empty": "Vous n'avez pas encore ajouté de projets.",
+      "technologies": "Technologies",
+      "count_label": "projets",
+      "image": "Image de couverture",
+      "view_details": "Voir le détail",
+      "edit_project": "Modifier le projet",
+      "add": "Ajouter",
+      "add_project": "Ajouter un projet",
+      "add_first": "Ajouter un premier projet",
+      "project_name": "Nom du projet",
+      "name_placeholder": "Ex : Quirocita v2",
+      "role": "Rôle",
+      "role_placeholder": "Ex : Développeur Full Stack",
+      "technologies_placeholder": "Ex : Laravel, Next.js, MySQL",
+      "description": "Description",
+      "description_placeholder": "Décrivez le projet et vos contributions",
+      "name_required": "Le nom du projet est requis",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "saving": "Enregistrement...",
+      "confirm_delete": "Voulez-vous vraiment supprimer ce projet ?",
+      "added": "Projet ajouté avec succès",
+      "updated": "Projet mis à jour avec succès",
+      "deleted": "Projet supprimé avec succès",
+      "error_loading": "Erreur lors du chargement des projets",
+      "error_adding": "Erreur lors de l'ajout du projet",
+      "error_updating": "Erreur lors de la mise à jour du projet",
+      "error_deleting": "Erreur lors de la suppression du projet"
+    }
   },
   "auth": {
     "login": {

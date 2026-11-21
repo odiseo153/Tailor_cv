@@ -130,6 +130,8 @@ export const createProfileFormData = (user: User): ProfileFormData => ({
   email: user.email || '',
   phone: user.phone || '',
   location: user.location || '',
+  headline: user.headline || '',
+  summary: user.summary || '',
 });
 
 export const createUpdateRequest = (
@@ -142,6 +144,9 @@ export const createUpdateRequest = (
   email: formData.email.trim(),
   phone: formData.phone.trim() || undefined,
   location: formData.location.trim() || undefined,
+  // Empty strings are sent on purpose so the user can clear these fields.
+  headline: formData.headline.trim(),
+  summary: formData.summary.trim(),
   profilePicture,
 });
 

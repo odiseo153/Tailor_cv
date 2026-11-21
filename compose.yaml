@@ -1,0 +1,45 @@
+services:
+  nextjs:
+    container_name: tailorCV
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    ports:
+      - "3000:3000"
+
+    env_file:
+      - .env
+
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      DATABASE_URL_LOCAL_MYSQL: mysql://tailor:${MYSQL_PASSWORD:-tailor_local_password}@mysql:3306/tailor
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-tailor_local_root_password}
+      MYSQL_DATABASE: tailor
+      MYSQL_USER: tailor
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-tailor_local_password}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # shortcut: the initial schema runs only on a new volume; apply future migrations separately.
+      - ./prisma/migrations/20260426222541_init/migration.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysql -h127.0.0.1 -utailor -p\"$$MYSQL_PASSWORD\" tailor -e 'SELECT 1 FROM User LIMIT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql_data:

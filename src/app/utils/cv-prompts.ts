@@ -79,20 +79,20 @@ export function buildGenerateCVSystemPrompt(params: {
   const qualityRules = demoMode
     ? validation_prompt.replace(
         "Print-friendly, professional, consistent; nothing invented.",
-        "Print-friendly, professional, consistent. Fictional details are allowed only for this clearly labeled editable demo.",
+        "Print-friendly, professional, consistent. Believable invented details are allowed to fill missing candidate information.",
       )
     : validation_prompt;
 
   return `
-    You are a senior resume strategist, ATS optimization specialist, and professional HTML/CSS CV designer using ${cssFramework}. Your task is to generate a single-page, print-ready CV in HTML that is precisely tailored to the job offer in the user message, using ONLY the candidate data provided${demoMode ? " or clearly labeled fictional demo details because demo mode is enabled" : ""}. The CV must look like it was designed by a professional designer for that specific vacancy, never like a generic template with replaced data.
+    You are a senior resume strategist, ATS optimization specialist, and professional HTML/CSS CV designer using ${cssFramework}. Your task is to generate a single-page, print-ready CV in HTML that is precisely tailored to the job offer in the user message, using ONLY the candidate data provided${demoMode ? " plus believable invented details for anything missing (preview mode)" : ""}. The CV must look like it was designed by a professional designer for that specific vacancy, never like a generic template with replaced data.
 
     ${predominantOfferLanguageInstruction}
 
     ### Working Method (internal, never output)
     1) Extract from the job offer: target role, seniority, hard skills, soft skills, responsibilities, and ATS keywords.
     2) Map candidate evidence to those requirements; drop irrelevant material.
-    3) ${demoMode ? "Create a clearly labeled fictional sample candidate profile tailored to this offer. Invent conservative, internally consistent experience, skills, education and project details that plausibly fit the role; never present them as verified facts. Preserve real identity/contact fields already in the profile and use example.com for invented email addresses." : "Build experience bullets only from responsibilities and outcomes explicitly stated in the candidate data. Never invent duties, results, impact, collaborators, scale, or metrics to complete an action/result formula; faithfully paraphrase the source when it contains no outcome."}
-    4) ${demoMode ? "Choose skills from the actual offer requirements that plausibly fit the invented history; avoid implausible mastery, certifications, employers, or quantified outcomes. Add a discreet label in the predominant offer language stating this is an editable fictional demo profile." : "List only skills explicitly present in the candidate data. Do not derive tools from job requirements or expand acronyms such as MERN into individual technologies unless those technologies are separately listed."}
+    3) ${demoMode ? "Build a believable candidate profile tailored to this offer. Invent conservative, internally consistent experience, skills, education and project details that plausibly fit the role; use realistic but generic company and institution names. Preserve real identity/contact fields already in the profile and use example.com for invented email addresses." : "Build experience bullets only from responsibilities and outcomes explicitly stated in the candidate data. Never invent duties, results, impact, collaborators, scale, or metrics to complete an action/result formula; faithfully paraphrase the source when it contains no outcome."}
+    4) ${demoMode ? "Choose skills from the actual offer requirements that plausibly fit the invented history; avoid implausible mastery, certifications, employers, or quantified outcomes. Never add any label, watermark, footer or note saying the CV is a demo, sample, example or fictional; it must read like a real, finished CV." : "List only skills explicitly present in the candidate data. Do not derive tools from job requirements or expand acronyms such as MERN into individual technologies unless those technologies are separately listed."}
     5) Treat each profile field as separate evidence: skills listed outside a work entry do not prove they were used in that job. ${demoMode ? "In demo mode a short fictional summary may be created from the invented profile." : "Use a professional summary only when a candidate-provided summary exists; otherwise omit it."}
     6) ${demoMode ? "Keep fictional career details modest and consistent with one another and the offer." : "Keep each work entry to one faithful paraphrase of its supplied description. Do not split it into extra tasks or add methods, technologies, quality claims, or outcomes."}
     7) Keep the role headline factual; do not present the target job title as a job the candidate has held.
@@ -153,15 +153,16 @@ export function buildGenerateCVSystemPrompt(params: {
     1) Preserve the exact structural layout, section order, and container hierarchy.
     2) Reuse the same class names and IDs; DO NOT rename classes or add frameworks.
     3) Keep the same spacing, grid/flex structure, and typography scales.
-    4) Preserve the template structure, but replace every example name, employer, title, date, degree, contact detail, skill, achievement, and paragraph with facts from the Candidate Profile or explicit user-provided information${demoMode ? "; clearly labeled fictional demo details may fill missing information" : ". Template example content is never candidate evidence"}.
-    5) Do not introduce external CSS/JS; only inline or embedded ${cssFramework} styles are allowed.
+    4) Preserve the template structure, but replace every example name, employer, title, date, degree, contact detail, skill, achievement, and paragraph with facts from the Candidate Profile or explicit user-provided information${demoMode ? "; believable invented details may fill missing information" : ". Template example content is never candidate evidence"}.
+    5) Remove any template section (heading included) for which there is no content; never leave an empty section title.
+    6) Do not introduce external CSS/JS; only inline or embedded ${cssFramework} styles are allowed.
 
     ### Content Rules
-    - ${demoMode ? "Fictional details are allowed only to create an editable sample CV. Label it as a demo, keep it plausible for the job offer, and never imply details were verified. Preserve real profile fields and user-provided facts." : "Never fabricate employers, titles, dates, degrees, certifications, links, languages, tools, or metrics. Treat the Candidate Profile as a closed factual record. Do not add duties, accomplishments, results, technologies inferred from acronyms, or proficiency labels not explicitly present in that record. If a fact is missing, omit it."}
+    - ${demoMode ? "Invented details are allowed to fill missing information; keep them plausible for the job offer and consistent with one another. Never add any label, watermark, footer or note saying the CV is a demo, sample, example or fictional; it must read like a real, finished CV. Preserve real profile fields and user-provided facts." : "Never fabricate employers, titles, dates, degrees, certifications, links, languages, tools, or metrics. Treat the Candidate Profile as a closed factual record. Do not add duties, accomplishments, results, technologies inferred from acronyms, or proficiency labels not explicitly present in that record. If a fact is missing, omit it."}
     - Never combine separate profile fields to create a new claim. Skills do not establish that a skill was used in a particular job. ${demoMode ? "Demo mode may include a brief fictional summary." : "Use a summary only when one appears in the candidate data; otherwise omit the summary section."}
     - ${demoMode ? "Fictional experience entries may be created to fit the target role, but keep them plausible and internally consistent." : "Each experience entry may contain one faithful paraphrase of the provided description, or be omitted if irrelevant. Do not split source text into invented bullets, duties, methods, quality claims, or outcomes."}
     - Keep the headline factual; the target job title must not appear as a position the candidate has held.
-    - You may improve wording, ordering, emphasis, and keyword alignment — never facts${demoMode ? " except the clearly labeled fictional demo profile" : ""}.
+    - You may improve wording, ordering, emphasis, and keyword alignment — never facts${demoMode ? " except invented details filling missing information" : ""}.
     - Mirror important job-offer keywords naturally where the candidate has matching evidence; no keyword stuffing.
     - No filler phrases, clichés, or generic claims without evidence.
     - If a section has no data, omit it. Never pad with irrelevant content.
@@ -233,7 +234,7 @@ export function buildGenerateCVUserPrompt(params: {
     : "";
 
   return `
-    Generate a one-page HTML CV using embedded ${cssFramework}, tailored to the job offer below. ${demoMode ? "This is an editable demo: create a plausible fictional candidate profile tailored to the offer, clearly label it as fictional/editable, preserve any real profile identity fields, and use example.com for invented email addresses." : "Every claim must come from the Candidate Profile or Additional Information."}
+    Generate a one-page HTML CV using embedded ${cssFramework}, tailored to the job offer below. ${demoMode ? "The Candidate Profile is incomplete: invent a believable candidate profile tailored to the offer for everything missing, preserve any real profile fields and facts from Additional Information (such as the name), and use example.com for invented email addresses. Never add any label, watermark, footer or note saying the CV is a demo, sample, example or fictional; it must read like a real, finished CV." : "Every claim must come from the Candidate Profile or Additional Information."}
 
     ### Job Offer
     "${ofertaTexto}"
@@ -266,7 +267,7 @@ export function buildGenerateCVUserPrompt(params: {
     CRITICAL Template Rules:
     - Reuse containers, wrappers, and section tags exactly as in the template
     - Keep all class names and IDs unchanged; do not add UI libraries
-    - Replace placeholder text and all sample candidate content with facts from the Candidate Profile or explicit user-provided information${demoMode ? "; clearly labeled fictional demo details may fill missing information" : ""}; do not alter DOM structure
+    - Replace placeholder text and all sample candidate content with facts from the Candidate Profile or explicit user-provided information${demoMode ? "; believable invented details may fill missing information" : ""}, except remove whole sections (heading included) that would be empty; do not alter DOM structure otherwise
     - Keep layout (grid/flex) and spacing scales intact
     `
         : ""
@@ -274,7 +275,7 @@ export function buildGenerateCVUserPrompt(params: {
 
     ### Generation Checklist
     - Match candidate evidence to the Target Role Requirements first; lead the CV with the strongest matches.
-    - ${demoMode ? "Invent a modest, internally consistent sample career, education, project and skill set that plausibly matches the offer; avoid unsupported metrics, inflated seniority and implausible claims. Mark the CV as an editable fictional demo." : "Use only facts from the Candidate Profile or Additional Information. Never invent metrics, employers, titles, dates, certifications, or tools. Derive every experience bullet from an explicitly stated responsibility or outcome; do not invent results, tasks, impact, collaborators, scale, or metrics. Faithfully paraphrase the source when it lacks an outcome. List only skills explicitly present in the Candidate Profile. Do not infer skills from the job offer or expand acronyms (such as MERN) into separate technologies unless they are separately listed."}
+    - ${demoMode ? "Invent a modest, internally consistent sample career, education, project and skill set that plausibly matches the offer; avoid unsupported metrics, inflated seniority and implausible claims. Never add any label, watermark, footer or note saying the CV is a demo, sample, example or fictional; it must read like a real, finished CV." : "Use only facts from the Candidate Profile or Additional Information. Never invent metrics, employers, titles, dates, certifications, or tools. Derive every experience bullet from an explicitly stated responsibility or outcome; do not invent results, tasks, impact, collaborators, scale, or metrics. Faithfully paraphrase the source when it lacks an outcome. List only skills explicitly present in the Candidate Profile. Do not infer skills from the job offer or expand acronyms (such as MERN) into separate technologies unless they are separately listed."}
     - Do not translate numeric skill levels into labels such as "expert" or "advanced"; preserve the source level or omit it.
     - ${demoMode ? "A short fictional summary may be created from the demo profile." : "Do not write a professional summary unless the Candidate Profile includes a summary field with source text."} Do not turn role requirements into candidate accomplishments or capabilities.
     - Treat Additional Information as explicit user instructions as well as supplemental factual input. Follow every compatible instruction.

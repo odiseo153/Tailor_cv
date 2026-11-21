@@ -61,6 +61,7 @@ export class UserHandler implements BaseHandler<User> {
         where: { id },
         include: {
           workExperience: true,
+          projects: true,
           skills: true,
           education: true,
           socialLinks: true,

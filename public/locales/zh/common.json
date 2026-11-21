@@ -408,7 +408,11 @@
       "deleted_success": "技能删除成功",
       "add_error": "添加技能时出错",
       "update_error": "更新技能时出错",
-      "delete_error": "删除技能时出错"
+      "delete_error": "删除技能时出错",
+      "previous": "上一页",
+      "next": "下一页",
+      "page_of": "第 {current} 页，共 {total} 页",
+      "per_page": "{size} 条/页"
     },
     "social_links": {
       "title": "社交链接",
@@ -427,7 +431,58 @@
         }
       }
     },
-    "professional_profile": "专业概述"
+    "professional_profile": "专业概述",
+    "layout": {
+      "eyebrow": "职业历程",
+      "title": "您的职业历程，",
+      "title_accent": "随时匹配每个职位。",
+      "present": "至今",
+      "stats_experience": "工作经历",
+      "stats_projects": "项目",
+      "stats_skills": "技能",
+      "level_advanced": "高级",
+      "level_intermediate": "中级",
+      "level_basic": "初级",
+      "show_more": "显示更多",
+      "show_less": "收起"
+    },
+    "summary": {
+      "title": "职业简介",
+      "empty": "您还没有添加职业简介。"
+    },
+    "projects": {
+      "title": "项目",
+      "empty": "您还没有添加项目。",
+      "technologies": "技术",
+      "count_label": "个项目",
+      "image": "封面图片",
+      "view_details": "查看详情",
+      "edit_project": "编辑项目",
+      "add": "添加",
+      "add_project": "添加项目",
+      "add_first": "添加第一个项目",
+      "project_name": "项目名称",
+      "name_placeholder": "例如：Quirocita v2",
+      "role": "角色",
+      "role_placeholder": "例如：全栈开发人员",
+      "technologies_placeholder": "例如：Laravel, Next.js, MySQL",
+      "description": "描述",
+      "description_placeholder": "描述项目和您的贡献",
+      "name_required": "项目名称为必填项",
+      "edit": "编辑",
+      "delete": "删除",
+      "cancel": "取消",
+      "save": "保存",
+      "saving": "保存中...",
+      "confirm_delete": "确定要删除此项目吗？",
+      "added": "项目添加成功",
+      "updated": "项目更新成功",
+      "deleted": "项目删除成功",
+      "error_loading": "加载项目时出错",
+      "error_adding": "添加项目时出错",
+      "error_updating": "更新项目时出错",
+      "error_deleting": "删除项目时出错"
+    }
   },
   "auth": {
     "login": {

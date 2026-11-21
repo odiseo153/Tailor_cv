@@ -25,12 +25,20 @@ export interface CandidateProfile {
   email?: string;
   phone?: string;
   location?: string;
+  headline?: string;
+  summary?: string;
   links: { platform: string; url: string }[];
   workExperience: {
     jobTitle: string;
     company: string;
     dates?: string;
     description?: string;
+  }[];
+  projects: {
+    name: string;
+    role?: string;
+    description?: string;
+    technologies?: string;
   }[];
   education: {
     degree: string;
@@ -50,7 +58,9 @@ export interface CandidateProfile {
 
 export function hasCandidateDetails(profile: CandidateProfile): boolean {
   return Boolean(
+    profile.summary ||
     profile.workExperience.length ||
+    profile.projects.length ||
     profile.education.length ||
     profile.skills.length ||
     profile.languages.length,
@@ -92,6 +102,7 @@ export function buildCandidateProfile(user: any): CandidateProfile {
     return {
       links: [],
       workExperience: [],
+      projects: [],
       education: [],
       skills: [],
       languages: [],
@@ -133,6 +144,18 @@ export function buildCandidateProfile(user: any): CandidateProfile {
           : undefined,
     }))
     .filter((w: any) => w.jobTitle || w.company || w.dates || w.description);
+
+  const optionalText = (value: unknown): string | undefined =>
+    typeof value === "string" && value.trim() ? value.trim() : undefined;
+
+  const projects = (Array.isArray(user.projects) ? user.projects : [])
+    .filter((p: any) => p && optionalText(p.name))
+    .map((p: any) => ({
+      name: p.name.trim(),
+      role: optionalText(p.role),
+      description: optionalText(p.description),
+      technologies: optionalText(p.technologies),
+    }));
 
   const education = (Array.isArray(user.education) ? user.education : [])
     .filter((e: any) => e && (e.degree || e.institution))
@@ -184,8 +207,11 @@ export function buildCandidateProfile(user: any): CandidateProfile {
     email: typeof user.email === "string" ? user.email : undefined,
     phone: typeof user.phone === "string" ? user.phone : undefined,
     location: typeof user.location === "string" ? user.location : undefined,
+    headline: optionalText(user.headline),
+    summary: optionalText(user.summary),
     links,
     workExperience,
+    projects,
     education,
     skills: technicalSkills,
     languages,

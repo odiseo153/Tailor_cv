@@ -7,6 +7,8 @@ export interface User {
   location?: string;
   profilePicture?: string;
   image?: string;
+  headline?: string | null;
+  summary?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -19,6 +21,8 @@ export interface ProfileUpdateRequest {
   phone?: string;
   location?: string;
   profilePicture?: string;
+  headline?: string;
+  summary?: string;
 }
 
 // API Response Types
@@ -37,6 +41,8 @@ export interface ProfileFormData {
   email: string;
   phone: string;
   location: string;
+  headline: string;
+  summary: string;
 }
 
 export interface ProfileFormErrors {
@@ -44,6 +50,8 @@ export interface ProfileFormErrors {
   email?: string;
   phone?: string;
   location?: string;
+  headline?: string;
+  summary?: string;
   general?: string;
 }
 

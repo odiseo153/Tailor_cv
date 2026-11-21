@@ -168,8 +168,11 @@ export function GenerateCVModule() {
       .catch(() => setTemplates([]));
   }, []);
 
+  // Pick the default template only once, so "Quitar" can leave no template selected.
+  const defaultTemplateApplied = useRef(false);
   useEffect(() => {
-    if (!templates.length) return;
+    if (!templates.length || defaultTemplateApplied.current) return;
+    defaultTemplateApplied.current = true;
 
     const matchedTemplate = templates.find((item) => item.id === templateId);
     if (matchedTemplate) return;
@@ -517,6 +520,7 @@ export function GenerateCVModule() {
       }
 
       const candidateData = buildCandidateProfile({ ...session?.user, ...userProfile });
+      // Guests / empty profiles get a believable invented CV so they can try the app.
       candidateData.demoMode = !hasCandidateDetails(candidateData);
       const foto =
         userProfile &&

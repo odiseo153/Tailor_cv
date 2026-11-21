@@ -30,21 +30,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SessionProvider>
       <I18nProvider>
         <AppContextProvider>
-          {/* Condicionar la renderización del Header basado en si estamos listos y en ruta de auth */}
-          {(!isAuthRoute || isReady) && <Header />}
-
-          <main className="flex-grow container mx-auto -top-px px-4 py-14">
-            {/* En rutas de auth, esperar a que el componente esté listo */}
-            {isReady || !isAuthRoute ? (
+          {isAuthRoute ? (
+            // Rutas de auth: página propia, sin Header/Footer
+            isReady ? (
               children
             ) : (
-              <div className="flex justify-center items-center h-[70vh]">
+              <div className="flex justify-center items-center min-h-screen">
                 <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
               </div>
-            )}
-          </main>
-
-          {(!isAuthRoute || isReady) && <Footer />}
+            )
+          ) : (
+            <>
+              <Header />
+              <main className="flex-grow container mx-auto -top-px px-4 py-14">
+                {children}
+              </main>
+              <Footer />
+            </>
+          )}
         </AppContextProvider>
       </I18nProvider>
       <Analytics />

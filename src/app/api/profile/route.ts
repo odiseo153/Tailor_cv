@@ -24,6 +24,8 @@ interface ProfileUpdateRequest {
   phone?: string;
   location?: string;
   profilePicture?: string;
+  headline?: string;
+  summary?: string;
 }
 
 interface ProfileResponse {
@@ -114,13 +116,19 @@ export async function PUT(request: Request): Promise<NextResponse<ProfileRespons
       await deleteServerProfilePicture(existingUser.profilePicture);
     }
 
+    // headline/summary are only touched when sent; empty strings clear them.
+    const optionalText = (value?: string) =>
+      value === undefined ? undefined : value.trim() || null;
+
     const updateData = {
       id: requestData.id,
       name: requestData.name,
       email: requestData.email,
       phone: requestData.phone || '',
       location: requestData.location || '',
-      profilePicture: newPicture
+      profilePicture: newPicture,
+      headline: optionalText(requestData.headline),
+      summary: optionalText(requestData.summary),
     };
 
     const result = await userHandler.update(requestData.id, updateData);

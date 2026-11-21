@@ -8,6 +8,7 @@
     "build_local": "prisma generate && next build",
     "start": "next start",
     "seed": "node prisma/seed.js",
+    "seed:odiseo": "node prisma/seed-odiseo.js",
     "lint": "next lint"
   },
   "prisma": {
