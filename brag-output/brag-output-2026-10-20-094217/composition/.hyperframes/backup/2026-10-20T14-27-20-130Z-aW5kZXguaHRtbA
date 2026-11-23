@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es" data-resolution="portrait">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080,height=1920">
+  <title>Tailor CV — Reel</title>
+  <script src="assets/gsap.min.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    html,body{margin:0;width:1080px;height:1920px;overflow:hidden}
+    body{font-family:Arial,Helvetica,sans-serif;background:#f7faff;color:#0f172a}
+    #root{position:relative;width:100%;height:100%;overflow:hidden;background:#f7faff}
+    .clip{position:absolute;inset:0;overflow:hidden}
+    .scene{background:radial-gradient(circle at 88% 8%,#dbeafe 0,#f7faff 34%,#fff 78%)}
+    .brand{position:absolute;left:64px;top:64px;display:flex;align-items:center;gap:14px;color:#1d4ed8;font-size:29px;font-weight:800}
+    .brand-mark{width:52px;height:52px;display:grid;place-items:center;border-radius:14px;background:#2563eb;color:#fff;box-shadow:0 12px 28px #2563eb35}
+    .kicker{color:#2563eb;font-size:24px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    h1,h2,h3,p{margin:0}
+    h1,h2{font-size:91px;line-height:1.01;letter-spacing:-.055em}
+    h3{font-size:35px;line-height:1.12}
+    .accent{color:#2563eb}
+    .lead{font-size:34px;line-height:1.35;color:#475569}
+    .title-zone{position:absolute;left:64px;right:64px;top:235px}
+    .title-zone .kicker{margin-bottom:24px}
+    .title-zone .lead{margin-top:30px}
+    .surface{background:#fff;border:2px solid #dbe5f1;border-radius:30px;box-shadow:0 38px 90px #1e3a8a24}
+    .vacancies{position:absolute;left:64px;right:64px;top:790px;height:900px}
+    .job-card{position:absolute;left:0;width:610px;height:210px;padding:31px 34px;background:#fff;border:2px solid #dbe5f1;border-radius:24px;box-shadow:0 22px 55px #1e3a8a18}
+    .job-card:nth-child(1){top:0;transform:rotate(-4deg)}
+    .job-card:nth-child(2){top:205px;left:95px;transform:rotate(3deg)}
+    .job-card:nth-child(3){top:420px;left:22px;transform:rotate(-2deg)}
+    .job-meta{font-size:22px;color:#64748b;margin-bottom:13px}
+    .job-title{font-size:34px;font-weight:800}
+    .job-tags{display:flex;gap:10px;margin-top:24px}
+    .tag{padding:8px 13px;border-radius:99px;background:#dbeafe;color:#1d4ed8;font-size:18px;font-weight:700}
+    .resume-card{position:absolute;right:0;top:92px;width:410px;height:650px;padding:42px;background:#fff;border:2px solid #bfdbfe;border-radius:24px;box-shadow:0 30px 75px #1e3a8a24}
+    .resume-head{height:74px;background:#2563eb;border-radius:13px;margin-bottom:34px}
+    .line{height:13px;border-radius:10px;background:#cbd5e1;margin-bottom:20px}
+    .line.short{width:60%}.line.medium{width:82%}
+    .again{position:absolute;right:-8px;bottom:72px;padding:17px 23px;border-radius:14px;background:#fef3c7;color:#92400e;font-size:24px;font-weight:900;transform:rotate(4deg)}
+    .pain-grid{position:absolute;left:64px;right:64px;top:750px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+    .pain-card{height:520px;padding:48px 42px;position:relative;overflow:hidden}
+    .pain-number{font-size:132px;font-weight:900;letter-spacing:-.07em;color:#2563eb}
+    .pain-label{font-size:35px;font-weight:800;margin-top:20px}
+    .pain-copy{font-size:26px;line-height:1.35;color:#64748b;margin-top:18px}
+    .clock{width:260px;height:260px;border:18px solid #2563eb;border-radius:50%;margin:22px auto 40px;position:relative}
+    .clock:before,.clock:after{content:'';position:absolute;left:50%;top:50%;width:10px;border-radius:9px;background:#0f172a;transform-origin:bottom center}
+    .clock:before{height:78px;transform:translate(-50%,-100%) rotate(25deg)}
+    .clock:after{height:102px;transform:translate(-50%,-100%) rotate(128deg)}
+    .no-call{display:grid;place-items:center;width:190px;height:190px;border-radius:50%;margin:38px auto;background:#fee2e2;color:#b91c1c;font-size:84px;font-weight:900}
+    .app-shell{position:absolute;left:48px;right:48px;top:660px;height:1070px;padding:30px;background:#eef4ff;border-radius:36px;border:2px solid #cfe0ff;box-shadow:0 38px 90px #1e3a8a20}
+    .app-top{height:82px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font-size:27px;font-weight:900}
+    .app-top small{font-size:20px;color:#64748b}
+    .flow{height:900px;display:grid;grid-template-columns:1fr 88px 1fr;align-items:center;gap:16px}
+    .panel{height:690px;padding:37px;background:#fff;border:2px solid #dbe5f1;border-radius:25px;box-shadow:0 20px 45px #1e3a8a16}
+    .panel-title{font-size:28px;font-weight:900;margin-bottom:30px}
+    .input{min-height:72px;padding:20px;border:2px solid #dbe5f1;border-radius:14px;background:#fbfdff;color:#334155;font-size:22px;line-height:1.35;margin-bottom:20px}
+    .textarea{height:230px}
+    .cta{display:inline-block;margin-top:14px;padding:17px 22px;border-radius:13px;background:#2563eb;color:white;font-size:23px;font-weight:900}
+    .arrow{display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:#2563eb;color:#fff;font-size:38px;font-weight:900;box-shadow:0 14px 30px #2563eb40}
+    .cv-mini{height:585px;padding:35px;background:#fff;border:2px solid #bfdbfe;border-radius:18px}
+    .cv-mini h3{color:#1d4ed8;margin-bottom:8px}
+    .cv-mini .role{font-size:21px;color:#64748b;margin-bottom:28px}
+    .cv-mini h4{font-size:21px;color:#1d4ed8;margin:27px 0 15px}
+    .analysis-shell{position:absolute;left:48px;right:48px;top:650px;height:1080px;padding:34px}
+    .analysis-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
+    .analysis-head h3{font-size:31px}
+    .score{font-size:78px;font-weight:900;color:#2563eb;letter-spacing:-.05em}
+    .score small{font-size:34px}
+    .analysis-copy{font-size:25px;line-height:1.4;color:#475569}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:40px 0}
+    .metric{padding:28px 15px;border-radius:18px;text-align:center;background:#eff6ff;color:#1d4ed8}
+    .metric:nth-child(2){background:#faf5ff;color:#7e22ce}.metric:nth-child(3){background:#f0fdf4;color:#15803d}
+    .metric strong{display:block;font-size:43px}.metric span{font-size:19px}
+    .suggestions{display:grid;gap:18px}
+    .suggestion{padding:24px 27px;border-radius:17px;background:#f8fafc;border:2px solid #e2e8f0;font-size:24px;font-weight:700}
+    .suggestion b{color:#2563eb}
+    .email-shell{position:absolute;left:70px;right:70px;top:650px;height:1040px;padding:42px 46px}
+    .email-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
+    .email-title h3{font-size:37px}
+    .mail-icon{width:74px;height:74px;display:grid;place-items:center;border-radius:18px;background:#dbeafe;color:#1d4ed8;font-size:38px}
+    .field-label{font-size:22px;font-weight:800;margin:22px 0 10px}
+    .email-field{padding:20px 22px;border:2px solid #dbe5f1;border-radius:13px;background:#fbfdff;font-size:24px;color:#334155}
+    .email-body{height:320px;line-height:1.45}
+    .send-row{display:flex;align-items:center;justify-content:space-between;margin-top:32px}
+    .send-button{padding:19px 29px;border-radius:14px;background:#2563eb;color:#fff;font-size:25px;font-weight:900}
+    .sent{padding:14px 20px;border-radius:13px;background:#dcfce7;color:#166534;font-size:23px;font-weight:900}
+    .final{background:#1d4ed8;color:#fff}
+    .orb{position:absolute;right:-520px;top:-390px;width:1450px;height:1450px;border:220px solid #ffffff16;border-radius:50%}
+    .final-lockup{position:absolute;left:84px;right:84px;top:650px}
+    .final-brand{display:flex;align-items:center;gap:25px;font-size:104px;font-weight:900;letter-spacing:-.06em}
+    .final-mark{width:132px;height:132px;display:grid;place-items:center;border-radius:32px;background:#fff;color:#1d4ed8}
+    .final-line{font-size:48px;line-height:1.2;color:#dbeafe;margin:50px 0 0 155px}.final-line span{display:block}
+  </style>
+</head>
+<body>
+<div data-hf-id="hf-fdpl" id="root" data-composition-id="main" data-start="0" data-duration="23" data-width="1080" data-height="1920">
+  <section data-hf-id="hf-saic" id="pain" class="clip scene" data-start="0" data-duration="4" data-track-index="0">
+    <div data-hf-id="hf-8i95" class="brand"><span data-hf-id="hf-ig8e" class="brand-mark">T</span>Tailor CV</div>
+    <div data-hf-id="hf-jp35" class="title-zone">
+      <div data-hf-id="hf-xv0g" class="kicker">El problema real</div>
+      <h1 data-hf-id="hf-m3fm"><span data-hf-id="hf-5hc5">Cada oferta pide</span> <span data-hf-id="hf-mcaz" class="accent">un currículum distinto.</span></h1>
+      <p data-hf-id="hf-ps5r" class="lead">Y volver a adaptarlo consume tiempo.</p>
+    </div>
+    <div data-hf-id="hf-rz1n" class="vacancies">
+      <article data-hf-id="hf-bhl5" class="job-card"><div data-hf-id="hf-kqm6" class="job-meta">Oferta 01 · Producto</div><div data-hf-id="hf-wzqm" class="job-title">Software Engineer</div><div data-hf-id="hf-cnk9" class="job-tags"><span data-hf-id="hf-zjaa" class="tag">React</span><span data-hf-id="hf-mqaa" class="tag">APIs</span></div></article>
+      <article data-hf-id="hf-xyv1" class="job-card"><div data-hf-id="hf-b4ts" class="job-meta">Oferta 02 · Datos</div><div data-hf-id="hf-y3wm" class="job-title">Backend Developer</div><div data-hf-id="hf-q3i5" class="job-tags"><span data-hf-id="hf-rnmx" class="tag">Python</span><span data-hf-id="hf-t01l" class="tag">SQL</span></div></article>
+      <article data-hf-id="hf-z5s4" class="job-card"><div data-hf-id="hf-7sk9" class="job-meta">Oferta 03 · Plataforma</div><div data-hf-id="hf-2kk7" class="job-title">Full Stack Developer</div><div data-hf-id="hf-raf8" class="job-tags"><span data-hf-id="hf-5a7c" class="tag">Node.js</span><span data-hf-id="hf-s7gc" class="tag">Cloud</span></div></article>
+      <div data-hf-id="hf-xewo" class="resume-card"><div data-hf-id="hf-bn0k" class="resume-head"></div><div data-hf-id="hf-np12" class="line"></div><div data-hf-id="hf-a4b3" class="line medium"></div><div data-hf-id="hf-sogq" class="line"></div><div data-hf-id="hf-gpz4" class="line short"></div><div data-hf-id="hf-t2rr" class="line"></div><div data-hf-id="hf-k38v" class="line medium"></div><div data-hf-id="hf-qo3c" class="line short"></div><div data-hf-id="hf-leyy" class="again">Adaptar otra vez</div></div>
+    </div>
+  </section>
+
+  <section data-hf-id="hf-vohc" id="cost" class="clip scene" data-start="4" data-duration="3" data-track-index="0">
+    <div data-hf-id="hf-193x" class="brand"><span data-hf-id="hf-f9gy" class="brand-mark">T</span>Tailor CV</div>
+    <div data-hf-id="hf-d9ed" class="title-zone">
+      <div data-hf-id="hf-3n5c" class="kicker">El costo</div>
+      <h2 data-hf-id="hf-2l5r"><span data-hf-id="hf-sij9">Más edición.</span> <span data-hf-id="hf-7l98" class="accent">Cero garantías.</span></h2>
+      <p data-hf-id="hf-lolw" class="lead">Horas ajustando detalles sin saber si llegará una llamada.</p>
+    </div>
+    <div data-hf-id="hf-rird" class="pain-grid">
+      <article data-hf-id="hf-45sp" class="pain-card surface"><div data-hf-id="hf-zwhu" class="clock"></div><div data-hf-id="hf-9xf5" class="pain-label">Tiempo que se va</div><div data-hf-id="hf-nmtq" class="pain-copy">Reescribir, ordenar y volver a exportar.</div></article>
+      <article data-hf-id="hf-hs8d" class="pain-card surface"><div data-hf-id="hf-1rlf" class="no-call">?</div><div data-hf-id="hf-ssbo" class="pain-label">Sin llamada segura</div><div data-hf-id="hf-k89j" class="pain-copy">Adaptar ayuda, pero nunca garantiza respuesta.</div></article>
+    </div>
+  </section>
+
+  <section data-hf-id="hf-02rm" id="tailor" class="clip scene" data-start="7" data-duration="5.5" data-track-index="0">
+    <div data-hf-id="hf-2g10" class="brand"><span data-hf-id="hf-fnrz" class="brand-mark">T</span>Tailor CV</div>
+    <div data-hf-id="hf-egbg" class="title-zone">
+      <div data-hf-id="hf-rj0q" class="kicker">Menos trabajo manual</div>
+      <h2 data-hf-id="hf-gavz"><span data-hf-id="hf-gfn4">Oferta dentro.</span> <span data-hf-id="hf-4aal" class="accent">Currículum enfocado.</span></h2>
+      <p data-hf-id="hf-ly8q" class="lead">Tailor CV usa la vacante como contexto para adaptar tu experiencia.</p>
+    </div>
+    <div data-hf-id="hf-4acs" class="app-shell">
+      <div data-hf-id="hf-epfb" class="app-top"><span data-hf-id="hf-ecma">✦ Generar currículum</span><small data-hf-id="hf-k61s">Tailor CV</small></div>
+      <div data-hf-id="hf-ck2w" class="flow">
+        <div data-hf-id="hf-owjm" class="panel">
+          <div data-hf-id="hf-sjim" class="panel-title">1. Oferta laboral</div>
+          <div data-hf-id="hf-6kzy" class="input">Software Engineer</div>
+          <div data-hf-id="hf-i4v9" class="input textarea">Buscamos experiencia en React, APIs y colaboración con equipos de producto.</div>
+          <div data-hf-id="hf-tzhr" class="cta">✦ Analizar oferta</div>
+        </div>
+        <div data-hf-id="hf-drib" class="arrow">→</div>
+        <div data-hf-id="hf-gxly" class="panel">
+          <div data-hf-id="hf-t0ei" class="panel-title">2. Resultado editable</div>
+          <div data-hf-id="hf-pfod" class="cv-mini">
+            <h3 data-hf-id="hf-8gsd">Alex Rivera</h3><div data-hf-id="hf-30gi" class="role">Software Engineer</div>
+            <div data-hf-id="hf-th2s" class="line"></div><div data-hf-id="hf-joxu" class="line medium"></div>
+            <h4 data-hf-id="hf-co4s">Experiencia relevante</h4><div data-hf-id="hf-tvdt" class="line"></div><div data-hf-id="hf-u9ou" class="line"></div><div data-hf-id="hf-ph69" class="line short"></div>
+            <h4 data-hf-id="hf-qyd1">Habilidades</h4><div data-hf-id="hf-jamt" class="line medium"></div><div data-hf-id="hf-pvha" class="line short"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section data-hf-id="hf-eg8k" id="analysis" class="clip scene" data-start="12.5" data-duration="3.5" data-track-index="0">
+    <div data-hf-id="hf-21pz" class="brand"><span data-hf-id="hf-g230" class="brand-mark">T</span>Tailor CV</div>
+    <div data-hf-id="hf-e20f" class="title-zone">
+      <div data-hf-id="hf-7cip" class="kicker">También analiza</div>
+      <h2 data-hf-id="hf-fwky"><span data-hf-id="hf-jrgk">Descubre cómo</span> <span data-hf-id="hf-3blp" class="accent">mejorar tu currículum.</span></h2>
+    </div>
+    <div data-hf-id="hf-9oaa" class="analysis-shell surface">
+      <div data-hf-id="hf-ov69" class="analysis-head"><h3 data-hf-id="hf-duub">Resultados del análisis</h3><div data-hf-id="hf-lcb0" class="score">55<small data-hf-id="hf-2gbk">/100</small></div></div>
+      <p data-hf-id="hf-tcop" class="analysis-copy">Evaluación por diseño visual, estructura y calidad del contenido.</p>
+      <div data-hf-id="hf-7i9z" class="metrics"><div data-hf-id="hf-dq4c" class="metric"><strong data-hf-id="hf-g9u0">55</strong><span data-hf-id="hf-r85e">Diseño</span></div><div data-hf-id="hf-q6lw" class="metric"><strong data-hf-id="hf-quj0">60</strong><span data-hf-id="hf-f2el">Estructura</span></div><div data-hf-id="hf-ozot" class="metric"><strong data-hf-id="hf-eaav">50</strong><span data-hf-id="hf-sv1o">Contenido</span></div></div>
+      <div data-hf-id="hf-pumv" class="suggestions"><div data-hf-id="hf-r9ir" class="suggestion"><b data-hf-id="hf-27a2">01</b> Mejora jerarquía y legibilidad.</div><div data-hf-id="hf-tnww" class="suggestion"><b data-hf-id="hf-2ll3">02</b> Refuerza palabras clave del puesto.</div><div data-hf-id="hf-zwei" class="suggestion"><b data-hf-id="hf-2zw4">03</b> Convierte tareas en logros concretos.</div></div>
+    </div>
+  </section>
+
+  <section data-hf-id="hf-p1vy" id="email" class="clip scene" data-start="16" data-duration="4.5" data-track-index="0">
+    <div data-hf-id="hf-38n2" class="brand"><span data-hf-id="hf-gge1" class="brand-mark">T</span>Tailor CV</div>
+    <div data-hf-id="hf-f8xi" class="title-zone">
+      <div data-hf-id="hf-hpet" class="kicker">Sin salir de la app</div>
+      <h2 data-hf-id="hf-fi9x"><span data-hf-id="hf-o53k">Revisa. Edita.</span> <span data-hf-id="hf-m1ch" class="accent">Envía por correo.</span></h2>
+      <p data-hf-id="hf-9mfz" class="lead">Currículum y mensaje de postulación, listos en el mismo flujo.</p>
+    </div>
+    <div data-hf-id="hf-jujc" class="email-shell surface">
+      <div data-hf-id="hf-qk39" class="email-title"><h3 data-hf-id="hf-9vie">Enviar por correo</h3><div data-hf-id="hf-dm2w" class="mail-icon">✉</div></div>
+      <div data-hf-id="hf-yo0v" class="field-label">Para</div><div data-hf-id="hf-usjn" class="email-field">reclutamiento@empresa.com</div>
+      <div data-hf-id="hf-niq3" class="field-label">Asunto</div><div data-hf-id="hf-q1t1" class="email-field">Postulación · Software Engineer</div>
+      <div data-hf-id="hf-kjta" class="field-label">Mensaje</div><div data-hf-id="hf-npzw" class="email-field email-body">Hola, comparto mi currículum adaptado a la posición de Software Engineer. Gracias por considerar mi perfil.</div>
+      <div data-hf-id="hf-uhot" class="send-row"><div data-hf-id="hf-pgyh" class="send-button">Enviar currículum</div><div data-hf-id="hf-n4of" class="sent">Enviado ✓</div></div>
+    </div>
+  </section>
+
+  <section data-hf-id="hf-h4zc" id="close" class="clip final" data-start="20.5" data-duration="2.5" data-track-index="0">
+    <div data-hf-id="hf-0p9a" class="orb" data-layout-ignore=""></div>
+    <div data-hf-id="hf-gcvj" class="final-lockup">
+      <div data-hf-id="hf-x6k0" class="final-brand"><span data-hf-id="hf-5d3p">T</span><span data-hf-id="hf-wsxr">Tailor CV</span></div>
+      <div data-hf-id="hf-h2dj" class="final-line"><span data-hf-id="hf-4mf6">Menos tiempo ajustando.</span><span data-hf-id="hf-rl51">Más tiempo postulando.</span></div>
+    </div>
+  </section>
+
+  <audio data-hf-id="hf-3ypy" id="music" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" data-start="0" data-duration="23" data-track-index="10" data-volume="0.18" data-automation="{&quot;version&quot;:1,&quot;lanes&quot;:[{&quot;target&quot;:&quot;volume&quot;,&quot;points&quot;:[{&quot;t&quot;:0,&quot;v&quot;:0.45},{&quot;t&quot;:0.6,&quot;v&quot;:0.72},{&quot;t&quot;:20.3,&quot;v&quot;:0.72},{&quot;t&quot;:20.8,&quot;v&quot;:1},{&quot;t&quot;:22.2,&quot;v&quot;:1},{&quot;t&quot;:23,&quot;v&quot;:0}]}]}" data-fx-carve="{&quot;enabled&quot;:true,&quot;sources&quot;:[&quot;voice&quot;],&quot;strength&quot;:0.8}" data-fx-chain="{&quot;version&quot;:1,&quot;nodes&quot;:[{&quot;type&quot;:&quot;peaking&quot;,&quot;id&quot;:&quot;n1&quot;,&quot;fromCarve&quot;:true,&quot;params&quot;:{&quot;frequency&quot;:250,&quot;gain&quot;:-7.4,&quot;q&quot;:2.06}},{&quot;type&quot;:&quot;peaking&quot;,&quot;id&quot;:&quot;n2&quot;,&quot;fromCarve&quot;:true,&quot;params&quot;:{&quot;frequency&quot;:400,&quot;gain&quot;:-7.4,&quot;q&quot;:2.06}},{&quot;type&quot;:&quot;peaking&quot;,&quot;id&quot;:&quot;n3&quot;,&quot;fromCarve&quot;:true,&quot;params&quot;:{&quot;frequency&quot;:630,&quot;gain&quot;:-7.4,&quot;q&quot;:2.06}},{&quot;type&quot;:&quot;peaking&quot;,&quot;id&quot;:&quot;n4&quot;,&quot;fromCarve&quot;:true,&quot;params&quot;:{&quot;frequency&quot;:1000,&quot;gain&quot;:-7.4,&quot;q&quot;:2.06}},{&quot;type&quot;:&quot;peaking&quot;,&quot;id&quot;:&quot;n5&quot;,&quot;fromCarve&quot;:true,&quot;params&quot;:{&quot;frequency&quot;:1600,&quot;gain&quot;:-14.8,&quot;q&quot;:2.06}},{&quot;type&quot;:&quot;peaking&quot;,&quot;id&quot;:&quot;n6&quot;,&quot;fromCarve&quot;:true,&quot;params&quot;:{&quot;frequency&quot;:2500,&quot;gain&quot;:-7.4,&quot;q&quot;:2.06}},{&quot;type&quot;:&quot;gain&quot;,&quot;id&quot;:&quot;n7&quot;,&quot;fromCarve&quot;:true,&quot;params&quot;:{&quot;gain&quot;:0}}]}"></audio>
+  <audio data-hf-id="hf-45qf" id="voice" src="assets/voiceover-new.wav" data-start="0.6" data-duration="19.541" data-track-index="11" data-volume="1"></audio>
+  <audio data-hf-id="hf-u95g" id="sfx-card" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="0.35" data-duration="0.2" data-track-index="12" data-volume="0.42"></audio>
+  <audio data-hf-id="hf-udhx" id="sfx-click" src="assets/sfx/interface/click_003.ogg" data-start="9.35" data-duration="0.01" data-track-index="12" data-volume="0.55"></audio>
+  <audio data-hf-id="hf-tl2m" id="sfx-ding" src="assets/sfx/impact/impactBell_heavy_000.ogg" data-start="19.25" data-duration="1.2" data-track-index="12" data-volume="0.42"></audio>
+</div>
+<script>
+  const tl=gsap.timeline({paused:true});
+  tl.fromTo('#pain h1',{y:55,opacity:0},{y:0,opacity:1,duration:.65,ease:'power3.out'},.12)
+    .fromTo('#pain .lead',{y:24,opacity:0},{y:0,opacity:1,duration:.45,ease:'power2.out'},.72)
+    .fromTo('#pain .job-card',{x:-110,opacity:0,rotation:-8},{x:0,opacity:1,rotation:0,duration:.55,stagger:.16,ease:'power3.out'},.55)
+    .fromTo('#pain .resume-card',{x:120,opacity:0,rotation:5},{x:0,opacity:1,rotation:0,duration:.72,ease:'power3.out'},.92)
+    .fromTo('#pain .again',{scale:.5,opacity:0},{scale:1,opacity:1,duration:.42,ease:'back.out(2)'},1.75)
+    .fromTo('#cost h2',{y:48,opacity:0},{y:0,opacity:1,duration:.58,ease:'power3.out'},4.12)
+    .fromTo('#cost .lead',{y:22,opacity:0},{y:0,opacity:1,duration:.42,ease:'power2.out'},4.65)
+    .fromTo('#cost .pain-card',{y:90,opacity:0},{y:0,opacity:1,duration:.62,stagger:.15,ease:'power3.out'},4.8)
+    .fromTo('#tailor h2',{y:50,opacity:0},{y:0,opacity:1,duration:.6,ease:'power3.out'},7.12)
+    .fromTo('#tailor .lead',{y:20,opacity:0},{y:0,opacity:1,duration:.42,ease:'power2.out'},7.72)
+    .fromTo('#tailor .app-shell',{y:110,opacity:0},{y:0,opacity:1,duration:.72,ease:'power3.out'},7.8)
+    .fromTo('#tailor .panel:first-of-type',{x:-50,opacity:0},{x:0,opacity:1,duration:.55,ease:'power2.out'},8.5)
+    .fromTo('#tailor .arrow',{scale:.3,opacity:0},{scale:1,opacity:1,duration:.42,ease:'back.out(2)'},9.3)
+    .fromTo('#tailor .panel:last-of-type',{x:50,opacity:0},{x:0,opacity:1,duration:.55,ease:'power2.out'},9.55)
+    .fromTo('#analysis h2',{y:50,opacity:0},{y:0,opacity:1,duration:.58,ease:'power3.out'},12.62)
+    .fromTo('#analysis .analysis-shell',{y:100,opacity:0},{y:0,opacity:1,duration:.68,ease:'power3.out'},12.9)
+    .fromTo('#analysis .metric',{scale:.75,opacity:0},{scale:1,opacity:1,duration:.38,stagger:.1,ease:'back.out(1.7)'},13.55)
+    .fromTo('#analysis .suggestion',{x:55,opacity:0},{x:0,opacity:1,duration:.36,stagger:.12,ease:'power2.out'},14.1)
+    .fromTo('#email h2',{y:50,opacity:0},{y:0,opacity:1,duration:.58,ease:'power3.out'},16.12)
+    .fromTo('#email .lead',{y:20,opacity:0},{y:0,opacity:1,duration:.42,ease:'power2.out'},16.7)
+    .fromTo('#email .email-shell',{y:100,opacity:0},{y:0,opacity:1,duration:.68,ease:'power3.out'},16.8)
+    .fromTo('#email .send-button',{scale:.92},{scale:1,duration:.28,ease:'back.out(2)'},18.7)
+    .fromTo('#email .sent',{scale:.5,opacity:0},{scale:1,opacity:1,duration:.42,ease:'back.out(2)'},19.22)
+    .fromTo('#close .final-lockup',{y:58,opacity:0},{y:0,opacity:1,duration:.72,ease:'power3.out'},20.7)
+    .fromTo('#close .orb',{scale:.9,opacity:.25},{scale:1,opacity:1,duration:2.1,ease:'sine.inOut'},20.5);
+  window.__timelines['main']=tl;
+</script>
+</body>
+</html>

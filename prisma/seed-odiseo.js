@@ -258,6 +258,7 @@ async function main() {
     if (Object.keys(fill).length > 0) {
       user = await prisma.user.update({ where: { id: user.id }, data: fill });
     }
+    console.log(await prisma.user.findFirst());
     console.log(`Usuario existente. Campos completados: ${Object.keys(fill).filter((f) => f !== 'password').join(', ') || 'ninguno'}.`);
   }
 

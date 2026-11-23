@@ -150,6 +150,9 @@ node prisma/seed-subscriptions.js
 npm run dev
 ```
 
+Para una base PostgreSQL alojada, aplica las migraciones con `npx prisma migrate deploy`.
+Prisma Migrate crea o cambia tablas; no copia registros desde otra base de datos.
+
 ## Variables de entorno
 
 ### Base de datos y auth

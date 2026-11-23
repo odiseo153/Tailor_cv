@@ -34,7 +34,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       # shortcut: the initial schema runs only on a new volume; apply future migrations separately.
-      - ./prisma/migrations/20260426222541_init/migration.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+      - ./prisma/mysql-migrations/20260426222541_init/migration.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mysql -h127.0.0.1 -utailor -p\"$$MYSQL_PASSWORD\" tailor -e 'SELECT 1 FROM User LIMIT 1' >/dev/null 2>&1"]
       interval: 5s
