@@ -1,7 +1,75 @@
 export const A4_PAGE_WIDTH = "210mm";
 export const A4_PAGE_HEIGHT = "297mm";
 
-export function addPreviewPageStyles(html: string, pageIndex: number) {
+const MM_TO_PX = 96 / 25.4;
+const PAGE_PADDING_PX = 10 * MM_TO_PX;
+const PAGE_CONTENT_HEIGHT_PX = (297 - 20) * MM_TO_PX;
+const MAX_PAGES = 20;
+
+/**
+ * Splits the rendered CV (page 0 preview frame) into pages without cutting
+ * elements: each page starts at the top of the first block that would cross
+ * the page bottom, and headings move with the content that follows them.
+ * Returns the content offset (px) where each page starts; [0] for one page.
+ * Measuring real blocks instead of scrollHeight also avoids empty trailing pages.
+ */
+export function computePageBreaks(doc: Document): number[] {
+  const root = doc.querySelector<HTMLElement>(".tailor-cv-page-content");
+  const win = doc.defaultView;
+  if (!root || !win) return [0];
+
+  const isBlock = (el: Element) => {
+    const display = win.getComputedStyle(el).display;
+    return display !== "inline" && display !== "contents" && display !== "none";
+  };
+  const originY = root.getBoundingClientRect().top + PAGE_PADDING_PX;
+  const units = Array.from(root.querySelectorAll("*"))
+    .filter((el) => isBlock(el) && !Array.from(el.children).some(isBlock))
+    .map((el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        top: rect.top - originY,
+        bottom: rect.bottom - originY,
+        height: rect.height,
+        heading: /^H[1-6]$/.test(el.tagName) || /title|heading/i.test(el.getAttribute("class") ?? ""),
+      };
+    })
+    .filter((unit) => unit.height > 0)
+    .sort((a, b) => a.top - b.top);
+  if (!units.length) return [0];
+
+  const contentBottom = Math.max(...units.map((unit) => unit.bottom));
+  const breaks = [0];
+  let start = 0;
+  while (contentBottom - start > PAGE_CONTENT_HEIGHT_PX + 1 && breaks.length < MAX_PAGES) {
+    const limit = start + PAGE_CONTENT_HEIGHT_PX;
+    let next = limit;
+    for (const unit of units) {
+      if (unit.top > start + 1 && unit.top < next && unit.bottom > limit) next = unit.top;
+    }
+    // Never leave a heading alone at the bottom of a page.
+    for (;;) {
+      const last = units.filter((unit) => unit.top > start + 1 && unit.bottom <= next + 0.5).pop();
+      if (!last?.heading || last.top >= next) break;
+      next = last.top;
+    }
+    if (next <= start + 1) next = limit; // block taller than a page: cut it
+    breaks.push(next);
+    start = next;
+  }
+  return breaks;
+}
+
+export function addPreviewPageStyles(html: string, pageIndex: number, pageBreaks: number[] = [0]) {
+  // Page window: shows only this page's slice, with the same margins on every page.
+  const start = pageBreaks[pageIndex] ?? 0;
+  const end = pageBreaks[pageIndex + 1];
+  const windowStyle =
+    pageIndex === 0
+      ? `height: ${end === undefined ? "auto" : `${PAGE_PADDING_PX + end}px`};`
+      : `margin-top: ${PAGE_PADDING_PX}px; height: ${end === undefined ? PAGE_CONTENT_HEIGHT_PX : end - start}px;`;
+  const contentOffset = pageIndex === 0 ? 0 : PAGE_PADDING_PX + start;
+
   const pageStyle = `
     <style>
       @page {
@@ -25,6 +93,11 @@ export function addPreviewPageStyles(html: string, pageIndex: number) {
         display: block !important;
       }
 
+      .tailor-cv-page-window {
+        overflow: hidden;
+        ${windowStyle}
+      }
+
       .tailor-cv-page-content,
       .tailor-cv-page-content * {
         max-width: none !important;
@@ -44,7 +117,7 @@ export function addPreviewPageStyles(html: string, pageIndex: number) {
         padding: 10mm;
         box-sizing: border-box;
         overflow-wrap: break-word;
-        transform: translateY(calc(-${A4_PAGE_HEIGHT} * ${pageIndex}));
+        transform: translateY(-${contentOffset}px);
         transform-origin: top left;
       }
 
@@ -106,8 +179,8 @@ export function addPreviewPageStyles(html: string, pageIndex: number) {
 
   if (/<body[^>]*>/i.test(htmlWithStyles)) {
     return htmlWithStyles
-      .replace(/<body([^>]*)>/i, '<body$1><div class="tailor-cv-page-content">')
-      .replace(/<\/body>/i, "</div></body>");
+      .replace(/<body([^>]*)>/i, '<body$1><div class="tailor-cv-page-window"><div class="tailor-cv-page-content">')
+      .replace(/<\/body>/i, "</div></div></body>");
   }
 
   return htmlWithStyles;

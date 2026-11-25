@@ -54,6 +54,7 @@ import {
   A4_PAGE_WIDTH,
   addEditablePreviewStyles,
   addPreviewPageStyles,
+  computePageBreaks,
 } from "../utils/preview-html";
 import { buildTemplatePreviewSrcDoc } from "@/lib/template-preview";
 import { buildCandidateProfile, hasCandidateDetails } from "../../utils/candidate-profile";
@@ -82,7 +83,7 @@ export function GenerateCVModule() {
   const [carrera, setCarrera] = useState<string>("");
   const [informacion, setInformacion] = useState("");
   const [data, setData] = useState<{ html: string } | null>(null);
-  const [previewPageCount, setPreviewPageCount] = useState(1);
+  const [previewPageBreaks, setPreviewPageBreaks] = useState<number[]>([0]);
   const [ofertaType, setOfertaType] = useState<"image" | "text">("text");
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -190,7 +191,7 @@ export function GenerateCVModule() {
   }, [templateId, templates]);
 
   useEffect(() => {
-    setPreviewPageCount(1);
+    setPreviewPageBreaks([0]);
   }, [data?.html]);
 
   useEffect(() => {
@@ -200,21 +201,16 @@ export function GenerateCVModule() {
     }
   }, [data?.html]);
 
-  const updatePreviewPageCount = (iframe: HTMLIFrameElement) => {
+  const updatePreviewPageBreaks = async (iframe: HTMLIFrameElement) => {
     const documentNode = iframe.contentDocument;
 
     if (!documentNode) return;
 
-    const contentHeight = Math.max(
-      documentNode.documentElement.scrollHeight,
-      documentNode.body?.scrollHeight ?? 0,
+    await documentNode.fonts.ready;
+    const breaks = computePageBreaks(documentNode);
+    setPreviewPageBreaks((current) =>
+      current.join() === breaks.join() ? current : breaks,
     );
-    const pageHeight =
-      iframe.clientHeight || documentNode.documentElement.clientHeight;
-
-    if (!contentHeight || !pageHeight) return;
-
-    setPreviewPageCount(Math.max(1, Math.ceil(contentHeight / pageHeight)));
   };
 
   const syncManualEditsToData = (): string | null => {
@@ -481,7 +477,9 @@ export function GenerateCVModule() {
       );
     } catch (error: any) {
       console.error("Error analyzing offer:", error);
-      Message.errorMessage(
+      Message.aiError(
+        error,
+        t,
         "Failed to analyze job offer: " + (error.message || "Unknown error"),
       );
     } finally {
@@ -591,7 +589,9 @@ export function GenerateCVModule() {
     } catch (error: any) {
       console.error("Error generating CV:", error);
       if (!isSilentUpdate)
-        Message.errorMessage(
+        Message.aiError(
+          error,
+          t,
           t("cv_generator.messages.error") +
             (error.message || "Error desconocido"),
         );
@@ -1328,15 +1328,15 @@ export function GenerateCVModule() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-8">
-                  {Array.from({ length: previewPageCount }).map(
+                  {previewPageBreaks.map(
                     (_, pageIndex) => (
                       <div key={pageIndex} className="shadow-2xl bg-white">
                         <iframe
-                          srcDoc={addPreviewPageStyles(data.html, pageIndex)}
+                          srcDoc={addPreviewPageStyles(data.html, pageIndex, previewPageBreaks)}
                           className="bg-white"
                           onLoad={(event) => {
                             if (pageIndex === 0) {
-                              updatePreviewPageCount(event.currentTarget);
+                              updatePreviewPageBreaks(event.currentTarget);
                             }
                           }}
                           scrolling="no"

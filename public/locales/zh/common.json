@@ -633,5 +633,9 @@
       "company_fallback": "未提供公司名称",
       "remote_badge": "远程"
     }
+  },
+  "ai_errors": {
+    "no_credits_title": "AI 额度不足",
+    "no_credits": "{provider} 没有可用额度。请为您的 {provider} 账户充值，或在“AI 模型”中选择其他提供商。"
   }
 } 

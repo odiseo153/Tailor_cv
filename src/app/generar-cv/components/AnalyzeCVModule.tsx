@@ -116,7 +116,7 @@ export function AnalyzeCVModule() {
       const errorMessage =
         error?.message || "Failed to analyze CV. Please try again.";
       setAnalysisState((prev) => ({ ...prev, error: errorMessage }));
-      Message.errorMessage(errorMessage);
+      Message.aiError(error, t, errorMessage);
     } finally {
       setAnalysisState((prev) => ({ ...prev, isAnalyzing: false }));
     }

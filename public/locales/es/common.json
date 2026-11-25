@@ -694,5 +694,9 @@
     "feature1": "Optimización ATS",
     "feature2": "Con IA",
     "feature3": "Match Laboral"
+  },
+  "ai_errors": {
+    "no_credits_title": "Sin créditos de IA",
+    "no_credits": "{provider} no tiene créditos disponibles. Recarga saldo en tu cuenta de {provider} o elige otro proveedor en \"Modelo de IA\"."
   }
 }

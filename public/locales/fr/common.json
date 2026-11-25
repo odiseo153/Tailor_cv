@@ -638,5 +638,9 @@
       "company_fallback": "Entreprise non précisée",
       "remote_badge": "Remote"
     }
+  },
+  "ai_errors": {
+    "no_credits_title": "Plus de crédits IA",
+    "no_credits": "{provider} n'a plus de crédits disponibles. Rechargez votre compte {provider} ou choisissez un autre fournisseur dans « Modèle IA »."
   }
 } 

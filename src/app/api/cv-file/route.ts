@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
+import { creditsErrorBody, isOutOfCreditsError } from "@/lib/ai-credits";
 import { jsonrepair } from "jsonrepair";
 import { buildExtractCVInfoPrompt } from "@/app/utils/cv-prompts";
 import { createDeepSeekImageDataUrl } from "./deepseek-file";
@@ -93,6 +94,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ content: jsonrepair(text) });
   } catch (error) {
+    if (isOutOfCreditsError(error)) {
+      return NextResponse.json(creditsErrorBody("deepseek"), { status: 402 });
+    }
     const message = error instanceof Error ? error.message : String(error);
     console.error("DeepSeek CV file API error:", error);
 

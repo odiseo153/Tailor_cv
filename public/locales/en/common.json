@@ -695,5 +695,9 @@
     "feature1": "ATS Optimization",
     "feature2": "AI-Powered",
     "feature3": "Job Match"
+  },
+  "ai_errors": {
+    "no_credits_title": "No AI credits",
+    "no_credits": "{provider} has no credits available. Top up your {provider} account or choose another provider under \"AI Model\"."
   }
 }

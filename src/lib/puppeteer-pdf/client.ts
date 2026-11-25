@@ -1,8 +1,9 @@
 import {
   addPreviewPageStyles,
-  CV_A4_PAGE_HEIGHT,
-  CV_A4_PAGE_WIDTH,
-} from "@/app/generar-cv/components/CVPreviewStyles";
+  computePageBreaks,
+  A4_PAGE_HEIGHT as CV_A4_PAGE_HEIGHT,
+  A4_PAGE_WIDTH as CV_A4_PAGE_WIDTH,
+} from "@/app/generar-cv/utils/preview-html";
 
 const MAX_IMAGE_DIMENSION = 1400;
 const MAX_DATA_URL_LENGTH = 350_000;
@@ -28,8 +29,8 @@ async function waitForImages(root: ParentNode) {
   );
 }
 
-function buildExportPageHtml(html: string, pageIndex: number) {
-  const previewHtml = addPreviewPageStyles(html, pageIndex);
+function buildExportPageHtml(html: string, pageIndex: number, pageBreaks: number[]) {
+  const previewHtml = addPreviewPageStyles(html, pageIndex, pageBreaks);
   const viewportStyle = `
     <style>
       .tailor-cv-export-viewport {
@@ -44,10 +45,10 @@ function buildExportPageHtml(html: string, pageIndex: number) {
   return previewHtml
     .replace(/<\/head>/i, `${viewportStyle}</head>`)
     .replace(
-      /<body([^>]*)><div class="tailor-cv-page-content">/i,
-      '<body$1><div class="tailor-cv-export-viewport"><div class="tailor-cv-page-content">',
+      /<body([^>]*)><div class="tailor-cv-page-window">/i,
+      '<body$1><div class="tailor-cv-export-viewport"><div class="tailor-cv-page-window">',
     )
-    .replace(/<\/div><\/body>/i, "</div></div></body>");
+    .replace(/<\/div><\/div><\/body>/i, "</div></div></div></body>");
 }
 
 async function buildFrame(srcdoc: string) {
@@ -84,21 +85,11 @@ async function buildFrame(srcdoc: string) {
   return { iframe, frameWindow, frameDocument };
 }
 
-async function getPageCount(html: string) {
+async function getPageBreaks(html: string) {
   const { iframe, frameDocument } = await buildFrame(addPreviewPageStyles(html, 0));
 
   try {
-    const contentHeight = Math.max(
-      frameDocument.documentElement.scrollHeight,
-      frameDocument.body?.scrollHeight ?? 0,
-    );
-    const pageHeight = iframe.clientHeight || frameDocument.documentElement.clientHeight;
-
-    if (!contentHeight || !pageHeight) {
-      return 1;
-    }
-
-    return Math.max(1, Math.ceil(contentHeight / pageHeight));
+    return computePageBreaks(frameDocument);
   } finally {
     document.body.removeChild(iframe);
   }
@@ -110,7 +101,7 @@ async function generatePdfBlobFromHtml(html: string) {
     import("jspdf"),
   ]);
 
-  const pageCount = await getPageCount(html);
+  const pageBreaks = await getPageBreaks(html);
   const pdf = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -119,9 +110,9 @@ async function generatePdfBlobFromHtml(html: string) {
   const pdfWidth = pdf.internal.pageSize.getWidth();
   const pdfHeight = pdf.internal.pageSize.getHeight();
 
-  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+  for (let pageIndex = 0; pageIndex < pageBreaks.length; pageIndex += 1) {
     const { iframe, frameWindow, frameDocument } = await buildFrame(
-      buildExportPageHtml(html, pageIndex),
+      buildExportPageHtml(html, pageIndex, pageBreaks),
     );
 
     try {

@@ -8,6 +8,7 @@ import {
 } from "../utils/cv-prompts";
 import { validateGeneratedCvHtml } from "../../lib/cv-html-validation";
 import { validateJobOfferAnalysis } from "../../lib/cv-job-analysis-validation";
+import { AICreditsError, throwIfCreditsError } from "../../lib/ai-credits";
 
 export interface ProgressCallback {
   onProgress?: (progress: number) => void;
@@ -47,6 +48,7 @@ async function callAIWithFallback(
   }
 
   if (!res.ok) {
+    throwIfCreditsError(payload);
     throw new Error(
       payload?.error ||
         responseText ||
@@ -107,6 +109,7 @@ export class CVHandler {
     }
 
     if (!res.ok) {
+      throwIfCreditsError(payload);
       throw new Error(
         payload?.error ||
           responseText ||
@@ -140,6 +143,7 @@ export class CVHandler {
       return jsonrepair(responseText);
     } catch (error) {
       console.error("Error extracting CV info:", error);
+      if (error instanceof AICreditsError) throw error;
       throw new Error(`Failed to process ${fileType} file: ${error}`);
     }
   }
@@ -242,6 +246,7 @@ export class CVHandler {
       return validateGeneratedCvHtml(content);
     } catch (error) {
       console.error("Error generating CV:", error);
+      if (error instanceof AICreditsError) throw error;
       throw new Error(`CV generation failed: ${error}`);
     }
   }
@@ -321,6 +326,7 @@ export class CVHandler {
       return analysisResult;
     } catch (error) {
       console.error("Error analyzing CV:", error);
+      if (error instanceof AICreditsError) throw error;
       throw new Error(`CV analysis failed: ${error}`);
     }
   }
@@ -415,6 +421,7 @@ Return ONLY the JSON object.`;
       };
     } catch (error) {
       console.error("Error extracting job offer data:", error);
+      if (error instanceof AICreditsError) throw error;
       throw new Error(`Failed to analyze job offer: ${error}`);
     }
   }

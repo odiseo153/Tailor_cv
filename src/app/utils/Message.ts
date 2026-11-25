@@ -1,4 +1,5 @@
 import Swal, { SweetAlertResult } from "sweetalert2";
+import { AICreditsError, providerLabel } from "@/lib/ai-credits";
 
 const TIMER_DURATION = 2000;
 const TOAST_BASE_CONFIG = {
@@ -23,6 +24,20 @@ export class Message {
       icon: "error",
       title: `¡Oops! ${message}`
     });
+  }
+
+  /** AI failure: a blocking popup when the provider has no credits, a toast otherwise. */
+  static aiError(error: unknown, t: (key: string) => string, fallbackMessage: string): void {
+    if (error instanceof AICreditsError) {
+      Swal.fire({
+        icon: "warning",
+        title: t("ai_errors.no_credits_title"),
+        text: t("ai_errors.no_credits").replace(/\{provider\}/g, providerLabel(error.provider)),
+        confirmButtonColor: "#316FED",
+      });
+      return;
+    }
+    Message.errorMessage(fallbackMessage);
   }
 
   static informationMessage(message: string): void {

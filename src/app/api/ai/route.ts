@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { OpenAI } from "openai";
 import { validateGeneratedCvHtml } from "@/lib/cv-html-validation";
 import { validateJobOfferAnalysis } from "@/lib/cv-job-analysis-validation";
+import { creditsErrorBody, isOutOfCreditsError } from "@/lib/ai-credits";
 
 // Vercel: allow up to 60s on Hobby, 300s on Pro. Set to max safe value.
 export const maxDuration = 60;
@@ -58,9 +59,12 @@ export async function POST(request: NextRequest) {
         const response = await client.chat.completions.create({
           model,
           messages,
-          max_completion_tokens: 4000,
+          max_completion_tokens: 8000,
           ...(name === "deepseek" || !/^gpt-5/i.test(model) ? { temperature: 0.7 } : {}),
-        });
+          // Reasoning made CV requests take 100s+ and hit timeouts; these tasks don't need it.
+          ...(name === "deepseek" ? { thinking: { type: "disabled" } } : {}),
+          ...(name === "openai" && /^gpt-5/i.test(model) ? { reasoning_effort: "low" as const } : {}),
+        } as OpenAI.Chat.ChatCompletionCreateParamsNonStreaming);
         if (typeof response.choices?.[0]?.message?.content === "string" && response.choices[0].message.content.trim()) {
           let content = response.choices[0].message.content;
           const isCvRequest = messages.some(
@@ -92,6 +96,10 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (error) {
+        // No credits: tell the user instead of silently falling back to another provider.
+        if (isOutOfCreditsError(error)) {
+          return NextResponse.json(creditsErrorBody(name), { status: 402 });
+        }
         const message = error instanceof Error ? error.message : String(error);
         failures.push(`${name}: ${message}`);
         console.warn(`[${name}] request failed`);
